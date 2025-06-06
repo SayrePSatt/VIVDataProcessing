@@ -13,6 +13,7 @@ close all
 clc
 
 %% Experiment Specification
+datafolder = "E:/EFDL/validation_testing/";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -20,9 +21,9 @@ m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-f_n = table2array(readtable('free_decay_90mm_4k/freedecay_air.dat'));
+f_n = table2array(readtable(datafolder+"free_decay_90mm_4k/freedecay_air.dat"));
 f_n = f_n(1,:);
-f_w = table2array(readtable('free_decay_90mm_4k/freedecay_water.dat'));
+f_w = table2array(readtable(datafolder+"free_decay_90mm_4k/freedecay_water.dat"));
 f_w = f_w(1,:);
 m_a = ((f_n(1)/f_w(1))^2-1)*m;
 St = 0.19;
@@ -107,7 +108,7 @@ hold on;
 griffin_fig = figure;
 hold on;
 %% Setting up folder directories
-topfolder = "RawData_90mm_4k\";
+topfolder = datafolder+"RawData_90mm_4k\";
 all_files = dir(topfolder+"*_diameter");
 all_dir = all_files([all_files(:).isdir]);
 num_diameters = numel(all_dir);
