@@ -134,7 +134,7 @@ for iii=1:length(files)
     if f_pump == 0
         U = 0.0;
     else
-        U = pf2u(f_pump)*5;
+        U = pf2u(f_pump);
     end
     filename = fullfile(files(iii).folder,files(iii).name);
     data = table2array(readtable(filename));

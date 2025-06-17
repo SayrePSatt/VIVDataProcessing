@@ -3,15 +3,15 @@ close all
 clc
 
 m = 5;
-type = "air";
-subfolder = "free_decay_90mm_1k_alt\";
-zero = csvread(subfolder+"freedecay_"+type+"_00.csv");
+type = "Water";
+subfolder = "E:\EFDL\tandemSphere\freeDecay\";
+zero = csvread(subfolder+"freeDecay"+type+"_3k_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);
 disp_zero_mean = mean(disp_zero_pos);
 
-for ii=1:8
-    data = csvread(subfolder+"freedecay_"+type+"_0"+ii+".csv");
+for ii=1:5
+    data = csvread(subfolder+"freeDecay"+type+"_3k_0"+ii+".csv");
     time = data(:,1);
     disp = data(:,2);
     disp = disp-disp_zero_mean;
