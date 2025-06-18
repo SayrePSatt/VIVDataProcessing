@@ -13,17 +13,17 @@ close all
 clc
 
 %% Experiment Specification
-datafolder = "E:/EFDL/validation_testing/";
+datafolder = "F:\EFDL\vivscratch\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
-m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
+m = 2.42947+1.14268;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-f_n = table2array(readtable(datafolder+"free_decay_90mm_4k/freedecay_air.dat"));
+f_n = table2array(readtable(datafolder+"freedecay/freedecay_air_2k_heavy.dat"));
 f_n = f_n(1,:);
-f_w = table2array(readtable(datafolder+"free_decay_90mm_4k/freedecay_water.dat"));
+f_w = table2array(readtable(datafolder+"freedecay/freedecay_water_2k_heavy.dat"));
 f_w = f_w(1,:);
 m_a = ((f_n(1)/f_w(1))^2-1)*m;
 St = 0.19;
@@ -108,7 +108,7 @@ hold on;
 griffin_fig = figure;
 hold on;
 %% Setting up folder directories
-topfolder = datafolder+"RawData_90mm_4k\";
+topfolder = datafolder+"testData\";
 all_files = dir(topfolder+"*_diameter");
 all_dir = all_files([all_files(:).isdir]);
 num_diameters = numel(all_dir);
@@ -130,7 +130,7 @@ files = dir(filepath+"*.csv");
 
 for iii=1:length(files)
     dt = 1/f_s;
-    f_pump = str2double(files(iii).name(10:14));
+    f_pump = str2double(files(iii).name(17:21));
     if f_pump == 0
         U = 0.0;
     else
@@ -407,7 +407,7 @@ if ii==1 && jj==1
     set(get(gca,'ylabel'),'rotation',0)
     % legend
 end
-xlimits_forces = [0 10];%max(squeeze(results_ave{1}(ii,jj,:)))+1];
+xlimits_forces = [0 7];%max(squeeze(results_ave{1}(ii,jj,:)))+1];
 
 figure(total_force_fig)
 hold on
@@ -431,7 +431,7 @@ ax = gca;
 % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{11}(ii,jj,:)),squeeze(results_lower{11}(ii,jj,:)),squeeze(results_upper{11}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
 modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,xlimits_forces(1),xlimits_forces(2),ax);
 modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,xlimits_forces(1),xlimits_forces(2),ax);
-modeII_line(ii,jj) = axis_norm(results_ave{1}(ii,jj,:),squeeze(results_ave{7}(ii,jj,:)),90,xlimits_forces(1),xlimits_forces(2),ax);
+% modeII_line(ii,jj) = axis_norm(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{7}(ii,jj,:)),90,xlimits_forces(1),xlimits_forces(2),ax);
 
 figure(vortex_phase_fig)
 hold on
