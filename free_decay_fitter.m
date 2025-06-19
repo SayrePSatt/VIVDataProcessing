@@ -2,16 +2,16 @@ clear all
 close all
 clc
 
-m = 4;
-type = "air";
+m = 5;
+type = "water";
 subfolder = "F:\EFDL\vivscratch\freeDecay\";
-zero = csvread(subfolder+"freedecay_"+type+"_2k_heavy_00.csv");
+zero = csvread(subfolder+"freedecay_1k_"+type+"_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);
 disp_zero_mean = mean(disp_zero_pos);
 
-for ii=1:5
-    data = csvread(subfolder+"freedecay_"+type+"_2k_heavy_0"+ii+".csv");
+for ii=1:6
+    data = csvread(subfolder+"freedecay_1k_"+type+"_0"+ii+".csv");
     time = data(:,1);
     disp = data(:,2);
     disp = disp-disp_zero_mean;

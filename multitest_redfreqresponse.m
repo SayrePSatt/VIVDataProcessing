@@ -17,13 +17,13 @@ datafolder = "F:\EFDL\vivscratch\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
-m = 2.42947+1.14268;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
+m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-f_n = table2array(readtable(datafolder+"freedecay/freedecay_air_2k_heavy.dat"));
+f_n = table2array(readtable(datafolder+"freedecay/freedecay_1k_air.dat"));
 f_n = f_n(1,:);
-f_w = table2array(readtable(datafolder+"freedecay/freedecay_water_2k_heavy.dat"));
+f_w = table2array(readtable(datafolder+"freedecay/freedecay_1k_water.dat"));
 f_w = f_w(1,:);
 m_a = ((f_n(1)/f_w(1))^2-1)*m; %test
 St = 0.19;
@@ -108,7 +108,7 @@ hold on;
 griffin_fig = figure;
 hold on;
 %% Setting up folder directories
-topfolder = datafolder+"testData\";
+topfolder = datafolder+"validation\";
 all_files = dir(topfolder+"*_diameter");
 all_dir = all_files([all_files(:).isdir]);
 num_diameters = numel(all_dir);
@@ -130,11 +130,11 @@ files = dir(filepath+"*.csv");
 
 for iii=1:length(files)
     dt = 1/f_s;
-    f_pump = str2double(files(iii).name(17:21));
+    f_pump = str2double(files(iii).name(18:22));
     if f_pump == 0
         U = 0.0;
     else
-        U = pf2u(f_pump);
+        U = pumpSpeedCalculator(f_pump);
     end
     filename = fullfile(files(iii).folder,files(iii).name);
     data = table2array(readtable(filename));
@@ -407,7 +407,7 @@ if ii==1 && jj==1
     set(get(gca,'ylabel'),'rotation',0)
     % legend
 end
-xlimits_forces = [0 7];%max(squeeze(results_ave{1}(ii,jj,:)))+1];
+xlimits_forces = [0 23];%max(squeeze(results_ave{1}(ii,jj,:)))+1];
 
 figure(total_force_fig)
 hold on
@@ -529,8 +529,9 @@ text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
 % x=0.5;
 annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
 annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
-annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
+% annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
 
 saveas(phase_subplot_fig,'phase_amp_fig.eps')
+saveas(phase_subplot_fig,'phase_amp_fig.jpg')
 
 
