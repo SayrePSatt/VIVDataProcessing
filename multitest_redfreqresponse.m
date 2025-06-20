@@ -8,12 +8,15 @@
 % This is adapted from a previous version for use with new data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear
+clear all
 close all
 clc
 
+%% Options for plotting
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
+
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch\";
+datafolder = "D:\EFDL\vivscratch\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -21,9 +24,9 @@ m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-f_n = table2array(readtable(datafolder+"freedecay/freedecay_1k_air.dat"));
+f_n = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_air.dat"));
 f_n = f_n(1,:);
-f_w = table2array(readtable(datafolder+"freedecay/freedecay_1k_water.dat"));
+f_w = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_water.dat"));
 f_w = f_w(1,:);
 m_a = ((f_n(1)/f_w(1))^2-1)*m; %test
 St = 0.19;
@@ -108,15 +111,17 @@ hold on;
 griffin_fig = figure;
 hold on;
 %% Setting up folder directories
-topfolder = datafolder+"validation\";
+topfolder = datafolder+"testData\";
 all_files = dir(topfolder+"*_diameter");
 all_dir = all_files([all_files(:).isdir]);
 num_diameters = numel(all_dir);
 
 for ii=1:num_diameters
 distance_files = dir(topfolder+all_dir(ii).name+"\*_distance");
+distance_names(ii,:) = cellfun(@(x)str2num(x(1:3)),{distance_files.name})/10;
 distance_dir = distance_files([distance_files(:).isdir]);
 num_distances = numel(distance_dir);
+plotting_color = lines(num_distances);
 
 for jj=1:num_distances
 test_files = dir(topfolder+all_dir(ii).name+"\"+distance_dir(jj).name+"\*_test");
@@ -324,9 +329,7 @@ if ii==1 && jj==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{9}(ii,jj,:)),squeeze(results_lower{9}(ii,jj,:)),squeeze(results_upper{9}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName',distance_dir(jj).name)
-xlim([0 max(squeeze(results_ave{1}(ii,jj,:)))+1])
-ylim([0 1])
+plot_fn(results_ave,results_lower,results_upper,1,9,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
@@ -340,9 +343,8 @@ if ii==1 && jj==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-errorbar(squeeze(results_ave{2}(ii,jj,:)),squeeze(results_ave{9}(ii,jj,:)),squeeze(results_lower{9}(ii,jj,:)),squeeze(results_upper{9}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName',distance_dir(jj).name)
-xlim([0 max(squeeze(results_ave{2}(ii,jj,:)))+1])
-ylim([0 1])
+plot_fn(results_ave,results_lower,results_upper,2,9,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+
 dim = [0.55 0.8 0.5 0.1];
 annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 dim = [0.32 0.5 0.5 0.1];
@@ -358,7 +360,7 @@ if ii==1 && jj==1
     set(gca,'XMinorTick','on','YMinorTick','on')
 end
 
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{10}(ii,jj,:)),squeeze(results_lower{10}(ii,jj,:)),squeeze(results_upper{10}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName',distance_dir(jj).name)
+plot_fn(results_ave,results_lower,results_upper,1,10,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 % set(gca)
 xlabel('$U^*$')
 ylabel('$f^*$')
@@ -394,7 +396,7 @@ if ii==1 && jj==1
     xlabel('$U^*$')
     ylabel('$\phi_{total}$')
     set(get(gca,'ylabel'),'rotation',0)
-
+    yline(90,'k--','DisplayName','')
     % legend
 
     figure(vortex_phase_fig)
@@ -405,56 +407,46 @@ if ii==1 && jj==1
     xlabel('$U^*$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',0)
+    yline(90,'k--','DisplayName','')
     % legend
 end
-xlimits_forces = [0 23];%max(squeeze(results_ave{1}(ii,jj,:)))+1];
 
 figure(total_force_fig)
 hold on
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{4}(ii,jj,:)),squeeze(results_lower{4}(ii,jj,:)),squeeze(results_upper{4}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName',distance_dir(jj).name)
-xlim(xlimits_forces)
+plot_fn(results_ave,results_lower,results_upper,1,4,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 
 figure(vortex_force_fig)
 hold on
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{6}(ii,jj,:)),squeeze(results_lower{6}(ii,jj,:)),squeeze(results_upper{6}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName',distance_dir(jj).name)
-xlim(xlimits_forces)
+plot_fn(results_ave,results_lower,results_upper,1,6,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 
 figure(total_phase_fig)
 hold on
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{7}(ii,jj,:)),squeeze(results_lower{7}(ii,jj,:)),squeeze(results_upper{7}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName','Hilbert')
-xlim(xlimits_forces)
+plot_fn(results_ave,results_lower,results_upper,1,7,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-yline(90,'k--')
 ax = gca;
 % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{11}(ii,jj,:)),squeeze(results_lower{11}(ii,jj,:)),squeeze(results_upper{11}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
-modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,xlimits_forces(1),xlimits_forces(2),ax);
-modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,xlimits_forces(1),xlimits_forces(2),ax);
 % modeII_line(ii,jj) = axis_norm(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{7}(ii,jj,:)),90,xlimits_forces(1),xlimits_forces(2),ax);
 
 figure(vortex_phase_fig)
 hold on
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{8}(ii,jj,:)),squeeze(results_lower{8}(ii,jj,:)),squeeze(results_upper{8}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName','Hilbert')
-xlim([0 max(squeeze(results_ave{1}(ii,jj,:)))+1])
+plot_fn(results_ave,results_lower,results_upper,1,8,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-yline(90,'k--')
 % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{12}(ii,jj,:)),squeeze(results_lower{12}(ii,jj,:)),squeeze(results_upper{12}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
 
 %Periodicity Plot
 figure(pdicy_fig)
-errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{3}(ii,jj,:)),squeeze(results_lower{3}(ii,jj,:)),squeeze(results_lower{3}(ii,jj,:)),'k-o','MarkerFaceColor','k','DisplayName',distance_dir(jj).name)
+plot_fn(results_ave,results_lower,results_upper,1,3,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
 
 xlabel('$U^*$')
 ylabel('$P$')
 set(get(gca,'ylabel'),'rotation',0)
 set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0 1])
-% clear results results_upper results_lower results_ave
-
-%Force Subplots
+clear results results_upper results_lower results_ave
 
 end
 end
@@ -487,10 +479,11 @@ title(ax1.Title.String); % Copy title from original axes
 ylabel('$A^*$')
 xlabel('')
 xticklabels({})
-xlim(xlimits_forces)
+xlim(ax1.XLim)
 text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
 set(gca,'XMinorTick','on','YMinorTick','on')
 set(get(gca,'ylabel'),'rotation',0)
+legend
 
 % Subplot 2
 subplot(3, 1, 2, 'Parent', phase_subplot_fig);
@@ -501,13 +494,14 @@ set(gca,'XMinorTick','on')
 ylabel('$\phi_{total}$')
 set(get(gca,'ylabel'),'rotation',0)
 ylim([0 180])
-xlim(xlimits_forces)
+xlim(ax1.XLim)
 xticklabels({})
 xlabel('')
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
 yline(90,'k--')
 text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
+legend
 
 % Subplot 3
 subplot(3, 1, 3, 'Parent', phase_subplot_fig);
@@ -519,7 +513,7 @@ xlabel('$U^*$')
 ylabel('$\phi_{vortex}$')
 set(get(gca,'ylabel'),'rotation',0)
 ylim([0 180])
-xlim(xlimits_forces)
+xlim(ax1.XLim)
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
 yline(90,'k--')
@@ -527,10 +521,12 @@ text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
 % 
 % hold on
 % x=0.5;
+modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax1);
+modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax1);
 annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
 annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
 % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
-
+legend
 saveas(phase_subplot_fig,'phase_amp_fig.eps')
 saveas(phase_subplot_fig,'phase_amp_fig.jpg')
 

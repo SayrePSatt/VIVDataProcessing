@@ -3,8 +3,8 @@ close all
 clc
 
 m = 5;
-type = "water";
-subfolder = "F:\EFDL\vivscratch\freeDecay\";
+type = "air";
+subfolder = "D:\EFDL\vivscratch\freeDecay\1k_06_19_2025\";
 zero = csvread(subfolder+"freedecay_1k_"+type+"_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);
@@ -30,7 +30,7 @@ zeta_ave = mean(zeta);
 zeta_95 = std(zeta)*tinv(0.975,ii-1);
 
 writemtx = [f_n_ave, zeta_ave; f_n_95, zeta_95];
-writematrix(writemtx,subfolder+"freedecay_"+type+".dat");
+writematrix(writemtx,subfolder+"freedecay_1k_"+type+".dat");
 
 findpeaks(disp)
 
