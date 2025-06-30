@@ -140,7 +140,7 @@ filepath = topfolder+all_dir(ii).name+"\"+distance_dir(jj).name+"\"+test_dir(kk)
 files = dir(filepath+"*.csv");
 
 for iii=1:length(files)
-    dt = 1/f_s;
+    dt = 1/f_s; %test
     f_pump = str2double(files(iii).name(18:22));
     if f_pump == 0
         U = 0.0;
@@ -157,7 +157,7 @@ for iii=1:length(files)
         encoder = encoder-encoder_offset;
     end
 
-    
+
     u_red(ii,jj,kk,iii) = U/(f_w_1k(1)*d_sph);
     pump_f(ii,jj,kk,iii) = f_pump;
 
