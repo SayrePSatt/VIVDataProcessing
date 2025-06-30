@@ -24,18 +24,24 @@ m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-f_n = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_air.dat"));
-f_n = f_n(1,:);
-f_w = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_water.dat"));
-f_w = f_w(1,:);
-m_a = ((f_n(1)/f_w(1))^2-1)*m; %test
+f_n_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_air.dat"));
+f_n_1k = f_n_1k(1,:);
+f_w_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_water.dat"));
+f_w_1k = f_w_1k(1,:);
+
+f_n_6k = table2array(readtable(datafolder+"freeDecay/6k_06_27_2025/freedecay_6k_air.dat"));
+f_n_6k = f_n_1k(1,:);
+f_w_6k = table2array(readtable(datafolder+"freeDecay/6k_06_27_2025/freedecay_6k_water.dat"));
+f_w_6k = f_w_1k(1,:);
+
+m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
 St = 0.19;
-omegana = 2*pi*f_n(1);
+omegana = 2*pi*f_n_1k(1);
 k = m*omegana^2; %5.375; %(f_n(1)*2*pi)^2*m
-c = f_n(2)*2*sqrt((m)*k);
+c = f_n_1k(2)*2*sqrt((m)*k);
 m_star = m/m_d;
-mass_damp = (m_star+C_A)*f_n(2);
-scruton = 2*m*f_n(2)/(rho*d_sph^2); 
+mass_damp = (m_star+C_A)*f_n_1k(2);
+scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
 
 diagnose = false;
 
@@ -151,7 +157,8 @@ for iii=1:length(files)
         encoder = encoder-encoder_offset;
     end
 
-    u_red(ii,jj,kk,iii) = U/(f_w(1)*d_sph);
+    
+    u_red(ii,jj,kk,iii) = U/(f_w_1k(1)*d_sph);
     pump_f(ii,jj,kk,iii) = f_pump;
 
     clear data
@@ -183,7 +190,7 @@ for iii=1:length(files)
     % figure
     [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
     f = f_windowed;
-    f_norm = f_windowed./f_w(1);
+    f_norm = f_windowed./f_w_1k(1);
     meanpwr = mean(mx,2);
 
     [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
@@ -199,7 +206,7 @@ for iii=1:length(files)
     end
     
     if ii==1 & jj==1 & kk==1
-        f_vo_norm(iii) = (St*U/d_sph)/f_w(1);
+        f_vo_norm(iii) = (St*U/d_sph)/f_w_1k(1);
     end
     
     u_norm(ii,jj,kk,iii) = (u_red(ii,jj,kk,iii)./f_star_peak(ii,jj,kk,iii))*St;
