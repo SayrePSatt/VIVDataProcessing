@@ -117,8 +117,13 @@ hold on;
 griffin_fig = figure;
 hold on;
 %% Setting up folder directories
+test_dist = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Distances to test
+test_dia = ["000" "060" "080" "100"]; %Diameter ratios to test
 topfolder = datafolder+"testData\";
-all_files = dir(topfolder+"*_diameter");
+all_files = dir(topfolder);
+
+for ii=3:length(all_files)
+    
 all_dir = all_files([all_files(:).isdir]);
 num_diameters = numel(all_dir);
 
@@ -140,7 +145,7 @@ filepath = topfolder+all_dir(ii).name+"\"+distance_dir(jj).name+"\"+test_dir(kk)
 files = dir(filepath+"*.csv");
 
 for iii=1:length(files)
-    dt = 1/f_s; %testtest
+    dt = 1/f_s;
     f_pump = str2double(files(iii).name(18:22));
     if f_pump == 0
         U = 0.0;
