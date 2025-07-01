@@ -30,9 +30,9 @@ f_w_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_
 f_w_1k = f_w_1k(1,:);
 
 f_n_6k = table2array(readtable(datafolder+"freeDecay/6k_06_27_2025/freedecay_6k_air.dat"));
-f_n_6k = f_n_1k(1,:);
+f_n_6k = f_n_6k(1,:);
 f_w_6k = table2array(readtable(datafolder+"freeDecay/6k_06_27_2025/freedecay_6k_water.dat"));
-f_w_6k = f_w_1k(1,:);
+f_w_6k = f_w_6k(1,:);
 
 m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
 St = 0.19;
@@ -117,54 +117,82 @@ hold on;
 griffin_fig = figure;
 hold on;
 %% Setting up folder directories
-test_dist = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Distances to test
-test_dia = ["000" "060" "080" "100"]; %Diameter ratios to test
+datafolder = "D:\EFDL\vivscratch\";
 topfolder = datafolder+"testData\";
 all_files = dir(topfolder);
 
-for ii=3:length(all_files)
+
+for ii = 3:length(all_files)
+    temp_config = all_files(ii).name;
+    configs(ii-2) = convertCharsToStrings(temp_config(4:11));
+    % distances =
+end
+
+uniq_configs = unique(configs);
+matching_tests = {};
+
+plotting_color = lines(length(uniq_configs));
+for ii = 1:length(uniq_configs)
+    uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3);
+    uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7);
+    kk = 1;
+    for jj = 3:length(all_files)
+        filename = all_files(jj).name;
+        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv')
+            matching_tests{ii,1}(kk) = convertCharsToStrings(filename);
+            
+            matching_tests{ii,2}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),13,13)); %Extracting the spring constant
+            matching_tests{ii,3}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),25,29)); %Extracting Pump Speed
+            matching_tests{ii,4}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),1,2)); %Extracting the test number
+            kk = kk+1;
+        end
+    end
     
-all_dir = all_files([all_files(:).isdir]);
-num_diameters = numel(all_dir);
+    for iii = [1, 6]
+        temp = find(matching_tests{ii,2}==iii);
+        uniq = unique(matching_tests{ii,3}(temp));
+        uniq_idx = 1:length(uniq);
+        for jjj = 1:length(uniq)
+            temp2 = find(matching_tests{ii,3}==uniq(jjj));
+            matching_tests{ii,5}(temp2) = uniq_idx(jjj);
+        end
+    end
+end
 
-for ii=1:num_diameters
-distance_files = dir(topfolder+all_dir(ii).name+"\*_distance");
-distance_names(ii,:) = cellfun(@(x)str2num(x(1:3)),{distance_files.name})/10;
-distance_dir = distance_files([distance_files(:).isdir]);
-num_distances = numel(distance_dir);
-plotting_color = lines(num_distances);
+%% Data Processing
+dt = 1/f_s;
 
-for jj=1:num_distances
-test_files = dir(topfolder+all_dir(ii).name+"\"+distance_dir(jj).name+"\*_test");
-test_dir = test_files([test_files(:).isdir]);
-num_tests = numel(test_dir);
-
-for kk=1:num_tests
-
-filepath = topfolder+all_dir(ii).name+"\"+distance_dir(jj).name+"\"+test_dir(kk).name+"\";
-files = dir(filepath+"*.csv");
-
-for iii=1:length(files)
-    dt = 1/f_s;
-    f_pump = str2double(files(iii).name(18:22));
+for ii=1:length(matching_tests)
+    for jj=1:length(matching_tests{ii})
+    f_pump = matching_tests{ii,3}(jj);
     if f_pump == 0
         U = 0.0;
     else
         U = pumpSpeedCalculator(f_pump);
     end
-    filename = fullfile(files(iii).folder,files(iii).name);
-    data = table2array(readtable(filename));
+
+    data = table2array(readtable(datafolder+"testData\"+matching_tests{ii,1}(jj)));
     time = data(:,1);
     encoder = data(:,2);
-    if iii==1
+    if jj==1
         encoder_offset = mean(encoder);
     else
         encoder = encoder-encoder_offset;
     end
 
+    if matching_tests{ii,2}(jj) == 1
+        f_w = f_w_1k;
+        kk = 1;
+    else
+        f_w = f_w_6k;
+        kk = 2;
+    end
 
-    u_red(ii,jj,kk,iii) = U/(f_w_1k(1)*d_sph);
-    pump_f(ii,jj,kk,iii) = f_pump;
+    iii = matching_tests{ii,4}(jj);
+    jjj = matching_tests{ii,5}(jj);
+
+    u_red{ii,kk}(iii,jjj) = U/(f_w(1)*d_sph); %Indexing is {configuration, spring constant}(test number, pump speed)
+    pump_f{ii,kk}(iii,jjj) = f_pump;
 
     clear data
 
@@ -203,18 +231,18 @@ for iii=1:length(files)
     p_f = polyfit(f(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2);
     p_f_norm = polyfit(f_norm(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2); %Fits a polynomial to the top of the mean power
 
-    f_peak(ii,jj,kk,iii) = -p_f(2)/(2*p_f(1)); %Setting 1st derivative slope to be 0, finding the location of 0
-    f_star_peak(ii,jj,kk,iii) = -p_f_norm(2)/(2*p_f_norm(1));
+    f_peak{ii,kk}(iii,jjj) = -p_f(2)/(2*p_f(1)); %Setting 1st derivative slope to be 0, finding the location of 0
+    f_star_peak{ii,kk}(iii,jjj) = -p_f_norm(2)/(2*p_f_norm(1));
 
-    if iii==1
-        f_star_peak(ii,jj,kk,iii) = NaN;
+    if jjj==1
+        f_star_peak{ii,kk}(iii,jjj) = NaN;
     end
     
-    if ii==1 & jj==1 & kk==1
+    if ii==1 & iii==1
         f_vo_norm(iii) = (St*U/d_sph)/f_w_1k(1);
     end
     
-    u_norm(ii,jj,kk,iii) = (u_red(ii,jj,kk,iii)./f_star_peak(ii,jj,kk,iii))*St;
+    u_norm{ii,kk}(iii,jjj) = (u_red{ii,kk}(iii,jjj)./f_star_peak{ii,kk}(iii,jjj))*St;
     
     %% Data Processing
     velo = FivePointDiff(encoder_filt,f_s)';
@@ -263,15 +291,15 @@ for iii=1:length(files)
     %     ylabel('C_{pot}')
     % end
 
-    C_y_rms(ii,jj,kk,iii) = rms(C_y-mean(C_y));
-    C_pot_rms(ii,jj,kk,iii) = rms(C_pot-mean(C_pot));
-    C_vortex_rms(ii,jj,kk,iii) = rms(C_vortex-mean(C_vortex));
+    C_y_rms{ii,kk}(iii,jjj) = rms(C_y-mean(C_y));
+    C_pot_rms{ii,kk}(iii,jjj) = rms(C_pot-mean(C_pot));
+    C_vortex_rms{ii,kk}(iii,jjj) = rms(C_vortex-mean(C_vortex));
     
-    A_y_star(ii,jj,kk,iii) = sqrt(2)*A_rms/d_sph;
-    pdicy(ii,jj,kk,iii) = sqrt(2)*A_rms./y_max; %Periodicity
-    if iii==1
-        A_y_star(ii,jj,kk,iii) = NaN;
-        pdicy(ii,jj,kk,iii) = NaN;
+    A_y_star{ii,kk}(iii,jjj) = sqrt(2)*A_rms/d_sph;
+    pdicy{ii,kk}(iii,jjj) = sqrt(2)*A_rms./y_max; %Periodicity
+    if jjj==1
+        A_y_star{ii,kk}(iii,jjj) = NaN;
+        pdicy{ii,kk}(iii,jjj) = NaN;
     end
 
     %% Phase Lag Calculations
@@ -294,10 +322,10 @@ for iii=1:length(files)
     % % plot(relative_phase_deg)
     % C_vortex_phase(ii,jj,kk,iii) = mean(relative_phase_deg);
 
-    [C_y_phase_alt(ii,jj,kk,iii), C_vortex_phase_alt(ii,jj,kk,iii)] = retrievephase2(f_s,f_peak(ii,jj,kk,iii),encoder_filt,C_y,C_vortex);
+    [C_y_phase_alt{ii,kk}(iii,jjj), C_vortex_phase_alt{ii,kk}(iii,jjj)] = retrievephase2(f_s,f_peak{ii,kk}(iii,jjj),encoder_filt,C_y,C_vortex);
     [totalphase, vortexphase] = retrievephase1(encoder_filt,C_y,C_vortex);
-    C_y_phase(ii,jj,kk,iii) = mean(totalphase);
-    C_vortex_phase(ii,jj,kk,iii) = mean(vortexphase);
+    C_y_phase{ii,kk}(iii,jjj) = mean(totalphase);
+    C_vortex_phase{ii,kk}(iii,jjj) = mean(vortexphase);
     if diagnose == true && kk==1
         figure
         plot(encoder_filt)
@@ -305,34 +333,48 @@ for iii=1:length(files)
         plot(C_vortex)
         ylabel('\phi')
         legend('Disp', 'Vortex Force')
-        title(u_red(ii,jj,kk,iii))
+        title(u_red{ii,kk}(iii,jjj))
     end
-end
-end
+    end
+% end
 %% Determining the average and uncertainty bounds from the tests
 
 results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
-for jjj = 1:length(results)
-    [results_ave{jjj}(ii,jj,:), results_upper{jjj}(ii,jj,:), results_lower{jjj}(ii,jj,:)] = ave_bounds(results{jjj}(ii,jj,:,:));
+for kkk = 1:length(results)
+    % kk
+    % ave_bounds(results{kkk}{ii,kk}(:,:))
+    [results_ave{kkk}{ii}(:), results_upper{kkk}{ii}(:), results_lower{kkk}{ii}(:)] = ave_bounds(results,kkk,ii);
+    % temp1 = results_ave_expand{kkk}{ii,1}(:);
+    % temp2 = results_ave_expand{kkk}{ii,2}(:);
+    % results_ave{kkk}{ii} = [temp2 temp1];
+    % 
+    % temp1 = cell2mat(results_lower_expand{kkk}{ii,1}(:));
+    % temp2 = cell2mat(results_lower_expand{kkk}{ii,2}(:));
+    % results_lower{kkk}{ii} = [temp2 temp1];
+    % 
+    % temp1 = cell2mat(results_upper_expand{kkk}{ii,1}(:));
+    % temp2 = cell2mat(results_upper_expand{kkk}{ii,2}(:));
+    % results_upper{kkk}{ii} = [temp2 temp1];
+
 end
 
 %% Plotting results from distances
-figure(griffin_fig)
-if ii==1 && jj==1
-    xscale("log");
-    scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
-    plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
-    plot(mass_damp,max(squeeze(results_ave{9}(ii,jj,:))),'ko','MarkerFaceColor','k');
-    set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$(m^*+C_A)\zeta$')
-    ylabel('$A^*$')
-    set(get(gca,'ylabel'),'rotation',0)
-end
+% figure(griffin_fig)
+% if ii==1
+%     xscale("log");
+%     scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
+%     plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
+%     plot(mass_damp,max(squeeze(results_ave{9}(ii,jj,:))),'ko','MarkerFaceColor','k');
+%     set(gca,'XMinorTick','on','YMinorTick','on')
+%     xlabel('$(m^*+C_A)\zeta$')
+%     ylabel('$A^*$')
+%     set(get(gca,'ylabel'),'rotation',0)
+% end
 
 %First plot is Ay_star
 figure(A_y_star_fig)
 hold on
-if ii==1 && jj==1
+if ii==1
     plot(u_red_A_star_sareen,A_star_sareen,'k-s','DisplayName','Sareen 2018b');
     plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
     set(gca,'XMinorTick','on','YMinorTick','on')
@@ -341,12 +383,12 @@ if ii==1 && jj==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,1,9,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color)
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
 hold on
-if ii==1 && jj==1
+if ii==1
     plot(unorm_unorm_sareen,unorm_Astar_sareen,'k-s','DisplayName','Sareen 2018b');
     plot(unorm_unorm_govwill,unorm_Astar_govwill,'k-d','DisplayName','Govhardan 2005');
     set(gca,'XMinorTick','on','YMinorTick','on')
@@ -355,7 +397,7 @@ if ii==1 && jj==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,2,9,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color)
 
 dim = [0.55 0.8 0.5 0.1];
 annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
@@ -365,23 +407,23 @@ dim = [0.75 0.65 0.5 0.1];
 annotation('textbox',dim,'String','Mode III','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 
 %Plots of frequency ratio
-figure(f_star_fig)
-hold on
-if ii==1 && jj==1
-    plot(squeeze(results_ave{1}(ii,jj,:)),f_vo_norm,'k-s','DisplayName',distance_dir(jj).name)
-    set(gca,'XMinorTick','on','YMinorTick','on')
-end
-
-plot_fn(results_ave,results_lower,results_upper,1,10,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
-% set(gca)
-xlabel('$U^*$')
-ylabel('$f^*$')
-yline(1,'k--')
-set(get(gca,'ylabel'),'rotation',0)
+% figure(f_star_fig)
+% hold on
+% if ii==1
+%     plot(squeeze(results_ave{1}(ii,jj,:)),f_vo_norm,'k-s','DisplayName',distance_dir(jj).name)
+%     set(gca,'XMinorTick','on','YMinorTick','on')
+% end
+% 
+% plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color)
+% % set(gca)
+% xlabel('$U^*$')
+% ylabel('$f^*$')
+% yline(1,'k--')
+% set(get(gca,'ylabel'),'rotation',0)
 
 %Plots of lift coefficient
 hold on
-if ii==1 && jj==1
+if ii==1
     figure(total_force_fig)
     hold on
     plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
@@ -425,15 +467,15 @@ end
 
 figure(total_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,4,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color)
 
 figure(vortex_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,6,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color)
 
 figure(total_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,7,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -443,7 +485,7 @@ ax = gca;
 
 figure(vortex_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,8,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -451,7 +493,7 @@ yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set l
 
 %Periodicity Plot
 figure(pdicy_fig)
-plot_fn(results_ave,results_lower,results_upper,1,3,ii,jj,distance_names(ii,jj),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color)
 
 xlabel('$U^*$')
 ylabel('$P$')
@@ -460,7 +502,6 @@ set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0 1])
 clear results results_upper results_lower results_ave
 
-end
 end
 %% Figure Saving
 saveas(A_y_star_fig,'A_y_star.eps')

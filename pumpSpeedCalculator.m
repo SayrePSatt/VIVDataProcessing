@@ -52,7 +52,7 @@ for i = 1:length(data_files)
 end
 
 % fprintf('Properties of the linear regression model fitted to the PIV data:');
-mdl = fitlm(Velocity,frequency);
+mdl = fitlm(frequency,Velocity);
 % fprintf(sprintf('\n\nPump Frequency of the channel flow for pump frequency of %d (m/s):',requiredPumpSpeed));
 velocityUser = predict(mdl,requiredPumpSpeed);
 
