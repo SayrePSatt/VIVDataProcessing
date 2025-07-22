@@ -36,9 +36,13 @@ f_w_6k = f_w_6k(1,:);
 
 m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
 St = 0.19;
-omegana = 2*pi*f_n_1k(1);
-k = m*omegana^2; %5.375; %(f_n(1)*2*pi)^2*m
-c = f_n_1k(2)*2*sqrt((m)*k);
+omegana_1k = 2*pi*f_n_1k(1);
+k_1k = m*omegana_1k^2; %5.375; %(f_n(1)*2*pi)^2*m
+omegana_6k = 2*pi*f_n_6k(1);
+k_6k = m*omegana_6k^2;
+
+c_1k = f_n_1k(2)*2*sqrt((m)*k_1k);
+c_6k = f_n_6k(2)*2*sqrt((m)*k_6k);
 m_star = m/m_d;
 mass_damp = (m_star+C_A)*f_n_1k(2);
 scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
@@ -132,6 +136,7 @@ uniq_configs = unique(configs);
 matching_tests = {};
 
 plotting_color = lines(length(uniq_configs));
+marker_style = {"o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"};
 for ii = 1:length(uniq_configs)
     uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3);
     uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7);
@@ -171,6 +176,18 @@ for ii=1:length(matching_tests)
         U = pumpSpeedCalculator(f_pump);
     end
 
+    k_temp = matching_tests{ii,2}(jj);
+    if k_temp == 1
+        k = k_1k;
+        kk = 1;
+        c = c_1k;
+        f_w = f_w_1k;
+    else
+        k = k_6k;
+        kk = 2;
+        c = c_6k;
+        f_w = f_w_6k;
+    end
     data = table2array(readtable(datafolder+"testData\"+matching_tests{ii,1}(jj)));
     time = data(:,1);
     encoder = data(:,2);
@@ -178,14 +195,6 @@ for ii=1:length(matching_tests)
         encoder_offset = mean(encoder);
     else
         encoder = encoder-encoder_offset;
-    end
-
-    if matching_tests{ii,2}(jj) == 1
-        f_w = f_w_1k;
-        kk = 1;
-    else
-        f_w = f_w_6k;
-        kk = 2;
     end
 
     iii = matching_tests{ii,4}(jj);
@@ -223,7 +232,7 @@ for ii=1:length(matching_tests)
     % figure
     [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
     f = f_windowed;
-    f_norm = f_windowed./f_w_1k(1);
+    f_norm = f_windowed./f_w(1);
     meanpwr = mean(mx,2);
 
     [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
@@ -239,7 +248,7 @@ for ii=1:length(matching_tests)
     end
     
     if ii==1 & iii==1
-        f_vo_norm(iii) = (St*U/d_sph)/f_w_1k(1);
+        f_vo_norm(iii) = (St*U/d_sph)/f_w(1);
     end
     
     u_norm{ii,kk}(iii,jjj) = (u_red{ii,kk}(iii,jjj)./f_star_peak{ii,kk}(iii,jjj))*St;
@@ -383,7 +392,7 @@ if ii==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
@@ -397,7 +406,7 @@ if ii==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 dim = [0.55 0.8 0.5 0.1];
 annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
@@ -407,19 +416,21 @@ dim = [0.75 0.65 0.5 0.1];
 annotation('textbox',dim,'String','Mode III','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 
 %Plots of frequency ratio
-% figure(f_star_fig)
-% hold on
-% if ii==1
-%     plot(squeeze(results_ave{1}(ii,jj,:)),f_vo_norm,'k-s','DisplayName',distance_dir(jj).name)
-%     set(gca,'XMinorTick','on','YMinorTick','on')
-% end
-% 
-% plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color)
-% % set(gca)
-% xlabel('$U^*$')
-% ylabel('$f^*$')
-% yline(1,'k--')
-% set(get(gca,'ylabel'),'rotation',0)
+figure(f_star_fig)
+hold on
+if ii==1
+    Ustar_temp = 0:23.5;
+    f_vo_norm = St*Ustar_temp;
+    plot(Ustar_temp,f_vo_norm,'k-','DisplayName','Static')
+    yline(1,'k--','HandleVisibility','off')
+    set(gca,'XMinorTick','on','YMinorTick','on')
+end
+
+plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+% set(gca)
+xlabel('$U^*$')
+ylabel('$f^*$')
+set(get(gca,'ylabel'),'rotation',0)
 
 %Plots of lift coefficient
 hold on
@@ -467,15 +478,15 @@ end
 
 figure(total_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 figure(vortex_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 figure(total_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -485,7 +496,7 @@ ax = gca;
 
 figure(vortex_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -493,7 +504,7 @@ yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set l
 
 %Periodicity Plot
 figure(pdicy_fig)
-plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color)
+plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 xlabel('$U^*$')
 ylabel('$P$')
@@ -584,3 +595,21 @@ saveas(phase_subplot_fig,'phase_amp_fig.eps')
 saveas(phase_subplot_fig,'phase_amp_fig.jpg')
 
 
+%% Extra Plots
+figure(A_y_star_fig)
+xlim([4.4,10.6])
+legend('Visible','off')
+errorbars = findall(gca, 'Type', 'ErrorBar'); % Get all lines in current axes
+lines = findall(gca,'Type','Line');
+
+for i = 1:length(lines)
+    set(lines(i),'Visible','off')
+end
+
+for i = 1:length(errorbars)
+    set(errorbars(i), 'Visible', 'on')
+    errorbars(i).LineStyle = 'none'; % Set line style to solid
+    % if i < 5
+    %     set(errorbars(i), 'Visible', 'off')
+    % end
+end
