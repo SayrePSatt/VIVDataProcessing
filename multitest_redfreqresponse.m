@@ -13,8 +13,8 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
-
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_reference = 0; %0 to not plot references
 %% Experiment Specification
 datafolder = "D:\EFDL\vivscratch\";
 
@@ -398,8 +398,10 @@ plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_leg
 figure(A_y_norm_fig)
 hold on
 if ii==1
-    plot(unorm_unorm_sareen,unorm_Astar_sareen,'k-s','DisplayName','Sareen 2018b');
-    plot(unorm_unorm_govwill,unorm_Astar_govwill,'k-d','DisplayName','Govhardan 2005');
+    if plot_reference == 1
+        plot(unorm_unorm_sareen,unorm_Astar_sareen,'k-s','DisplayName','Sareen 2018b');
+        plot(unorm_unorm_govwill,unorm_Astar_govwill,'k-d','DisplayName','Govhardan 2005');
+    end
     set(gca,'XMinorTick','on','YMinorTick','on')
     xlabel('$(U^*/f^*)St$')
     ylabel('$A^*$')
@@ -437,7 +439,9 @@ hold on
 if ii==1
     figure(total_force_fig)
     hold on
-    plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
+    if plot_reference==1
+        plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
+    end
     set(gca,'XMinorTick','on','YMinorTick','on')
     xlabel('$U^*$')
     ylabel('$C_{total}$')
@@ -446,7 +450,9 @@ if ii==1
 
     figure(vortex_force_fig)
     hold on
-    plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
+    if plot_reference==1
+        plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
+    end
     set(gca,'XMinorTick','on','YMinorTick','on')
     xlabel('$U^*$')
     ylabel('$C_{vortex}$')
@@ -455,8 +461,10 @@ if ii==1
 
     figure(total_phase_fig)
     hold on
-    plot(u_red_totalphase_sareen,totalphase_sareen,'k-s','DisplayName','Sareen 2018b');
-    plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
+    if plot_reference==1
+        plot(u_red_totalphase_sareen,totalphase_sareen,'k-s','DisplayName','Sareen 2018b');
+        plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
+    end
     set(gca,'XMinorTick','on')
     xlabel('$U^*$')
     ylabel('$\phi_{total}$')
@@ -466,8 +474,10 @@ if ii==1
 
     figure(vortex_phase_fig)
     hold on
-    plot(u_red_vortexphase_sareen,vortexphase_sareen,'k-s','DisplayName','Sareen 2018b');
-    plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
+    if plot_reference == 1
+        plot(u_red_vortexphase_sareen,vortexphase_sareen,'k-s','DisplayName','Sareen 2018b');
+        plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
+    end
     set(gca,'XMinorTick','on')
     xlabel('$U^*$')
     ylabel('$\phi_{vortex}$')
@@ -491,8 +501,10 @@ ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
 ax = gca;
-% errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{11}(ii,jj,:)),squeeze(results_lower{11}(ii,jj,:)),squeeze(results_upper{11}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
-% modeII_line(ii,jj) = axis_norm(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{7}(ii,jj,:)),90,xlimits_forces(1),xlimits_forces(2),ax);
+% if ii==1
+%     % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{11}(ii,jj,:)),squeeze(results_lower{11}(ii,jj,:)),squeeze(results_upper{11}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
+%     modeII_line(ii,jj) = axis_norm(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{7}(ii,jj,:)),90,xlimits_forces(1),xlimits_forces(2),ax);
+% end
 
 figure(vortex_phase_fig)
 hold on
@@ -515,6 +527,22 @@ clear results results_upper results_lower results_ave
 
 end
 %% Figure Saving
+figure(A_y_star_fig)
+delete(findall(gcf,'type','annotation'))
+arrow_x = [0.775 0.775];
+arrow_y = [0.85 0.35];
+arrow_anno = annotation('arrow', arrow_x, arrow_y);
+arrow_anno.Color = 'black';
+arrow_anno.LineWidth = 2;
+
+figure(pdicy_fig)
+delete(findall(gcf,'type','annotation'))
+arrow_x = [0.775 0.775];
+arrow_y = [0.6 0.85];
+arrow_anno = annotation('arrow', arrow_x, arrow_y);
+arrow_anno.Color = 'black';
+arrow_anno.LineWidth = 2;
+
 saveas(A_y_star_fig,'A_y_star.eps')
 saveas(total_force_fig,'total_force.eps')
 saveas(vortex_force_fig,'vortex_force.eps')
@@ -522,6 +550,7 @@ saveas(total_phase_fig,'total_phase.eps')
 saveas(vortex_phase_fig,'vortex_phase.eps')
 saveas(A_y_norm_fig,'A_y_norm.eps')
 saveas(griffin_fig,'griffin.eps')
+saveas(pdicy_fig,'pdicy.eps')
 
 exportgraphics(A_y_star_fig,'A_y_star.jpg','Resolution',300);
 exportgraphics(total_force_fig,'total_force.jpg','Resolution',300)
@@ -532,84 +561,84 @@ exportgraphics(A_y_norm_fig,'A_y_norm.jpg','Resolution',300)
 exportgraphics(griffin_fig,'griffin.jpg','Resolution',300)
 
 %% Testing force subfigure
-% Copy the contents of each existing figure to the new combined figure
-% Subplot 1
-phase_subplot_fig = figure;
-hold on;
-subplot(3, 1, 1, 'Parent', phase_subplot_fig);
-ax1 = get(A_y_star_fig, 'CurrentAxes');
-copyobj(allchild(ax1), gca);
-title(ax1.Title.String); % Copy title from original axes
-ylabel('$A^*$')
-xlabel('')
-xticklabels({})
-xlim(ax1.XLim)
-text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
-set(gca,'XMinorTick','on','YMinorTick','on')
-set(get(gca,'ylabel'),'rotation',0)
-legend
-
-% Subplot 2
-subplot(3, 1, 2, 'Parent', phase_subplot_fig);
-ax2 = get(total_phase_fig, 'CurrentAxes');
-copyobj(allchild(ax2), gca);
-title(ax2.Title.String); % Copy title from original axes
-set(gca,'XMinorTick','on')
-ylabel('$\phi_{total}$')
-set(get(gca,'ylabel'),'rotation',0)
-ylim([0 180])
-xlim(ax1.XLim)
-xticklabels({})
-xlabel('')
-yticks(0:15:180);  % Set ticks every 15 units
-yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-yline(90,'k--')
-text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
-legend
-
-% Subplot 3
-subplot(3, 1, 3, 'Parent', phase_subplot_fig);
-ax3 = get(vortex_phase_fig, 'CurrentAxes');
-copyobj(allchild(ax3), gca);
-title(ax3.Title.String); % Copy title from original axes
-set(gca,'XMinorTick','on')
-xlabel('$U^*$')
-ylabel('$\phi_{vortex}$')
-set(get(gca,'ylabel'),'rotation',0)
-ylim([0 180])
-xlim(ax1.XLim)
-yticks(0:15:180);  % Set ticks every 15 units
-yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-yline(90,'k--')
-text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
+% % Copy the contents of each existing figure to the new combined figure
+% % Subplot 1
+% phase_subplot_fig = figure;
+% hold on;
+% subplot(3, 1, 1, 'Parent', phase_subplot_fig);
+% ax1 = get(A_y_star_fig, 'CurrentAxes');
+% copyobj(allchild(ax1), gca);
+% title(ax1.Title.String); % Copy title from original axes
+% ylabel('$A^*$')
+% xlabel('')
+% xticklabels({})
+% xlim(ax1.XLim)
+% text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
+% set(gca,'XMinorTick','on','YMinorTick','on')
+% set(get(gca,'ylabel'),'rotation',0)
+% legend
 % 
-% hold on
-% x=0.5;
-modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax1);
-modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax1);
-annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
-annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
-% annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
-legend
-saveas(phase_subplot_fig,'phase_amp_fig.eps')
-saveas(phase_subplot_fig,'phase_amp_fig.jpg')
-
+% % Subplot 2
+% subplot(3, 1, 2, 'Parent', phase_subplot_fig);
+% ax2 = get(total_phase_fig, 'CurrentAxes');
+% copyobj(allchild(ax2), gca);
+% title(ax2.Title.String); % Copy title from original axes
+% set(gca,'XMinorTick','on')
+% ylabel('$\phi_{total}$')
+% set(get(gca,'ylabel'),'rotation',0)
+% ylim([0 180])
+% xlim(ax1.XLim)
+% xticklabels({})
+% xlabel('')
+% yticks(0:15:180);  % Set ticks every 15 units
+% yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
+% yline(90,'k--')
+% text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
+% legend
+% 
+% % Subplot 3
+% subplot(3, 1, 3, 'Parent', phase_subplot_fig);
+% ax3 = get(vortex_phase_fig, 'CurrentAxes');
+% copyobj(allchild(ax3), gca);
+% title(ax3.Title.String); % Copy title from original axes
+% set(gca,'XMinorTick','on')
+% xlabel('$U^*$')
+% ylabel('$\phi_{vortex}$')
+% set(get(gca,'ylabel'),'rotation',0)
+% ylim([0 180])
+% xlim(ax1.XLim)
+% yticks(0:15:180);  % Set ticks every 15 units
+% yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
+% yline(90,'k--')
+% text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
+% % 
+% % hold on
+% % x=0.5;
+% modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax1);
+% modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax1);
+% annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
+% annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
+% % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
+% legend
+% saveas(phase_subplot_fig,'phase_amp_fig.eps')
+% saveas(phase_subplot_fig,'phase_amp_fig.jpg')
+% 
 
 %% Extra Plots
-figure(A_y_star_fig)
-xlim([4.4,10.6])
-legend('Visible','off')
-errorbars = findall(gca, 'Type', 'ErrorBar'); % Get all lines in current axes
-lines = findall(gca,'Type','Line');
-
-for i = 1:length(lines)
-    set(lines(i),'Visible','off')
-end
-
-for i = 1:length(errorbars)
-    set(errorbars(i), 'Visible', 'on')
-    errorbars(i).LineStyle = 'none'; % Set line style to solid
-    % if i < 5
-    %     set(errorbars(i), 'Visible', 'off')
-    % end
-end
+% figure(A_y_star_fig)
+% xlim([4.4,10.6])
+% legend('Visible','off')
+% errorbars = findall(gca, 'Type', 'ErrorBar'); % Get all lines in current axes
+% lines = findall(gca,'Type','Line');
+% 
+% for i = 1:length(lines)
+%     set(lines(i),'Visible','off')
+% end
+% 
+% for i = 1:length(errorbars)
+%     set(errorbars(i), 'Visible', 'on')
+%     errorbars(i).LineStyle = 'none'; % Set line style to solid
+%     % if i < 5
+%     %     set(errorbars(i), 'Visible', 'off')
+%     % end
+% end
