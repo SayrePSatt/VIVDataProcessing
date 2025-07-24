@@ -8,13 +8,14 @@
 % This is adapted from a previous version for use with new data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear all
+clear all %#ok<CLALL>
 close all
 clc
 
 %% Options for plotting
 plot_legends = 0; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
+plot_errors = 0; %0 to not plot errorbars
 %% Experiment Specification
 datafolder = "D:\EFDL\vivscratch\";
 
@@ -51,7 +52,7 @@ diagnose = false;
 
 markers = ['s' 'd' '*'];
 %% Importing external data for comparison
-sareen = csvread('sareen2018b_ampphase.csv',3);
+sareen = csvread('sareen2018b_ampphase.csv',3); %#ok<CSVRD>
 sareen(sareen==0) = NaN;
 u_red_A_star_sareen = sareen(:,1);
 A_star_sareen = sareen(:,2);
@@ -60,7 +61,7 @@ vortexphase_sareen = sareen(:,4);
 u_red_totalphase_sareen = sareen(:,5);
 totalphase_sareen = sareen(:,6);
 
-govwill = csvread('gov_2005_amplift.csv',3);
+govwill = csvread('gov_2005_amplift.csv',3); %#ok<CSVRD>
 govwill(govwill==0) = NaN;
 u_red_A_star_govwill = govwill(:,9);
 A_star_govwill = govwill(:,10);
@@ -73,14 +74,14 @@ vortexforce_govwill = govwill(:,6);
 u_red_vortexphase_govwill = govwill(:,7);
 vortexphase_govwill = govwill(:,8);
 
-unorm_reference = csvread('unorm_reference.csv',3);
+unorm_reference = csvread('unorm_reference.csv',3); %#ok<CSVRD>
 unorm_reference(unorm_reference==0) = NaN;
 unorm_unorm_sareen = unorm_reference(:,1);
 unorm_Astar_sareen = unorm_reference(:,2);
 unorm_unorm_govwill = rmmissing(unorm_reference(:,3));
 unorm_Astar_govwill = rmmissing(unorm_reference(:,4));
 
-griffin_plot = csvread('griffin_govwill.csv',3);
+griffin_plot = csvread('griffin_govwill.csv',3); %#ok<CSVRD>
 griffin_plot(griffin_plot==0) = NaN;
 griffin_massdamp_samp = griffin_plot(:,1);
 griffin_Astar_samp = griffin_plot(:,2);
@@ -90,6 +91,9 @@ griffin_Astar_fit = rmmissing(griffin_plot(:,4));
 
 A_y_star_fig = figure;
 hold on;
+
+A_y_star_pctile_fig = figure;
+hold on
 
 A_y_norm_fig = figure;
 hold on;
@@ -122,7 +126,7 @@ griffin_fig = figure;
 hold on;
 %% Setting up folder directories
 datafolder = "D:\EFDL\vivscratch\";
-topfolder = datafolder+"testData\";
+topfolder = datafolder+"testData_single\";
 all_files = dir(topfolder);
 
 
@@ -167,7 +171,8 @@ end
 %% Data Processing
 dt = 1/f_s;
 
-for ii=1:length(matching_tests)
+[test_size ~] = size(matching_tests);
+for ii=1:test_size
     for jj=1:length(matching_tests{ii})
     f_pump = matching_tests{ii,3}(jj);
     if f_pump == 0
@@ -214,31 +219,27 @@ for ii=1:length(matching_tests)
     
     freq = 1/(dt*n)*(0:n); % Create x-qxis of frequencies in Hz
     L = 1:floor(n/2); %only plot the first half of freqs
-    % plot(freq(L), PSD(L), 'LineWidth', 3); hold on
-    % set(gca, 'FontSizf_ne',12)
-    % 
-    % xlim([0.4 0.55])
-    % xlabel('Frequency (f)')
-    % ylabel('PSD')
-    % xline(f_w(1))
-    % title('Unfiltered Encoder Data')
-    
     f_c = 2;   %Cutoff frequency
     [b,a] = butter(4,f_c/(f_s/2),"low");
     
     encoder_filt = filtfilt(b,a,encoder);
     %% Freq Investigation
-    clear f_peaks mx phase f_windowed A_y_max peak_idx
+    clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq
     % figure
     [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
     f = f_windowed;
     f_norm = f_windowed./f_w(1);
     meanpwr = mean(mx,2);
 
+    nfft = 100000;
+    [PSD_freq, PSD_norm{ii,kk}(iii,jjj,:)] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
+
     [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
     
     p_f = polyfit(f(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2);
     p_f_norm = polyfit(f_norm(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2); %Fits a polynomial to the top of the mean power
+
+    PSD_freq_norm{ii,kk}(iii,jjj,:) = PSD_freq/f_w(1);
 
     f_peak{ii,kk}(iii,jjj) = -p_f(2)/(2*p_f(1)); %Setting 1st derivative slope to be 0, finding the location of 0
     f_star_peak{ii,kk}(iii,jjj) = -p_f_norm(2)/(2*p_f_norm(1));
@@ -261,16 +262,16 @@ for ii=1:length(matching_tests)
     A_rms = (rms(encoder_filt));
     y_max = max(abs(encoder_filt));
     
+    pos_peaks = findpeaks(encoder_filt,'MinPeakProminence',0.01);
+    neg_peaks = findpeaks(-encoder_filt,'MinPeakProminence',0.01);
+    all_peaks = [pos_peaks; neg_peaks];
+    peaks_percentile = prctile(all_peaks,[10 90]);
+    
     data_length = length(acc);
     time = time(1:data_length);
     encoder_filt = encoder_filt(1:data_length);
     velo =  velo(1:data_length);
 
-    %Investigating Strangeness in Phase
-    % mass_force = m*acc;
-    % damping_force = c.*velo;
-    % spring_force = k*encoder_filt;
-    % 
     F = m.*acc+c.*velo/5+k*encoder_filt;
     F_pot = -m_a*acc;%-C_A*m_d*acc;
     F_vortex = F - F_pot;
@@ -305,6 +306,8 @@ for ii=1:length(matching_tests)
     C_vortex_rms{ii,kk}(iii,jjj) = rms(C_vortex-mean(C_vortex));
     
     A_y_star{ii,kk}(iii,jjj) = sqrt(2)*A_rms/d_sph;
+    peaks_10{ii,kk}(iii,jjj) = peaks_percentile(1)/d_sph;
+    peaks_90{ii,kk}(iii,jjj) = peaks_percentile(2)/d_sph;
     pdicy{ii,kk}(iii,jjj) = sqrt(2)*A_rms./y_max; %Periodicity
     if jjj==1
         A_y_star{ii,kk}(iii,jjj) = NaN;
@@ -348,23 +351,9 @@ for ii=1:length(matching_tests)
 % end
 %% Determining the average and uncertainty bounds from the tests
 
-results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
+results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
 for kkk = 1:length(results)
-    % kk
-    % ave_bounds(results{kkk}{ii,kk}(:,:))
     [results_ave{kkk}{ii}(:), results_upper{kkk}{ii}(:), results_lower{kkk}{ii}(:)] = ave_bounds(results,kkk,ii);
-    % temp1 = results_ave_expand{kkk}{ii,1}(:);
-    % temp2 = results_ave_expand{kkk}{ii,2}(:);
-    % results_ave{kkk}{ii} = [temp2 temp1];
-    % 
-    % temp1 = cell2mat(results_lower_expand{kkk}{ii,1}(:));
-    % temp2 = cell2mat(results_lower_expand{kkk}{ii,2}(:));
-    % results_lower{kkk}{ii} = [temp2 temp1];
-    % 
-    % temp1 = cell2mat(results_upper_expand{kkk}{ii,1}(:));
-    % temp2 = cell2mat(results_upper_expand{kkk}{ii,2}(:));
-    % results_upper{kkk}{ii} = [temp2 temp1];
-
 end
 
 %% Plotting results from distances
@@ -384,15 +373,28 @@ end
 figure(A_y_star_fig)
 hold on
 if ii==1
-    plot(u_red_A_star_sareen,A_star_sareen,'k-s','DisplayName','Sareen 2018b');
-    plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
+    if plot_reference == 1
+        plot(u_red_A_star_sareen,A_star_sareen,'k-s','DisplayName','Sareen 2018b');
+        plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
+    end
     set(gca,'XMinorTick','on','YMinorTick','on')
     xlabel('$U^*$')
     ylabel('$A^*$')
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+
+figure(A_y_star_pctile_fig)
+
+if ii==1
+    set(gca,'XMinorTick','on','YMinorTick','on')
+    xlabel('$U^*$')
+    ylabel('$A^*$')
+    set(get(gca,'ylabel'),'rotation',0)
+end
+
+plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
@@ -408,7 +410,7 @@ if ii==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
 dim = [0.55 0.8 0.5 0.1];
 annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
@@ -428,7 +430,7 @@ if ii==1
     set(gca,'XMinorTick','on','YMinorTick','on')
 end
 
-plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 % set(gca)
 xlabel('$U^*$')
 ylabel('$f^*$')
@@ -488,15 +490,15 @@ end
 
 figure(total_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
 figure(vortex_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
 figure(total_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -508,7 +510,7 @@ ax = gca;
 
 figure(vortex_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -516,14 +518,14 @@ yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set l
 
 %Periodicity Plot
 figure(pdicy_fig)
-plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
 xlabel('$U^*$')
 ylabel('$P$')
 set(get(gca,'ylabel'),'rotation',0)
 set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0 1])
-clear results results_upper results_lower results_ave
+clear results_upper results_lower %results_ave %results
 
 end
 %% Figure Saving

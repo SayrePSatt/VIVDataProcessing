@@ -1,4 +1,4 @@
-function [mx, phase,f] = psdd3(fs,x,N,Ns,op)
+function [mx, phase,f] = psdd3_sayre(fs,x,N,Ns,op)
 % [mx,f] = PSDD3_JV(fs,x,N,Ns,op)
 % Windowed FFT.
 % fs - sampling frequency of original signal
