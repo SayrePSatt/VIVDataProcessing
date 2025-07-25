@@ -13,9 +13,10 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
+single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 %% Experiment Specification
 datafolder = "D:\EFDL\vivscratch\";
 
@@ -92,9 +93,6 @@ griffin_Astar_fit = rmmissing(griffin_plot(:,4));
 A_y_star_fig = figure;
 hold on;
 
-A_y_star_pctile_fig = figure;
-hold on
-
 A_y_norm_fig = figure;
 hold on;
 
@@ -124,9 +122,17 @@ hold on;
 
 griffin_fig = figure;
 hold on;
+
+if single_test == 1;
+    A_y_star_pctile_fig = figure;
+    hold on
+    
+    freq_contour_fig = figure;
+    hold on;
+end
 %% Setting up folder directories
 datafolder = "D:\EFDL\vivscratch\";
-topfolder = datafolder+"testData_single\";
+topfolder = datafolder+"testdata\";
 all_files = dir(topfolder);
 
 
@@ -142,8 +148,8 @@ matching_tests = {};
 plotting_color = lines(length(uniq_configs));
 marker_style = {"o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"};
 for ii = 1:length(uniq_configs)
-    uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3);
-    uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7);
+    uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3); %Extracting distance ratios
+    uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7); %Extracting diameter ratios
     kk = 1;
     for jj = 3:length(all_files)
         filename = all_files(jj).name;
@@ -159,11 +165,11 @@ for ii = 1:length(uniq_configs)
     
     for iii = [1, 6]
         temp = find(matching_tests{ii,2}==iii);
-        uniq = unique(matching_tests{ii,3}(temp));
-        uniq_idx = 1:length(uniq);
+        uniq = unique(matching_tests{ii,3}(temp)); %Finds all pump speeds that were tested
+        uniq_idx = 1:length(uniq); %Number of different pump speeds
         for jjj = 1:length(uniq)
-            temp2 = find(matching_tests{ii,3}==uniq(jjj));
-            matching_tests{ii,5}(temp2) = uniq_idx(jjj);
+            temp2 = find(matching_tests{ii,3}==uniq(jjj)); %Finds the indexes in the matching_tests that matches each unique pump frequency
+            matching_tests{ii,5}(temp2) = uniq_idx(jjj); %Index in an array where each pump speed would belong
         end
     end
 end
@@ -171,9 +177,9 @@ end
 %% Data Processing
 dt = 1/f_s;
 
-[test_size ~] = size(matching_tests);
+[test_size ~] = size(matching_tests); %Gives the number of unique configurations that were tested
 for ii=1:test_size
-    for jj=1:length(matching_tests{ii})
+    for jj=1:length(matching_tests{ii}) %Gives the number of tests for each configuration
     f_pump = matching_tests{ii,3}(jj);
     if f_pump == 0
         U = 0.0;
@@ -193,7 +199,7 @@ for ii=1:test_size
         c = c_6k;
         f_w = f_w_6k;
     end
-    data = table2array(readtable(datafolder+"testData\"+matching_tests{ii,1}(jj)));
+    data = table2array(readtable(topfolder+matching_tests{ii,1}(jj)));
     time = data(:,1);
     encoder = data(:,2);
     if jj==1
@@ -231,15 +237,16 @@ for ii=1:test_size
     f_norm = f_windowed./f_w(1);
     meanpwr = mean(mx,2);
 
-    nfft = 100000;
-    [PSD_freq, PSD_norm{ii,kk}(iii,jjj,:)] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
+    if single_test == 1
+        nfft = 500000;
+        [PSD_freq, PSD_norm{ii,kk}(iii,jjj,:)] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
+        PSD_freq_norm{ii,kk}(iii,jjj,:) = PSD_freq/f_w(1);
+    end
 
     [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
     
     p_f = polyfit(f(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2);
     p_f_norm = polyfit(f_norm(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2); %Fits a polynomial to the top of the mean power
-
-    PSD_freq_norm{ii,kk}(iii,jjj,:) = PSD_freq/f_w(1);
 
     f_peak{ii,kk}(iii,jjj) = -p_f(2)/(2*p_f(1)); %Setting 1st derivative slope to be 0, finding the location of 0
     f_star_peak{ii,kk}(iii,jjj) = -p_f_norm(2)/(2*p_f_norm(1));
@@ -350,26 +357,43 @@ for ii=1:test_size
     end
 % end
 %% Determining the average and uncertainty bounds from the tests
+if single_test == 1
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
+else
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
+end
 
-results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
 for kkk = 1:length(results)
-    [results_ave{kkk}{ii}(:), results_upper{kkk}{ii}(:), results_lower{kkk}{ii}(:)] = ave_bounds(results,kkk,ii);
+    [results_ave{kkk}{ii}(:,:), results_upper{kkk}{ii}(:,:), results_lower{kkk}{ii}(:,:)] = ave_bounds(results,kkk,ii);
 end
 
 %% Plotting results from distances
-% figure(griffin_fig)
-% if ii==1
-%     xscale("log");
-%     scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
-%     plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
-%     plot(mass_damp,max(squeeze(results_ave{9}(ii,jj,:))),'ko','MarkerFaceColor','k');
-%     set(gca,'XMinorTick','on','YMinorTick','on')
-%     xlabel('$(m^*+C_A)\zeta$')
-%     ylabel('$A^*$')
-%     set(get(gca,'ylabel'),'rotation',0)
-% end
 
 %First plot is Ay_star
+
+if single_test == 1
+    figure(freq_contour_fig)
+    plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
+    if ii==1
+        Ustar_temp = 0:23.5;
+        f_vo_norm = St*Ustar_temp;
+        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+        yline(1,'k-','HandleVisibility','off')
+        set(gca,'XMinorTick','on','YMinorTick','on')
+    end
+
+    figure(A_y_star_pctile_fig)
+    plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+    if ii==1
+        set(gca,'XMinorTick','on','YMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$A^*$')
+        set(get(gca,'ylabel'),'rotation',0)
+    end
+
+end
+
+
 figure(A_y_star_fig)
 hold on
 if ii==1
@@ -384,17 +408,6 @@ if ii==1
 end
 
 plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
-
-figure(A_y_star_pctile_fig)
-
-if ii==1
-    set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
-    ylabel('$A^*$')
-    set(get(gca,'ylabel'),'rotation',0)
-end
-
-plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
@@ -430,10 +443,11 @@ if ii==1
     set(gca,'XMinorTick','on','YMinorTick','on')
 end
 
-plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors) %Freq Ratio plot
 % set(gca)
 xlabel('$U^*$')
 ylabel('$f^*$')
+ylim([0.9 1.2])
 set(get(gca,'ylabel'),'rotation',0)
 
 %Plots of lift coefficient
@@ -471,7 +485,7 @@ if ii==1
     xlabel('$U^*$')
     ylabel('$\phi_{total}$')
     set(get(gca,'ylabel'),'rotation',0)
-    yline(90,'k--','DisplayName','')
+    yline(90,'k--','HandleVisibility','off')
     % legend
 
     figure(vortex_phase_fig)
@@ -484,7 +498,7 @@ if ii==1
     xlabel('$U^*$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',0)
-    yline(90,'k--','DisplayName','')
+    yline(90,'k--','HandleVisibility','off')
     % legend
 end
 
@@ -525,9 +539,19 @@ ylabel('$P$')
 set(get(gca,'ylabel'),'rotation',0)
 set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0 1])
-clear results_upper results_lower %results_ave %results
-
+% clear results_upper results_lower results_ave results
 end
+
+figure(griffin_fig)
+xscale("log");
+scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
+plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
+plot(mass_damp,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
+set(gca,'XMinorTick','on','YMinorTick','on')
+xlabel('$(m^*+C_A)\zeta$')
+ylabel('$A^*$')
+set(get(gca,'ylabel'),'rotation',0)
+
 %% Figure Saving
 figure(A_y_star_fig)
 delete(findall(gcf,'type','annotation'))
@@ -561,6 +585,8 @@ exportgraphics(total_phase_fig,'total_phase.jpg','Resolution',300)
 exportgraphics(vortex_phase_fig,'vortex_phase.jpg','Resolution',300)
 exportgraphics(A_y_norm_fig,'A_y_norm.jpg','Resolution',300)
 exportgraphics(griffin_fig,'griffin.jpg','Resolution',300)
+exportgraphics(pdicy_fig,'pdicy.jpg','Resolution',300)
+exportgraphics(f_star_fig,'f_star.jpg','Resolution',300)
 
 %% Testing force subfigure
 % % Copy the contents of each existing figure to the new combined figure
