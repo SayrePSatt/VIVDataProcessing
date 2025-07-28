@@ -19,6 +19,7 @@ plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 %% Experiment Specification
 datafolder = "D:\EFDL\vivscratch\";
+topfolder = datafolder+"lockin\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -131,8 +132,6 @@ if single_test == 1;
     hold on;
 end
 %% Setting up folder directories
-datafolder = "D:\EFDL\vivscratch\";
-topfolder = datafolder+"testdata\";
 all_files = dir(topfolder);
 
 
@@ -569,14 +568,14 @@ arrow_anno = annotation('arrow', arrow_x, arrow_y);
 arrow_anno.Color = 'black';
 arrow_anno.LineWidth = 2;
 
-saveas(A_y_star_fig,'A_y_star.eps')
-saveas(total_force_fig,'total_force.eps')
-saveas(vortex_force_fig,'vortex_force.eps')
-saveas(total_phase_fig,'total_phase.eps')
-saveas(vortex_phase_fig,'vortex_phase.eps')
-saveas(A_y_norm_fig,'A_y_norm.eps')
-saveas(griffin_fig,'griffin.eps')
-saveas(pdicy_fig,'pdicy.eps')
+saveas(A_y_star_fig,'A_y_star.eps','epsc')
+saveas(total_force_fig,'total_force.eps','epsc')
+saveas(vortex_force_fig,'vortex_force.eps','epsc')
+saveas(total_phase_fig,'total_phase.eps','epsc')
+saveas(vortex_phase_fig,'vortex_phase.eps','epsc')
+saveas(A_y_norm_fig,'A_y_norm.eps','epsc')
+saveas(griffin_fig,'griffin.eps','epsc')
+saveas(pdicy_fig,'pdicy.eps','epsc')
 
 exportgraphics(A_y_star_fig,'A_y_star.jpg','Resolution',300);
 exportgraphics(total_force_fig,'total_force.jpg','Resolution',300)
