@@ -18,8 +18,8 @@ plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch\";
-topfolder = datafolder+"lockin\";
+datafolder = "D:\EFDL\vivscratch_2\tandemSphere\";
+topfolder = datafolder+"testData\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
