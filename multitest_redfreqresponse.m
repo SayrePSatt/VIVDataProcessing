@@ -19,7 +19,7 @@ plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 %% Experiment Specification
 datafolder = "D:\EFDL\vivscratch_2\tandemSphere\";
-topfolder = datafolder+"testData\";
+topfolder = datafolder+"testData\rawFiles\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -27,28 +27,34 @@ m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-f_n_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_air.dat"));
-f_n_1k = f_n_1k(1,:);
-f_w_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_water.dat"));
-f_w_1k = f_w_1k(1,:);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_06_27_2025/freedecay_1k_air.dat"));
+f_n_1k(1,:) = temp_1k(1,:);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_water.dat"));
+f_w_1k(1,:) = temp_1k(1,:);
+f_n_1k(2,:) = f_n_1k(1,:);
+f_w_1k(2,:) = f_w_1k(1,:);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_air.dat"));
+f_n_1k(3,:) = temp_1k(1,:);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
+f_w_1k(3,:) = temp_1k(1,:);
 
-f_n_6k = table2array(readtable(datafolder+"freeDecay/6k_06_27_2025/freedecay_6k_air.dat"));
-f_n_6k = f_n_6k(1,:);
-f_w_6k = table2array(readtable(datafolder+"freeDecay/6k_06_27_2025/freedecay_6k_water.dat"));
-f_w_6k = f_w_6k(1,:);
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_air.dat"));
+f_n_6k(1,:) = temp_6k(1,:);
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_water.dat"));
+f_w_6k(1,:) = temp_6k(1,:);
 
 m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
 St = 0.19;
-omegana_1k = 2*pi*f_n_1k(1);
-k_1k = m*omegana_1k^2; %5.375; %(f_n(1)*2*pi)^2*m
-omegana_6k = 2*pi*f_n_6k(1);
-k_6k = m*omegana_6k^2;
+omegana_1k = 2*pi*f_n_1k(:,1);
+k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
+omegana_6k = 2*pi*f_n_6k(:,1);
+k_6k = m*omegana_6k.^2;
 
-c_1k = f_n_1k(2)*2*sqrt((m)*k_1k);
-c_6k = f_n_6k(2)*2*sqrt((m)*k_6k);
+c_1k = f_n_1k(:,2).*2.*sqrt((m).*k_1k);
+c_6k = f_n_6k(:,2).*2.*sqrt((m).*k_6k);
 m_star = m/m_d;
-mass_damp = (m_star+C_A)*f_n_1k(2);
-scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
+mass_damp = (m_star+C_A)*f_n_1k(1,2);
+% scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
 
 diagnose = false;
 
@@ -188,15 +194,15 @@ for ii=1:test_size
 
     k_temp = matching_tests{ii,2}(jj);
     if k_temp == 1
-        k = k_1k;
+        k = k_1k(matching_tests{ii,4}(jj));
         kk = 1;
-        c = c_1k;
-        f_w = f_w_1k;
+        c = c_1k(matching_tests{ii,4}(jj));
+        f_w = f_w_1k(matching_tests{ii,4}(jj),1);
     else
-        k = k_6k;
+        k = k_6k(matching_tests{ii,4}(jj),1);
         kk = 2;
-        c = c_6k;
-        f_w = f_w_6k;
+        c = c_6k(matching_tests{ii,4}(jj));
+        f_w = f_w_6k(matching_tests{ii,4}(jj),1);
     end
     data = table2array(readtable(topfolder+matching_tests{ii,1}(jj)));
     time = data(:,1);
