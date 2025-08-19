@@ -2,13 +2,13 @@ clear all
 close all
 clc
 
-m = 5;
-type = "water";
-stiffness = 1;
-subfolder = "D:\EFDL\vivscratch_2\tandemSphere\freeDecay\"+stiffness+"k_06_19_2025\";
-% zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_00.csv");
-% disp_zero_time = zero(:,1);
-% disp_zero_pos = zero(:,2);
+m = 6;
+type = "air";
+stiffness = 6;
+subfolder = "E:\EFDL\tandemSphere\freeDecay\"+stiffness+"k_08_18_2025\";
+zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_00.csv");
+disp_zero_time = zero(:,1);
+disp_zero_pos = zero(:,2);
 disp_zero_mean = 0;%mean(disp_zero_pos);
 
 for ii=1:6

@@ -13,13 +13,13 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_reference = 1; %0 to not plot references
+plot_errors = 1; %0 to not plot errorbars
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch_2\tandemSphere\";
-topfolder = datafolder+"testData\rawFiles\";
+datafolder = "D:\EFDL\vivscratch_isolated\";
+topfolder = datafolder+"testData\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -27,21 +27,26 @@ m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_06_27_2025/freedecay_1k_air.dat"));
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_06_19_2025/freedecay_1k_water.dat"));
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
 f_w_1k(1,:) = temp_1k(1,:);
 f_n_1k(2,:) = f_n_1k(1,:);
 f_w_1k(2,:) = f_w_1k(1,:);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_air.dat"));
-f_n_1k(3,:) = temp_1k(1,:);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
-f_w_1k(3,:) = temp_1k(1,:);
+% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_air.dat"));
+% f_n_1k(3,:) = temp_1k(1,:);
+% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
+% f_w_1k(3,:) = temp_1k(1,:);
 
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_air.dat"));
 f_n_6k(1,:) = temp_6k(1,:);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_water.dat"));
 f_w_6k(1,:) = temp_6k(1,:);
+
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
+f_n_6k(2,:) = temp_6k(1,:);
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
+f_w_6k(2,:) = temp_6k(1,:);
 
 m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
 St = 0.19;
@@ -55,6 +60,8 @@ c_6k = f_n_6k(:,2).*2.*sqrt((m).*k_6k);
 m_star = m/m_d;
 mass_damp = (m_star+C_A)*f_n_1k(1,2);
 % scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
+
+load("pumpFit_freq2velo.mat");
 
 diagnose = false;
 
@@ -163,17 +170,32 @@ for ii = 1:length(uniq_configs)
             
             matching_tests{ii,2}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),13,13)); %Extracting the spring constant
             matching_tests{ii,3}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),25,29)); %Extracting Pump Speed
+            f_pump = matching_tests{ii,3}(kk);
+            if f_pump == 0
+                U = 0.0;
+            else
+                U = predict(mdl,f_pump);
+            end
+            matching_tests{ii,6}(kk) = U; %Extracting flow velocity
             matching_tests{ii,4}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),1,2)); %Extracting the test number
+           
+            k_temp = matching_tests{ii,2}(kk);
+            if k_temp == 1
+                f_w = f_w_1k(matching_tests{ii,4}(kk),1);
+            else
+                f_w = f_w_6k(matching_tests{ii,4}(kk),1);
+            end
+            matching_tests{ii,7}(kk) = matching_tests{ii,6}(kk)/(f_w*d_sph); %Extracting reduced velocity
             kk = kk+1;
         end
     end
     
     for iii = [1, 6]
         temp = find(matching_tests{ii,2}==iii);
-        uniq = unique(matching_tests{ii,3}(temp)); %Finds all pump speeds that were tested
+        uniq = unique(round(matching_tests{ii,7}(temp),1)); %Finds all pump speeds that were tested
         uniq_idx = 1:length(uniq); %Number of different pump speeds
         for jjj = 1:length(uniq)
-            temp2 = find(matching_tests{ii,3}==uniq(jjj)); %Finds the indexes in the matching_tests that matches each unique pump frequency
+            temp2 = find(round(matching_tests{ii,7},1)==uniq(jjj)); %Finds the indexes in the matching_tests that matches each unique pump frequency
             matching_tests{ii,5}(temp2) = uniq_idx(jjj); %Index in an array where each pump speed would belong
         end
     end
@@ -186,11 +208,7 @@ dt = 1/f_s;
 for ii=1:test_size
     for jj=1:length(matching_tests{ii}) %Gives the number of tests for each configuration
     f_pump = matching_tests{ii,3}(jj);
-    if f_pump == 0
-        U = 0.0;
-    else
-        U = pumpSpeedCalculator(f_pump);
-    end
+    U = matching_tests{ii,6}(jj);
 
     k_temp = matching_tests{ii,2}(jj);
     if k_temp == 1
@@ -594,67 +612,67 @@ exportgraphics(pdicy_fig,'pdicy.jpg','Resolution',300)
 exportgraphics(f_star_fig,'f_star.jpg','Resolution',300)
 
 %% Testing force subfigure
-% % Copy the contents of each existing figure to the new combined figure
-% % Subplot 1
-% phase_subplot_fig = figure;
-% hold on;
-% subplot(3, 1, 1, 'Parent', phase_subplot_fig);
-% ax1 = get(A_y_star_fig, 'CurrentAxes');
-% copyobj(allchild(ax1), gca);
-% title(ax1.Title.String); % Copy title from original axes
-% ylabel('$A^*$')
-% xlabel('')
-% xticklabels({})
-% xlim(ax1.XLim)
-% text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
-% set(gca,'XMinorTick','on','YMinorTick','on')
-% set(get(gca,'ylabel'),'rotation',0)
-% legend
+% Copy the contents of each existing figure to the new combined figure
+% Subplot 1
+phase_subplot_fig = figure;
+hold on;
+subplot(3, 1, 1, 'Parent', phase_subplot_fig);
+ax1 = get(A_y_star_fig, 'CurrentAxes');
+copyobj(allchild(ax1), gca);
+title(ax1.Title.String); % Copy title from original axes
+ylabel('$A^*$')
+xlabel('')
+xticklabels({})
+xlim(ax1.XLim)
+text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
+set(gca,'XMinorTick','on','YMinorTick','on')
+set(get(gca,'ylabel'),'rotation',0)
+legend
+
+% Subplot 2
+subplot(3, 1, 2, 'Parent', phase_subplot_fig);
+ax2 = get(total_phase_fig, 'CurrentAxes');
+copyobj(allchild(ax2), gca);
+title(ax2.Title.String); % Copy title from original axes
+set(gca,'XMinorTick','on')
+ylabel('$\phi_{total}$')
+set(get(gca,'ylabel'),'rotation',0)
+ylim([0 180])
+xlim(ax1.XLim)
+xticklabels({})
+xlabel('')
+yticks(0:15:180);  % Set ticks every 15 units
+yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
+yline(90,'k--')
+text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
+legend
+
+% Subplot 3
+subplot(3, 1, 3, 'Parent', phase_subplot_fig);
+ax3 = get(vortex_phase_fig, 'CurrentAxes');
+copyobj(allchild(ax3), gca);
+title(ax3.Title.String); % Copy title from original axes
+set(gca,'XMinorTick','on')
+xlabel('$U^*$')
+ylabel('$\phi_{vortex}$')
+set(get(gca,'ylabel'),'rotation',0)
+ylim([0 180])
+xlim(ax1.XLim)
+yticks(0:15:180);  % Set ticks every 15 units
+yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
+yline(90,'k--')
+text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
 % 
-% % Subplot 2
-% subplot(3, 1, 2, 'Parent', phase_subplot_fig);
-% ax2 = get(total_phase_fig, 'CurrentAxes');
-% copyobj(allchild(ax2), gca);
-% title(ax2.Title.String); % Copy title from original axes
-% set(gca,'XMinorTick','on')
-% ylabel('$\phi_{total}$')
-% set(get(gca,'ylabel'),'rotation',0)
-% ylim([0 180])
-% xlim(ax1.XLim)
-% xticklabels({})
-% xlabel('')
-% yticks(0:15:180);  % Set ticks every 15 units
-% yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-% yline(90,'k--')
-% text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
-% legend
-% 
-% % Subplot 3
-% subplot(3, 1, 3, 'Parent', phase_subplot_fig);
-% ax3 = get(vortex_phase_fig, 'CurrentAxes');
-% copyobj(allchild(ax3), gca);
-% title(ax3.Title.String); % Copy title from original axes
-% set(gca,'XMinorTick','on')
-% xlabel('$U^*$')
-% ylabel('$\phi_{vortex}$')
-% set(get(gca,'ylabel'),'rotation',0)
-% ylim([0 180])
-% xlim(ax1.XLim)
-% yticks(0:15:180);  % Set ticks every 15 units
-% yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-% yline(90,'k--')
-% text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
-% % 
-% % hold on
-% % x=0.5;
-% modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax1);
-% modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax1);
-% annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
-% annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
-% % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
-% legend
-% saveas(phase_subplot_fig,'phase_amp_fig.eps')
-% saveas(phase_subplot_fig,'phase_amp_fig.jpg')
+% hold on
+% x=0.5;
+modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax2);
+modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax2);
+annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
+annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
+% annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
+legend
+saveas(phase_subplot_fig,'phase_amp_fig.eps')
+saveas(phase_subplot_fig,'phase_amp_fig.jpg')
 % 
 
 %% Extra Plots

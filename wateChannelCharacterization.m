@@ -1,7 +1,7 @@
 % tic
 clear;clc;
 
-requiredPumpSpeed = 3; % in m/s
+requiredPumpSpeed = 0.5; % in m/s
 
 % fprintf('Loading files...\n')
 data_files = dir ('data/*.dat');
@@ -52,9 +52,10 @@ for i = 1:length(data_files)
 end
 
 fprintf('Properties of the linear regression model fitted to the PIV data:');
-mdl = fitlm(frequency,Velocity)
+mdl = fitlm(Velocity,frequency)
 fprintf(sprintf('\n\nPump Frequency of the channel flow for velocity of %d (m/s):',requiredPumpSpeed));
 FrequencyUser = predict(mdl,requiredPumpSpeed)
+save("pumpFit_velo2freq.mat","mdl",'-mat')
 % fprintf(sprintf('\n\nVelocity of the channel flow for pump frequency of %d (m/s):',requiredPumpSpeed));
 % FrequencyUser = predict(requiredPumpSpeed,mdl)
 
