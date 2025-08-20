@@ -3,9 +3,9 @@ close all
 clc
 
 m = 6;
-type = "air";
-stiffness = 6;
-subfolder = "E:\EFDL\tandemSphere\freeDecay\"+stiffness+"k_08_18_2025\";
+type = "water";
+stiffness = 1;
+subfolder = "E:\EFDL\tandemSphere\freeDecay\"+stiffness+"k_08_20_2025\";
 zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);

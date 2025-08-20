@@ -33,6 +33,10 @@ temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k
 f_w_1k(1,:) = temp_1k(1,:);
 f_n_1k(2,:) = f_n_1k(1,:);
 f_w_1k(2,:) = f_w_1k(1,:);
+f_n_1k(3,:) = f_n_1k(1,:);
+f_w_1k(3,:) = f_w_1k(1,:);
+f_n_1k(4,:) = f_n_1k(1,:);
+f_w_1k(4,:) = f_w_1k(1,:);
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_air.dat"));
 % f_n_1k(3,:) = temp_1k(1,:);
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
@@ -47,6 +51,11 @@ temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k
 f_n_6k(2,:) = temp_6k(1,:);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
 f_w_6k(2,:) = temp_6k(1,:);
+
+f_n_6k(3,:) = f_n_6k(2,:);
+f_w_6k(3,:) = f_w_6k(2,:);
+f_n_6k(4,:) = f_n_6k(2,:);
+f_w_6k(4,:) = f_w_6k(2,:);
 
 m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
 St = 0.19;
@@ -108,6 +117,7 @@ A_y_star_fig = figure;
 hold on;
 
 A_y_norm_fig = figure;
+A_y_norm_fig.Position = [100 100 600 400];
 hold on;
 
 phase_subplot_fig = figure;
@@ -137,7 +147,7 @@ hold on;
 griffin_fig = figure;
 hold on;
 
-if single_test == 1;
+if single_test == 1
     A_y_star_pctile_fig = figure;
     hold on
     
@@ -448,12 +458,12 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
-dim = [0.55 0.8 0.5 0.1];
+dim = [0.35 0.75 0.5 0.1];
 annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.32 0.5 0.5 0.1];
+dim = [0.17 0.5 0.5 0.1];
 annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.75 0.65 0.5 0.1];
-annotation('textbox',dim,'String','Mode III','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+dim = [0.5 0.6 0.5 0.1];
+annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 
 %Plots of frequency ratio
 figure(f_star_fig)
@@ -592,31 +602,35 @@ arrow_anno = annotation('arrow', arrow_x, arrow_y);
 arrow_anno.Color = 'black';
 arrow_anno.LineWidth = 2;
 
-saveas(A_y_star_fig,'A_y_star.eps','epsc')
-saveas(total_force_fig,'total_force.eps','epsc')
-saveas(vortex_force_fig,'vortex_force.eps','epsc')
-saveas(total_phase_fig,'total_phase.eps','epsc')
-saveas(vortex_phase_fig,'vortex_phase.eps','epsc')
-saveas(A_y_norm_fig,'A_y_norm.eps','epsc')
-saveas(griffin_fig,'griffin.eps','epsc')
-saveas(pdicy_fig,'pdicy.eps','epsc')
+saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
+saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
+saveas(vortex_force_fig,['figures\' 'vortex_force.eps'],'epsc')
+saveas(total_phase_fig,['figures\' 'total_phase.eps'],'epsc')
+saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
+saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
+saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
+saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
+saveas(A_y_star_pctile_fig,'A_y_star_pctile.eps','epsc')
 
-exportgraphics(A_y_star_fig,'A_y_star.jpg','Resolution',300);
-exportgraphics(total_force_fig,'total_force.jpg','Resolution',300)
-exportgraphics(vortex_force_fig,'vortex_force.jpg','Resolution',300)
-exportgraphics(total_phase_fig,'total_phase.jpg','Resolution',300)
-exportgraphics(vortex_phase_fig,'vortex_phase.jpg','Resolution',300)
-exportgraphics(A_y_norm_fig,'A_y_norm.jpg','Resolution',300)
-exportgraphics(griffin_fig,'griffin.jpg','Resolution',300)
-exportgraphics(pdicy_fig,'pdicy.jpg','Resolution',300)
-exportgraphics(f_star_fig,'f_star.jpg','Resolution',300)
+exportgraphics(A_y_star_fig,['figures\' 'A_y_star.jpg'],'Resolution',300);
+exportgraphics(total_force_fig,['figures\' 'total_force.jpg'],'Resolution',300)
+exportgraphics(vortex_force_fig,['figures\' 'vortex_force.jpg'],'Resolution',300)
+exportgraphics(total_phase_fig,['figures\' 'total_phase.jpg'],'Resolution',300)
+exportgraphics(vortex_phase_fig,['figures\' 'vortex_phase.jpg'],'Resolution',300)
+exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.jpg'],'Resolution',300)
+exportgraphics(griffin_fig,['figures\' 'griffin.jpg'],'Resolution',300)
+exportgraphics(pdicy_fig,['figures\' 'pdicy.jpg'],'Resolution',300)
+exportgraphics(f_star_fig,['figures\' 'f_star.jpg'],'Resolution',300)
+exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.jpg'],'Resolution',300)
 
 %% Testing force subfigure
 % Copy the contents of each existing figure to the new combined figure
 % Subplot 1
 phase_subplot_fig = figure;
+phase_subplot_fig.Position = [100 100 600 800];
 hold on;
-subplot(3, 1, 1, 'Parent', phase_subplot_fig);
+tl = tiledlayout(3,1);
+nexttile
 ax1 = get(A_y_star_fig, 'CurrentAxes');
 copyobj(allchild(ax1), gca);
 title(ax1.Title.String); % Copy title from original axes
@@ -627,52 +641,61 @@ xlim(ax1.XLim)
 text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
 set(gca,'XMinorTick','on','YMinorTick','on')
 set(get(gca,'ylabel'),'rotation',0)
-legend
+box on
+% legend
 
 % Subplot 2
-subplot(3, 1, 2, 'Parent', phase_subplot_fig);
+nexttile
 ax2 = get(total_phase_fig, 'CurrentAxes');
 copyobj(allchild(ax2), gca);
 title(ax2.Title.String); % Copy title from original axes
 set(gca,'XMinorTick','on')
 ylabel('$\phi_{total}$')
-set(get(gca,'ylabel'),'rotation',0)
-ylim([0 180])
+set(get(gca,'ylabel'),'rotation',90)
+ylim([0 200])
 xlim(ax1.XLim)
 xticklabels({})
 xlabel('')
-yticks(0:15:180);  % Set ticks every 15 units
-yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
+yticks(0:90:180);  % Set ticks every 15 units
+yticklabels({'','90', '180'});  % Set labels only at 90 and 180
 yline(90,'k--')
 text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
-legend
+box on
+% legend
 
 % Subplot 3
-subplot(3, 1, 3, 'Parent', phase_subplot_fig);
+nexttile
 ax3 = get(vortex_phase_fig, 'CurrentAxes');
 copyobj(allchild(ax3), gca);
 title(ax3.Title.String); % Copy title from original axes
 set(gca,'XMinorTick','on')
 xlabel('$U^*$')
 ylabel('$\phi_{vortex}$')
-set(get(gca,'ylabel'),'rotation',0)
-ylim([0 180])
+set(get(gca,'ylabel'),'rotation',90)
+ylim([0 200])
 xlim(ax1.XLim)
-yticks(0:15:180);  % Set ticks every 15 units
-yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
+yticks(0:90:180);  % Set ticks every 15 units
+yticklabels({'', '90', '180'});  % Set labels only at 90 and 180
 yline(90,'k--')
 text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
+drawnow
 % 
 % hold on
 % x=0.5;
-modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax2);
-modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax2);
-annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
-annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
+box on
+modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,95,ax,tl);
+modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,95,ax,tl);
+modeII_line_current = axis_norm(cell2mat(squeeze(results_ave{1,1})),cell2mat(squeeze(results_ave{1,7})),95,ax,tl);
+position_temp = tl.InnerPosition;
+norm_bottom = position_temp(2);
+norm_top = position_temp(2)+position_temp(4);
+annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
+annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
+annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', 'b', 'LineWidth', 1.5,'LineStyle',':');
 % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
-legend
-saveas(phase_subplot_fig,'phase_amp_fig.eps')
-saveas(phase_subplot_fig,'phase_amp_fig.jpg')
+% legend
+saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
+exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.jpg'],'Resolution',300)
 % 
 
 %% Extra Plots

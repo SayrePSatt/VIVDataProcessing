@@ -32,7 +32,7 @@ end
 xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
 
 if plot_legend == 1
-    plot_leg = legend('Location','northwest');
+    plot_leg = legend('Location','northeast');
     set(plot_leg,'Color','none','Box','off')
 end
 
