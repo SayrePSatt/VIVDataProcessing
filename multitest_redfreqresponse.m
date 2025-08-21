@@ -14,11 +14,15 @@ clc
 
 %% Options for plotting
 plot_legends = 0; %0 to not plot legends, 1 to plot legends
-plot_reference = 1; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
-single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
+plot_reference = 0; %0 to not plot references
+plot_errors = 0; %0 to not plot errorbars
+single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+
+test_distratios = ["000" "040"];
+test_diaratios = ["00" "10"];
+
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch_isolated\";
+datafolder = "D:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -165,6 +169,7 @@ for ii = 3:length(all_files)
 end
 
 uniq_configs = unique(configs);
+uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios)); %Selects only the configurations selected for testing
 matching_tests = {};
 
 plotting_color = lines(length(uniq_configs));
@@ -200,12 +205,15 @@ for ii = 1:length(uniq_configs)
         end
     end
     
-    for iii = [1, 6]
+    for iii = [1,6]
         temp = find(matching_tests{ii,2}==iii);
-        uniq = unique(round(matching_tests{ii,7}(temp),1)); %Finds all pump speeds that were tested
+        temp_nan = find(~(matching_tests{ii,2}==iii));
+        uniq = unique(round(matching_tests{ii,7}(temp)/0.5)*0.5); %Finds all pump speeds that were tested
         uniq_idx = 1:length(uniq); %Number of different pump speeds
         for jjj = 1:length(uniq)
-            temp2 = find(round(matching_tests{ii,7},1)==uniq(jjj)); %Finds the indexes in the matching_tests that matches each unique pump frequency
+            samespring_ustar(temp) = matching_tests{ii,7}(temp);
+            samespring_ustar(temp_nan) = NaN;
+            temp2 = find(round(samespring_ustar/0.5)*0.5==uniq(jjj)); %Finds the indexes in the matching_tests that matches each unique pump frequency
             matching_tests{ii,5}(temp2) = uniq_idx(jjj); %Index in an array where each pump speed would belong
         end
     end
@@ -243,7 +251,9 @@ for ii=1:test_size
 
     iii = matching_tests{ii,4}(jj);
     jjj = matching_tests{ii,5}(jj);
-
+    
+    f_testing{ii,kk}(iii,jjj) = f_pump;
+    U_testing{ii,kk}(iii,jjj) = U;
     u_red{ii,kk}(iii,jjj) = U/(f_w(1)*d_sph); %Indexing is {configuration, spring constant}(test number, pump speed)
     pump_f{ii,kk}(iii,jjj) = f_pump;
 
@@ -610,7 +620,10 @@ saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
 saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
 saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
 saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
-saveas(A_y_star_pctile_fig,'A_y_star_pctile.eps','epsc')
+if single_test == 1
+    saveas(A_y_star_pctile_fig,'A_y_star_pctile.eps','epsc')
+    saveas(freq_contour_fig,'freq_contour.eps','epsc')
+end
 
 exportgraphics(A_y_star_fig,['figures\' 'A_y_star.jpg'],'Resolution',300);
 exportgraphics(total_force_fig,['figures\' 'total_force.jpg'],'Resolution',300)
@@ -621,81 +634,90 @@ exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.jpg'],'Resolution',300)
 exportgraphics(griffin_fig,['figures\' 'griffin.jpg'],'Resolution',300)
 exportgraphics(pdicy_fig,['figures\' 'pdicy.jpg'],'Resolution',300)
 exportgraphics(f_star_fig,['figures\' 'f_star.jpg'],'Resolution',300)
-exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.jpg'],'Resolution',300)
+if single_test == 1
+    exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.jpg'],'Resolution',300)
+    exportgraphics(freq_contour_fig,['figures\' 'freq_contour.jpg'],'Resolution',300)
+end
 
 %% Testing force subfigure
 % Copy the contents of each existing figure to the new combined figure
 % Subplot 1
-phase_subplot_fig = figure;
-phase_subplot_fig.Position = [100 100 600 800];
-hold on;
-tl = tiledlayout(3,1);
-nexttile
-ax1 = get(A_y_star_fig, 'CurrentAxes');
-copyobj(allchild(ax1), gca);
-title(ax1.Title.String); % Copy title from original axes
-ylabel('$A^*$')
-xlabel('')
-xticklabels({})
-xlim(ax1.XLim)
-text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
-set(gca,'XMinorTick','on','YMinorTick','on')
-set(get(gca,'ylabel'),'rotation',0)
-box on
-% legend
-
-% Subplot 2
-nexttile
-ax2 = get(total_phase_fig, 'CurrentAxes');
-copyobj(allchild(ax2), gca);
-title(ax2.Title.String); % Copy title from original axes
-set(gca,'XMinorTick','on')
-ylabel('$\phi_{total}$')
-set(get(gca,'ylabel'),'rotation',90)
-ylim([0 200])
-xlim(ax1.XLim)
-xticklabels({})
-xlabel('')
-yticks(0:90:180);  % Set ticks every 15 units
-yticklabels({'','90', '180'});  % Set labels only at 90 and 180
-yline(90,'k--')
-text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
-box on
-% legend
-
-% Subplot 3
-nexttile
-ax3 = get(vortex_phase_fig, 'CurrentAxes');
-copyobj(allchild(ax3), gca);
-title(ax3.Title.String); % Copy title from original axes
-set(gca,'XMinorTick','on')
-xlabel('$U^*$')
-ylabel('$\phi_{vortex}$')
-set(get(gca,'ylabel'),'rotation',90)
-ylim([0 200])
-xlim(ax1.XLim)
-yticks(0:90:180);  % Set ticks every 15 units
-yticklabels({'', '90', '180'});  % Set labels only at 90 and 180
-yline(90,'k--')
-text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
-drawnow
-% 
-% hold on
-% x=0.5;
-box on
-modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,95,ax,tl);
-modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,95,ax,tl);
-modeII_line_current = axis_norm(cell2mat(squeeze(results_ave{1,1})),cell2mat(squeeze(results_ave{1,7})),95,ax,tl);
-position_temp = tl.InnerPosition;
-norm_bottom = position_temp(2);
-norm_top = position_temp(2)+position_temp(4);
-annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
-annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
-annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', 'b', 'LineWidth', 1.5,'LineStyle',':');
-% annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
-% legend
-saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
-exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.jpg'],'Resolution',300)
+if single_test == 1
+    phase_subplot_fig = figure;
+    phase_subplot_fig.Position = [100 100 600 800];
+    hold on;
+    tl = tiledlayout(3,1);
+    nexttile
+    ax1 = get(A_y_star_fig, 'CurrentAxes');
+    copyobj(allchild(ax1), gca);
+    title(ax1.Title.String); % Copy title from original axes
+    ylabel('$A^*$')
+    xlabel('')
+    xticklabels({})
+    xlim(ax1.XLim)
+    text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
+    set(gca,'XMinorTick','on','YMinorTick','on')
+    set(get(gca,'ylabel'),'rotation',0)
+    box on
+    % legend
+    
+    % Subplot 2
+    nexttile
+    ax2 = get(total_phase_fig, 'CurrentAxes');
+    copyobj(allchild(ax2), gca);
+    title(ax2.Title.String); % Copy title from original axes
+    set(gca,'XMinorTick','on')
+    ylabel('$\phi_{total}$')
+    set(get(gca,'ylabel'),'rotation',90)
+    ylim([0 200])
+    xlim(ax1.XLim)
+    xticklabels({})
+    xlabel('')
+    yticks(0:90:180);  % Set ticks every 15 units
+    yticklabels({'','90', '180'});  % Set labels only at 90 and 180
+    yline(90,'k--')
+    text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
+    box on
+    % legend
+    
+    % Subplot 3
+    nexttile
+    ax3 = get(vortex_phase_fig, 'CurrentAxes');
+    copyobj(allchild(ax3), gca);
+    title(ax3.Title.String); % Copy title from original axes
+    set(gca,'XMinorTick','on')
+    xlabel('$U^*$')
+    ylabel('$\phi_{vortex}$')
+    set(get(gca,'ylabel'),'rotation',90)
+    ylim([0 200])
+    xlim(ax1.XLim)
+    yticks(0:90:180);  % Set ticks every 15 units
+    yticklabels({'', '90', '180'});  % Set labels only at 90 and 180
+    yline(90,'k--')
+    text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
+    drawnow
+    % 
+    % hold on
+    % x=0.5;
+    box on
+    modeII_line_gov = axis_norm(u_red_totalphase_govwill,totalphase_govwill,90,ax,tl);
+    modeII_line_sareen = axis_norm(u_red_totalphase_sareen,totalphase_sareen,90,ax,tl);
+    position_temp = tl.InnerPosition;
+    norm_bottom = position_temp(2);
+    norm_top = position_temp(2)+position_temp(4);
+    for ii = 1:length(results_ave{1,1})
+        modeII_line = axis_norm((squeeze(results_ave{1,1}{ii})),(squeeze(results_ave{1,7}{ii})),90,ax,tl);
+        annotation(phase_subplot_fig, 'line', [modeII_line modeII_line], [norm_bottom norm_top], 'Color', plotting_color(ii,:), 'LineWidth', 1.5,'LineStyle',':');
+    end
+    % annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
+    % annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
+    % annotation(phase_subplot_fig, 'line', [modeII_line_0 modeII_line_0], [norm_bottom norm_top], 'Color', plotting_color(1,:), 'LineWidth', 1.5,'LineStyle',':');
+    % annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
+    % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
+    % legend
+    saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
+    exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.jpg'],'Resolution',300)
+end
 % 
 
 %% Extra Plots
