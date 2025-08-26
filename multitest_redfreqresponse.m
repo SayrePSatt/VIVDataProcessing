@@ -13,22 +13,22 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
+plot_reference = 1; %0 to not plot references
+plot_errors = 1; %0 to not plot errorbars
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000" "040"];
-test_diaratios = ["00" "10"];
+test_distratios = ["000"];
+test_diaratios = ["00"];
 
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch_3\";
+datafolder = "F:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
 m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
-m_d = (4/3)*pi*(d_sph/2)^3*rho+0.005^2*pi*d_sph/4; %Displaced mass
+m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
@@ -61,7 +61,8 @@ f_w_6k(3,:) = f_w_6k(2,:);
 f_n_6k(4,:) = f_n_6k(2,:);
 f_w_6k(4,:) = f_w_6k(2,:);
 
-m_a = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
+m_a_1k = ((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
+m_a_6k = ((f_n_6k(2)/f_w_6k(2))^2-1)*m;
 St = 0.19;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
@@ -232,11 +233,13 @@ for ii=1:test_size
     if k_temp == 1
         k = k_1k(matching_tests{ii,4}(jj));
         kk = 1;
+        m_a = m_a_1k;
         c = c_1k(matching_tests{ii,4}(jj));
         f_w = f_w_1k(matching_tests{ii,4}(jj),1);
     else
         k = k_6k(matching_tests{ii,4}(jj),1);
         kk = 2;
+        m_a = m_a_6k;
         c = c_6k(matching_tests{ii,4}(jj));
         f_w = f_w_6k(matching_tests{ii,4}(jj),1);
     end
@@ -401,7 +404,7 @@ for ii=1:test_size
 % end
 %% Determining the average and uncertainty bounds from the tests
 if single_test == 1
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90};%, PSD_freq_norm, PSD_norm};
 else
     results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
 end
@@ -415,15 +418,15 @@ end
 %First plot is Ay_star
 
 if single_test == 1
-    figure(freq_contour_fig)
-    plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
-    if ii==1
-        Ustar_temp = 0:23.5;
-        f_vo_norm = St*Ustar_temp;
-        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
-        yline(1,'k-','HandleVisibility','off')
-        set(gca,'XMinorTick','on','YMinorTick','on')
-    end
+    % figure(freq_contour_fig)
+    % plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
+    % if ii==1
+    %     Ustar_temp = 0:23.5;
+    %     f_vo_norm = St*Ustar_temp;
+    %     plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+    %     yline(1,'k-','HandleVisibility','off')
+    %     set(gca,'XMinorTick','on','YMinorTick','on')
+    % end
 
     figure(A_y_star_pctile_fig)
     plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
@@ -709,8 +712,8 @@ if single_test == 1
         modeII_line = axis_norm((squeeze(results_ave{1,1}{ii})),(squeeze(results_ave{1,7}{ii})),90,ax,tl);
         annotation(phase_subplot_fig, 'line', [modeII_line modeII_line], [norm_bottom norm_top], 'Color', plotting_color(ii,:), 'LineWidth', 1.5,'LineStyle',':');
     end
-    % annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
-    % annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
+    annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
+    annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
     % annotation(phase_subplot_fig, 'line', [modeII_line_0 modeII_line_0], [norm_bottom norm_top], 'Color', plotting_color(1,:), 'LineWidth', 1.5,'LineStyle',':');
     % annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
     % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');

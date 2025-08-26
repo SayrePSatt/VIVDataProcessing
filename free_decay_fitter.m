@@ -2,10 +2,10 @@ clear all
 close all
 clc
 
-m = 5;
-type = "air";
+m = 6;
+type = "water";
 stiffness = 1;
-subfolder = "D:\EFDL\vivscratch_3\freeDecay\1k_06_19_2025\";
+subfolder = "F:\EFDL\vivscratch_3\freeDecay\1k_08_24_2025\";
 zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);

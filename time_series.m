@@ -9,14 +9,16 @@ zerofile = extractBefore(file,25);
 zerofile = [zerofile '00.00.csv'];
 zerofilename = strcat(location,zerofile);
 load("pumpFit_freq2velo.mat");
+decay_location = strcat(extractBefore(location,'testData\'),'freeDecay\');
 
 pump_f = str2double(extractBetween(file,25,29)); %extracting pump frequency
 pump_U = predict(mdl,pump_f);
 
 test_num = extractBefore(file,3);
 spring_num = char(extractBetween(file,13,13));
+distance = str2double(char(extractBetween(file,4,6)))/10;
 
-freedecay_location = strcat(location,test_num,'_test\freedecay_',spring_num,'k_water.dat');
+freedecay_location = strcat(decay_location,test_num,'_test\freedecay_',spring_num,'k_water.dat');
 f_w = table2array(readtable(freedecay_location));
 f_w = f_w(1,1);
 
@@ -73,13 +75,13 @@ f.Position = [100 100 500 250];
 figure(f)
 plot(t/T,encoder_filt,'k-')
 xlim([0 cycles])
-limits = round(max(abs(encoder_filt))/0.5)*0.5;
+limits = ceil(max(abs(encoder_filt))/0.5)*0.5;
 % limits = 0.1;
 ylim([-limits limits])
 yticks([-limits 0 limits])
 xlabel('$t/T$')
 ylabel('$y/D$')
-title(['$U^*=$' num2str(U_star)])
+title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
 
 figurename = [extractBefore(file,11) '_' num2str(U_star*10) '_timeseries'];
 exportgraphics(f,['figures\' figurename '.jpg'],'Resolution',300);
