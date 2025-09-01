@@ -22,7 +22,7 @@ test_distratios = ["000"];
 test_diaratios = ["00"];
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_3\";
+datafolder = "F:\EFDL\vivscratch_isolated\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -61,8 +61,8 @@ f_w_6k(3,:) = f_w_6k(2,:);
 f_n_6k(4,:) = f_n_6k(2,:);
 f_w_6k(4,:) = f_w_6k(2,:);
 
-m_a_1k = 0.18%((f_n_1k(1)/f_w_1k(1))^2-1)*m; %test
-m_a_6k = 0.14%((f_n_6k(2)/f_w_6k(2))^2-1)*m;
+m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m %test
+m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m
 St = 0.19;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
@@ -233,13 +233,13 @@ for ii=1:test_size
     if k_temp == 1
         k = k_1k(matching_tests{ii,4}(jj));
         kk = 1;
-        m_a = m_a_1k;
+        m_a = m_a_1k(matching_tests{ii,4}(jj));
         c = c_1k(matching_tests{ii,4}(jj));
         f_w = f_w_1k(matching_tests{ii,4}(jj),1);
     else
         k = k_6k(matching_tests{ii,4}(jj),1);
         kk = 2;
-        m_a = m_a_6k;
+        m_a = m_a_6k(matching_tests{ii,4}(jj));
         c = c_6k(matching_tests{ii,4}(jj));
         f_w = f_w_6k(matching_tests{ii,4}(jj),1);
     end

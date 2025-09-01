@@ -2,14 +2,14 @@ clear all
 close all
 clc
 
-m = 6;
+m = 15;
 type = "water";
-stiffness = 1;
-subfolder = "F:\EFDL\vivscratch_3\freeDecay\1k_08_24_2025\";
+stiffness = 6;
+subfolder = "F:\EFDL\vivscratch_3\freeDecay\6k_08_18_2025\";
 zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);
-disp_zero_mean = 0;%mean(disp_zero_pos);
+disp_zero_mean = mean(disp_zero_pos);
 
 for ii=1:6
     data = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_0"+ii+".csv");
