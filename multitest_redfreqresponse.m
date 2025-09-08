@@ -22,7 +22,7 @@ test_distratios = ["000"];
 test_diaratios = ["00"];
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_isolated\";
+datafolder = "F:\EFDL\vivscratch_isolated_ind\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
