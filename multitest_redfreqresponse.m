@@ -18,61 +18,89 @@ plot_reference = 1; %0 to not plot references
 plot_errors = 1; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000"];
-test_diaratios = ["00"];
+test_distratios = ["000"]; %#ok<NBRAK2>
+test_diaratios = ["00"]; %#ok<NBRAK2>
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_isolated\";
+datafolder = "F:\EFDL\vivscratch_isolated_ind\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
-d_sph = 0.0889;  %Diameter of Sphere
-m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
-m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
+d_sph_90 = 0.0889;  %Diameter of Sphere
+d_sph_80 = 0.08;
+m_90 = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
+m_80 = 1.916;
+m_d_90 = (4/3)*pi*(d_sph_90/2)^3*rho+rho*0.005^2*pi*d_sph_90/4; %Displaced mass
+m_d_80 = (4/3)*pi*(d_sph_90/2)^3*rho+rho*0.005^2*pi*d_sph_90/4;
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
-f_n_1k(1,:) = temp_1k(1,:);
+f_n_90_1k(1,:) = temp_1k(1,:);
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
-f_w_1k(1,:) = temp_1k(1,:);
-f_n_1k(2,:) = f_n_1k(1,:);
-f_w_1k(2,:) = f_w_1k(1,:);
-f_n_1k(3,:) = f_n_1k(1,:);
-f_w_1k(3,:) = f_w_1k(1,:);
-f_n_1k(4,:) = f_n_1k(1,:);
-f_w_1k(4,:) = f_w_1k(1,:);
+f_w_90_1k(1,:) = temp_1k(1,:);
+f_n_90_1k(2,:) = f_n_90_1k(1,:);
+f_w_90_1k(2,:) = f_w_90_1k(1,:);
+f_n_90_1k(3,:) = f_n_90_1k(1,:);
+f_w_90_1k(3,:) = f_w_90_1k(1,:);
+f_n_90_1k(4,:) = f_n_90_1k(1,:);
+f_w_90_1k(4,:) = f_w_90_1k(1,:);
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_air.dat"));
 % f_n_1k(3,:) = temp_1k(1,:);
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
 % f_w_1k(3,:) = temp_1k(1,:);
 
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_air.dat"));
-f_n_6k(1,:) = temp_6k(1,:);
+f_n_90_6k(1,:) = temp_6k(1,:);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_water.dat"));
-f_w_6k(1,:) = temp_6k(1,:);
+f_w_90_6k(1,:) = temp_6k(1,:);
 
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
-f_n_6k(2,:) = temp_6k(1,:);
+f_n_90_6k(2,:) = temp_6k(1,:);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
-f_w_6k(2,:) = temp_6k(1,:);
+f_w_90_6k(2,:) = temp_6k(1,:);
 
-f_n_6k(3,:) = f_n_6k(2,:);
-f_w_6k(3,:) = f_w_6k(2,:);
-f_n_6k(4,:) = f_n_6k(2,:);
-f_w_6k(4,:) = f_w_6k(2,:);
+f_n_90_6k(3,:) = f_n_90_6k(2,:);
+f_w_90_6k(3,:) = f_w_90_6k(2,:);
+f_n_90_6k(4,:) = f_n_90_6k(2,:);
+f_w_90_6k(4,:) = f_w_90_6k(2,:);
 
-m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m %test
-m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m
+% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_01_2025_80mm/freedecay_1k_air.dat"));
+f_n_80_1k(1,:) = temp_1k(1,:);
+% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_01_2025_80mm/freedecay_1k_water.dat"));
+f_w_80_1k(1,:) = temp_1k(1,:);
+
+% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_01_2025_80mm/freedecay_6k_air.dat"));
+f_n_80_6k(1,:) = temp_6k(1,:);
+% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_01_2025_80mm/freedecay_6k_water.dat"));
+f_w_80_6k(1,:) = temp_6k(1,:);
+
+m_a_90_1k = ((f_n_90_1k(:,1)./f_w_90_1k(:,1)).^2-1)*m_90; %test
+m_a_90_6k = ((f_n_90_6k(:,1)./f_w_90_6k(:,1)).^2-1)*m_90;
+
+m_a_80_1k = ((f_n_80_1k(:,1)./f_w_80_1k(:,1)).^2-1)*m_80; %test
+m_a_80_6k = ((f_n_80_6k(:,1)./f_w_80_6k(:,1)).^2-1)*m_80;
+
 St = 0.19;
-omegana_1k = 2*pi*f_n_1k(:,1);
-k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
-omegana_6k = 2*pi*f_n_6k(:,1);
-k_6k = m*omegana_6k.^2;
 
-c_1k = f_n_1k(:,2).*2.*sqrt((m).*k_1k);
-c_6k = f_n_6k(:,2).*2.*sqrt((m).*k_6k);
-m_star = m/m_d;
-mass_damp = (m_star+C_A)*f_n_1k(1,2);
+omegana_90_1k = 2*pi*f_n_90_1k(:,1);
+k_90_1k = m_90*omegana_90_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
+omegana_90_6k = 2*pi*f_n_90_6k(:,1);
+k_90_6k = m_90*omegana_90_6k.^2;
+
+omegana_80_1k = 2*pi*f_n_80_1k(:,1);
+k_80_1k = m_80*omegana_80_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
+omegana_80_6k = 2*pi*f_n_80_6k(:,1);
+k_80_6k = m_80*omegana_80_6k.^2;
+
+c_90_1k = f_n_90_1k(:,2).*2.*sqrt((m_90).*k_90_1k);
+c_90_6k = f_n_90_6k(:,2).*2.*sqrt((m_90).*k_90_6k);
+m_star_90 = m_90/m_d_90;
+mass_damp_90 = (m_star_90+C_A)*f_n_90_1k(1,2);
+
+c_80_1k = f_n_80_1k(:,2).*2.*sqrt((m_80).*k_80_1k);
+c_80_6k = f_n_80_6k(:,2).*2.*sqrt((m_80).*k_80_6k);
+m_star_80 = m_80/m_d_80;
+mass_damp_80 = (m_star_80+C_A)*f_n_80_1k(1,2);
 % scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
 
 load("pumpFit_freq2velo.mat");
@@ -165,7 +193,7 @@ all_files = dir(topfolder);
 
 for ii = 3:length(all_files)
     temp_config = all_files(ii).name;
-    configs(ii-2) = convertCharsToStrings(temp_config(4:11));
+    configs(ii-2) = convertCharsToStrings(temp_config(4:17));
     % distances =
 end
 
@@ -176,8 +204,9 @@ matching_tests = {};
 plotting_color = lines(length(uniq_configs));
 marker_style = {"o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"};
 for ii = 1:length(uniq_configs)
-    uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3); %Extracting distance ratios
-    uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7); %Extracting diameter ratios
+    % uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3); %Extracting distance ratios
+    % uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7); %Extracting diameter ratios
+    % uniq_spheredia(ii) = extractBetween(uniq_configs(ii),10,11); %Extracting the different sphere diameters used
     kk = 1;
     for jj = 3:length(all_files)
         filename = all_files(jj).name;
@@ -186,6 +215,7 @@ for ii = 1:length(uniq_configs)
             
             matching_tests{ii,2}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),13,13)); %Extracting the spring constant
             matching_tests{ii,3}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),25,29)); %Extracting Pump Speed
+            matching_tests{ii,8}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),16,17)); %Extracting the sphere diameter used
             f_pump = matching_tests{ii,3}(kk);
             if f_pump == 0
                 U = 0.0;
@@ -196,10 +226,21 @@ for ii = 1:length(uniq_configs)
             matching_tests{ii,4}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),1,2)); %Extracting the test number
            
             k_temp = matching_tests{ii,2}(kk);
-            if k_temp == 1
-                f_w = f_w_1k(matching_tests{ii,4}(kk),1);
-            else
-                f_w = f_w_6k(matching_tests{ii,4}(kk),1);
+            spheredia_temp = matching_tests{ii,8}(kk);
+            if spheredia_temp == 90    
+                d_sph = d_sph_90;
+                if k_temp == 1
+                    f_w = f_w_90_1k(matching_tests{ii,4}(kk),1);
+                else
+                    f_w = f_w_90_6k(matching_tests{ii,4}(kk),1);
+                end
+            elseif spheredia_temp == 80
+                d_sph = d_sph_80;
+                if k_temp == 1
+                    f_w = f_w_80_1k(matching_tests{ii,4}(kk),1);
+                else
+                    f_w = f_w_80_6k(matching_tests{ii,4}(kk),1);
+                end
             end
             matching_tests{ii,7}(kk) = matching_tests{ii,6}(kk)/(f_w*d_sph); %Extracting reduced velocity
             kk = kk+1;
@@ -230,18 +271,39 @@ for ii=1:test_size
     U = matching_tests{ii,6}(jj);
 
     k_temp = matching_tests{ii,2}(jj);
-    if k_temp == 1
-        k = k_1k(matching_tests{ii,4}(jj));
-        kk = 1;
-        m_a = m_a_1k(matching_tests{ii,4}(jj));
-        c = c_1k(matching_tests{ii,4}(jj));
-        f_w = f_w_1k(matching_tests{ii,4}(jj),1);
-    else
-        k = k_6k(matching_tests{ii,4}(jj),1);
-        kk = 2;
-        m_a = m_a_6k(matching_tests{ii,4}(jj));
-        c = c_6k(matching_tests{ii,4}(jj));
-        f_w = f_w_6k(matching_tests{ii,4}(jj),1);
+    spheredia_temp = matching_tests{ii,8}(jj);
+    if spheredia_temp == 90
+        m = m_90;
+        d_sph = d_sph_90;
+        if k_temp == 1
+            k = k_90_1k(matching_tests{ii,4}(jj));
+            kk = 1;
+            m_a = m_a_90_1k(matching_tests{ii,4}(jj));
+            c = c_90_1k(matching_tests{ii,4}(jj));
+            f_w = f_w_90_1k(matching_tests{ii,4}(jj),1);
+        else
+            k = k_90_6k(matching_tests{ii,4}(jj),1);
+            kk = 2;
+            m_a = m_a_90_6k(matching_tests{ii,4}(jj));
+            c = c_90_6k(matching_tests{ii,4}(jj));
+            f_w = f_w_90_6k(matching_tests{ii,4}(jj),1);
+        end
+    elseif spheredia_temp == 80
+        m = m_80;
+        d_sph = d_sph_80;
+        if k_temp == 1
+            k = k_80_1k(matching_tests{ii,4}(jj));
+            kk = 1;
+            m_a = m_a_80_1k(matching_tests{ii,4}(jj));
+            c = c_80_1k(matching_tests{ii,4}(jj));
+            f_w = f_w_80_1k(matching_tests{ii,4}(jj),1);
+        else
+            k = k_80_6k(matching_tests{ii,4}(jj),1);
+            kk = 2;
+            m_a = m_a_80_6k(matching_tests{ii,4}(jj));
+            c = c_80_6k(matching_tests{ii,4}(jj));
+            f_w = f_w_80_6k(matching_tests{ii,4}(jj),1);
+        end
     end
     data = table2array(readtable(topfolder+matching_tests{ii,1}(jj)));
     time = data(:,1);
@@ -404,9 +466,9 @@ for ii=1:test_size
 % end
 %% Determining the average and uncertainty bounds from the tests
 if single_test == 1
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90};%, PSD_freq_norm, PSD_norm};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90}%, PSD_freq_norm, PSD_norm};
 else
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f}
 end
 
 for kkk = 1:length(results)
@@ -471,11 +533,11 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
-dim = [0.35 0.75 0.5 0.1];
+dim = [0.35 0.8 0.5 0.1];
 annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 dim = [0.17 0.5 0.5 0.1];
 annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.5 0.6 0.5 0.1];
+dim = [0.5 0.65 0.5 0.1];
 annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 
 %Plots of frequency ratio
@@ -592,28 +654,28 @@ figure(griffin_fig)
 xscale("log");
 scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
 plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
-plot(mass_damp,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
+plot(mass_damp_90,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
 set(gca,'XMinorTick','on','YMinorTick','on')
 xlabel('$(m^*+C_A)\zeta$')
 ylabel('$A^*$')
 set(get(gca,'ylabel'),'rotation',0)
 
 %% Figure Saving
-figure(A_y_star_fig)
-delete(findall(gcf,'type','annotation'))
-arrow_x = [0.775 0.775];
-arrow_y = [0.85 0.35];
-arrow_anno = annotation('arrow', arrow_x, arrow_y);
-arrow_anno.Color = 'black';
-arrow_anno.LineWidth = 2;
-
-figure(pdicy_fig)
-delete(findall(gcf,'type','annotation'))
-arrow_x = [0.775 0.775];
-arrow_y = [0.6 0.85];
-arrow_anno = annotation('arrow', arrow_x, arrow_y);
-arrow_anno.Color = 'black';
-arrow_anno.LineWidth = 2;
+% figure(A_y_star_fig)
+% delete(findall(gcf,'type','annotation'))
+% arrow_x = [0.775 0.775];
+% arrow_y = [0.85 0.35];
+% arrow_anno = annotation('arrow', arrow_x, arrow_y);
+% arrow_anno.Color = 'black';
+% arrow_anno.LineWidth = 2;
+% 
+% figure(pdicy_fig)
+% delete(findall(gcf,'type','annotation'))
+% arrow_x = [0.775 0.775];
+% arrow_y = [0.6 0.85];
+% arrow_anno = annotation('arrow', arrow_x, arrow_y);
+% arrow_anno.Color = 'black';
+% arrow_anno.LineWidth = 2;
 
 saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
 saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')

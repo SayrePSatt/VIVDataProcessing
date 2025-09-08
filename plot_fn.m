@@ -2,7 +2,7 @@ function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plo
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 distance = str2double(extractBetween(name,1,3))/10;
-legend_label = distance+"D";
+legend_label = extractAfter(name,9);%distance+"D";
 
 x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:));

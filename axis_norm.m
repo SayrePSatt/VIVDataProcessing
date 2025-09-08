@@ -7,6 +7,7 @@ ax_limits = get(ax,'XLim');
 axis_upper = ax_limits(2);
 axis_lower = ax_limits(1);
 crossingIndices = find(y(1:end-1) < value & y(2:end) >= value);
+crossingIndices = crossingIndices(1);
 
 % Initialize an array to store crossing points
 crossingXValues = [];
