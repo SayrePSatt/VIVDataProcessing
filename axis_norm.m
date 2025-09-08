@@ -1,12 +1,13 @@
-function norm_value = axis_norm(x,y,value,ax)
+function norm_value = axis_norm(x,y,value,ax,tl)
 %This function takes in a value, such as the reduced velocity, determines
 %where that value is in normalized position on the axis, then provides the
 %normalized value of that position
-ax_offset = get(ax,'Position');
+ax_offset = get(tl,'Position');
 ax_limits = get(ax,'XLim');
 axis_upper = ax_limits(2);
 axis_lower = ax_limits(1);
 crossingIndices = find(y(1:end-1) < value & y(2:end) >= value);
+crossingIndices = crossingIndices(1);
 
 % Initialize an array to store crossing points
 crossingXValues = [];

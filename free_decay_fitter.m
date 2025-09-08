@@ -2,16 +2,17 @@ clear all
 close all
 clc
 
-m = 5;
+m = 7;
 type = "air";
-subfolder = "D:\EFDL\vivscratch\freeDecay\1k_06_19_2025\";
-zero = csvread(subfolder+"freedecay_1k_"+type+"_00.csv");
+stiffness = 6;
+subfolder = "D:\EFDL\tandemSphere\freeDecay\6k_09_06_2025\";
+zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_00.csv");
 disp_zero_time = zero(:,1);
 disp_zero_pos = zero(:,2);
 disp_zero_mean = mean(disp_zero_pos);
 
 for ii=1:6
-    data = csvread(subfolder+"freedecay_1k_"+type+"_0"+ii+".csv");
+    data = csvread(subfolder+"freedecay_"+stiffness+"k_"+type+"_0"+ii+".csv");
     time = data(:,1);
     disp = data(:,2);
     disp = disp-disp_zero_mean;
@@ -30,7 +31,7 @@ zeta_ave = mean(zeta);
 zeta_95 = std(zeta)*tinv(0.975,ii-1);
 
 writemtx = [f_n_ave, zeta_ave; f_n_95, zeta_95];
-writematrix(writemtx,subfolder+"freedecay_1k_"+type+".dat");
+writematrix(writemtx,subfolder+"freedecay_"+stiffness+"k_"+type+".dat");
 
 findpeaks(disp)
 
