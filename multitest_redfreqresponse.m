@@ -49,9 +49,9 @@ f_w_90_1k(4,:) = f_w_90_1k(1,:);
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
 % f_w_1k(3,:) = temp_1k(1,:);
 
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_air.dat"));
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
 f_n_90_6k(1,:) = temp_6k(1,:);
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_water.dat"));
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
 f_w_90_6k(1,:) = temp_6k(1,:);
 
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
@@ -248,6 +248,7 @@ for ii = 1:length(uniq_configs)
     end
     
     for iii = [1,6]
+        clear samespring_ustar
         temp = find(matching_tests{ii,2}==iii);
         temp_nan = find(~(matching_tests{ii,2}==iii));
         uniq = unique(round(matching_tests{ii,7}(temp)/0.5)*0.5); %Finds all pump speeds that were tested
