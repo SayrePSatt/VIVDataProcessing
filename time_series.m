@@ -24,10 +24,6 @@ f_w = f_w(1,1);
 
 U_star = round(pump_U/(f_w*d_sph),1);
 
-cycles = 20;
-f_s = 1000;
-dt = 1/f_s;
-
 data = table2array(readtable(filename));
 zero = table2array(readtable(zerofilename));
 time = data(:,1);
@@ -37,6 +33,9 @@ encoderoffset = mean(zero(:,2));
 encoder = encoder-encoderoffset;
 
 %% Filtering
+cycles = 50;
+f_s = 1000;
+dt = 1/f_s;
 % subplot(3,1,1)
 n = length(time);
 fhat = fft(encoder, n); % Compute the fast fourier transform
@@ -47,7 +46,7 @@ L = 1:floor(n/2); %only plot the first half of freqs
 f_c = 2;   %Cutoff frequency
 [b,a] = butter(4,f_c/(f_s/2),"low");
 
-encoder_filt = filtfilt(b,a,encoder)/d_sph;
+encoder_filt = encoder/d_sph;%filtfilt(b,a,encoder)/d_sph;
 
 %% Freq Investigation
 [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
@@ -71,8 +70,9 @@ encoder_filt = encoder_filt(idx);
 %% Plotting
 close all
 f = figure;
+set(gcf, 'color', '#eeeeee');
+set(gca, 'color', '#eeeeee');
 f.Position = [100 100 500 250];
-figure(f)
 plot(t/T,encoder_filt,'k-')
 xlim([0 cycles])
 limits = ceil(max(abs(encoder_filt))/0.5)*0.5;
@@ -82,7 +82,9 @@ yticks([-limits 0 limits])
 xlabel('$t/T$')
 ylabel('$y/D$')
 title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
+set(gcf, 'color', '#eeeeee');
+set(gca, 'color', '#eeeeee');
 
 figurename = [extractBefore(file,11) '_' num2str(U_star*10) '_timeseries'];
-exportgraphics(f,['figures\' figurename '.jpg'],'Resolution',300);
+exportgraphics(f,['figures\' figurename '.png'],'Resolution',300,'BackgroundColor',[238 238 238]/255);
 saveas(f,['figures\' figurename '.eps'],'epsc');

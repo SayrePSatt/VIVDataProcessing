@@ -2,7 +2,7 @@ clear all
 close all
 clc
 
-m = 15;
+m = 7;
 type = "water";
 stiffness = 6;
 subfolder = "F:\EFDL\vivscratch_3\freeDecay\6k_08_18_2025\";

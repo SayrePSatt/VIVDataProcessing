@@ -21,8 +21,10 @@ single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 test_distratios = ["000"];
 test_diaratios = ["00"];
 
+bgColor = [238 238 238]/255;
+
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_isolated_ind\";
+datafolder = "F:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -119,44 +121,70 @@ griffin_Astar_fit = rmmissing(griffin_plot(:,4));
 %% Setting up plots for later
 
 A_y_star_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 A_y_norm_fig = figure;
 A_y_norm_fig.Position = [100 100 600 400];
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 phase_subplot_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 total_force_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 vortex_force_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 total_phase_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 vortex_phase_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 pdicy_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 f_star_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 test_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 griffin_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 hold on;
 
 if single_test == 1
     A_y_star_pctile_fig = figure;
+    set(gcf, 'color', bgColor);
+    set(gca, 'color', bgColor);
     hold on
     
     freq_contour_fig = figure;
+    set(gcf, 'color', bgColor);
+    set(gca, 'color', bgColor);
     hold on;
 end
 %% Setting up folder directories
@@ -404,7 +432,7 @@ for ii=1:test_size
 % end
 %% Determining the average and uncertainty bounds from the tests
 if single_test == 1
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90};%, PSD_freq_norm, PSD_norm};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
 else
     results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
 end
@@ -418,15 +446,15 @@ end
 %First plot is Ay_star
 
 if single_test == 1
-    % figure(freq_contour_fig)
-    % plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
-    % if ii==1
-    %     Ustar_temp = 0:23.5;
-    %     f_vo_norm = St*Ustar_temp;
-    %     plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
-    %     yline(1,'k-','HandleVisibility','off')
-    %     set(gca,'XMinorTick','on','YMinorTick','on')
-    % end
+    figure(freq_contour_fig)
+    plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
+    if ii==1
+        Ustar_temp = 0:23.5;
+        f_vo_norm = St*Ustar_temp;
+        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+        yline(1,'k-','HandleVisibility','off')
+        set(gca,'XMinorTick','on','YMinorTick','on')
+    end
 
     figure(A_y_star_pctile_fig)
     plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
@@ -598,22 +626,33 @@ xlabel('$(m^*+C_A)\zeta$')
 ylabel('$A^*$')
 set(get(gca,'ylabel'),'rotation',0)
 
+%% Annotation Playing
+% figure(A_y_star_fig)
+% delete(findall(gcf,'type','annotation'))
+% xlim([2 7])
+% ylim([0 0.6])
+% dim = [0.35 0.6 0.5 0.1];
+% annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.17 0.4 0.5 0.1];
+% annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.6 0.5 0.5 0.1];
+% annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 %% Figure Saving
 figure(A_y_star_fig)
-delete(findall(gcf,'type','annotation'))
-arrow_x = [0.775 0.775];
-arrow_y = [0.85 0.35];
-arrow_anno = annotation('arrow', arrow_x, arrow_y);
-arrow_anno.Color = 'black';
-arrow_anno.LineWidth = 2;
+% delete(findall(gcf,'type','annotation'))
+% arrow_x = [0.775 0.775];
+% arrow_y = [0.85 0.35];
+% arrow_anno = annotation('arrow', arrow_x, arrow_y);
+% arrow_anno.Color = 'black';
+% arrow_anno.LineWidth = 2;
 
 figure(pdicy_fig)
-delete(findall(gcf,'type','annotation'))
-arrow_x = [0.775 0.775];
-arrow_y = [0.6 0.85];
-arrow_anno = annotation('arrow', arrow_x, arrow_y);
-arrow_anno.Color = 'black';
-arrow_anno.LineWidth = 2;
+% delete(findall(gcf,'type','annotation'))
+% arrow_x = [0.775 0.775];
+% arrow_y = [0.6 0.85];
+% arrow_anno = annotation('arrow', arrow_x, arrow_y);
+% arrow_anno.Color = 'black';
+% arrow_anno.LineWidth = 2;
 
 saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
 saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
@@ -628,20 +667,19 @@ if single_test == 1
     saveas(freq_contour_fig,'freq_contour.eps','epsc')
 end
 
-exportgraphics(A_y_star_fig,['figures\' 'A_y_star.jpg'],'Resolution',300);
-exportgraphics(total_force_fig,['figures\' 'total_force.jpg'],'Resolution',300)
-exportgraphics(vortex_force_fig,['figures\' 'vortex_force.jpg'],'Resolution',300)
-exportgraphics(total_phase_fig,['figures\' 'total_phase.jpg'],'Resolution',300)
-exportgraphics(vortex_phase_fig,['figures\' 'vortex_phase.jpg'],'Resolution',300)
-exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.jpg'],'Resolution',300)
-exportgraphics(griffin_fig,['figures\' 'griffin.jpg'],'Resolution',300)
-exportgraphics(pdicy_fig,['figures\' 'pdicy.jpg'],'Resolution',300)
-exportgraphics(f_star_fig,['figures\' 'f_star.jpg'],'Resolution',300)
+exportgraphics(A_y_star_fig,['figures\' 'A_y_star.png'],'Resolution',300,'BackgroundColor', bgColor);
+exportgraphics(total_force_fig,['figures\' 'total_force.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(vortex_force_fig,['figures\' 'vortex_force.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(total_phase_fig,['figures\' 'total_phase.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(vortex_phase_fig,['figures\' 'vortex_phase.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(griffin_fig,['figures\' 'griffin.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(pdicy_fig,['figures\' 'pdicy.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(f_star_fig,['figures\' 'f_star.png'],'Resolution',300,'BackgroundColor', bgColor)
 if single_test == 1
-    exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.jpg'],'Resolution',300)
-    exportgraphics(freq_contour_fig,['figures\' 'freq_contour.jpg'],'Resolution',300)
+    exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.png'],'Resolution',300,'BackgroundColor', bgColor)
+    exportgraphics(freq_contour_fig,['figures\' 'freq_contour.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
-
 %% Testing force subfigure
 % Copy the contents of each existing figure to the new combined figure
 % Subplot 1
@@ -719,7 +757,7 @@ if single_test == 1
     % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
     % legend
     saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
-    exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.jpg'],'Resolution',300)
+    exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
 % 
 

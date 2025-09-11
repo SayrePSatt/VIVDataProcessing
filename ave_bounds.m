@@ -7,9 +7,9 @@ function [ave,upper,lower] = ave_bounds(result,quantity,config)
 quantity_1k = result{quantity}{config,1}(:,:,:);
 quantity_1k(quantity_1k==0) = NaN;
 ave_1k = squeeze(mean(quantity_1k,1,'omitnan'));
-size(quantity_1k)
+size(quantity_1k);
 size(ave_1k);
-std_1k = std(quantity_1k,0,1)/sqrt(size(quantity_1k,1));
+std_1k = squeeze(std(quantity_1k,0,1)/sqrt(size(quantity_1k,1)));
 upper_1k = std_1k;
 lower_1k = std_1k;
 % upper_1k = squeeze(max(quantity_1k,[],1,'omitnan'))-ave_1k;
@@ -19,12 +19,13 @@ quantity_6k = result{quantity}{config,2}(:,:,:);
 quantity_6k(quantity_6k==0) = NaN;
 ave_6k = squeeze(mean(quantity_6k,1,'omitnan'));
 size(ave_6k);
-std_6k = std(quantity_6k,0,1)/sqrt(size(quantity_6k,1));
+std_6k = squeeze(std(quantity_6k,0,1)/sqrt(size(quantity_6k,1)));
 upper_6k = std_6k;
 lower_6k = std_6k;
 % upper_6k = squeeze(max(quantity_6k,[],1,'omitnan'))-ave_6k;
 % lower_6k = ave_6k-squeeze(min(quantity_6k,[],1,'omitnan'));
-
+% size(ave_6k)
+% size(upper_6k)
 [rows_1k, columns_1k] = size(ave_1k);
 [rows_6k, columns_6k] = size(ave_6k);
 

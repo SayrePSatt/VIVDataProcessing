@@ -6,6 +6,7 @@ function plot_psd_fn(results,x_num,y_num,z_num,config_idx,plot_legend,plotting_c
 x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:,:));
 z_data = squeeze(results{z_num}{config_idx}(:,:));
+z_data(z_data == 0) = NaN;
 
 lower_limit = 10;
 upper_limit = 60;
@@ -20,10 +21,10 @@ if plot_legend == 1
 end
 xlabel('$U^*$')
 ylabel('$f^*$')
-colormap(flipud(gray))
+colormap(flipud(autumn))
 
-clim('auto')
-
+clim([20 70])
+set(gca,'Colorscale','log')
 xlim([0 max(x_data)]);
 ylim([0 2]);
 
