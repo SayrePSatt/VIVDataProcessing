@@ -13,13 +13,13 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 1; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_reference = 0; %0 to not plot references
+plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000"];
-test_diaratios = ["00"];
+test_distratios = ["000" "015" "020" "025" "030" "040" "060" "070"];
+test_diaratios = ["00" "10"];
 
 bgColor = [238 238 238]/255;
 
@@ -201,7 +201,10 @@ uniq_configs = unique(configs);
 uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios)); %Selects only the configurations selected for testing
 matching_tests = {};
 
-plotting_color = lines(length(uniq_configs));
+plotting_color(1,:) = [0 0 0];
+plotting_color(2:7,:) = lines(6);
+plotting_color(8,:) = [1 0 0];
+
 marker_style = {"o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"};
 for ii = 1:length(uniq_configs)
     uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3); %Extracting distance ratios
@@ -353,7 +356,7 @@ for ii=1:test_size
     encoder_filt = encoder_filt(1:data_length);
     velo =  velo(1:data_length);
 
-    F = m.*acc+c.*velo/5+k*encoder_filt;
+    F = m.*acc+c.*velo+k*encoder_filt; 
     F_pot = -m_a*acc;%-C_A*m_d*acc;
     F_vortex = F - F_pot;
     % F_vortex = (m+m_d).*acc+f_n(2).*velo+k*encoder_filt;
@@ -627,16 +630,16 @@ ylabel('$A^*$')
 set(get(gca,'ylabel'),'rotation',0)
 
 %% Annotation Playing
-% figure(A_y_star_fig)
-% delete(findall(gcf,'type','annotation'))
+figure(A_y_star_fig)
+delete(findall(gcf,'type','annotation'))
 % xlim([2 7])
-% ylim([0 0.6])
-% dim = [0.35 0.6 0.5 0.1];
-% annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-% dim = [0.17 0.4 0.5 0.1];
-% annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-% dim = [0.6 0.5 0.5 0.1];
-% annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+ylim([0 1.0])
+dim = [0.35 0.75 0.5 0.1];
+annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+dim = [0.17 0.4 0.5 0.1];
+annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+dim = [0.6 0.6 0.5 0.1];
+annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 %% Figure Saving
 figure(A_y_star_fig)
 % delete(findall(gcf,'type','annotation'))

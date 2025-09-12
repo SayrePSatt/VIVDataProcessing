@@ -15,7 +15,7 @@ z_data_mask = z_data;
 % z_data_mask(z_data_mask<lower_limit) = NaN;
 
 pcolor(x_data,y_data,z_data_mask);
-shading flat;
+shading interp;
 if plot_legend == 1
     colorbar
 end
@@ -24,8 +24,10 @@ ylabel('$f^*$')
 colormap(flipud(autumn))
 
 clim([20 70])
-set(gca,'Colorscale','log')
+set(gca,'Colorscale','linear')
 xlim([0 max(x_data)]);
 ylim([0 2]);
-
+% 
+% h = get(gca,'children');
+% uistack(h(7),'top')
 end
