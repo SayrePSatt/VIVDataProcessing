@@ -14,8 +14,8 @@ clc
 
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
+plot_reference = 1; %0 to not plot references
+plot_errors = 1; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
 test_distratios = ["000" "015" "040" "070" "100"]; %"020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
@@ -24,18 +24,18 @@ test_diaratios = ["00" "10"];
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_3\";
+datafolder = "D:\EFDL\vivscratch_80mm\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
-d_sph = 0.0889;  %Diameter of Sphere
-m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
+d_sph = 0.08;  %Diameter of Sphere
+m = 1.916+2*0.0028;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup. Each spring is 2.8g, use 1/3 mass of springs
 m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
-f_s = 1000;     %Sampling Frequency
+f_s = 100;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_01_2025_80mm/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_01_2025_80mm/freedecay_1k_water.dat"));
 f_w_1k(1,:) = temp_1k(1,:);
 f_n_1k(2,:) = f_n_1k(1,:);
 f_w_1k(2,:) = f_w_1k(1,:);
@@ -48,14 +48,14 @@ f_w_1k(4,:) = f_w_1k(1,:);
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_07_30_2025/freedecay_1k_water.dat"));
 % f_w_1k(3,:) = temp_1k(1,:);
 
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_air.dat"));
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_01_2025_80mm/freedecay_6k_air.dat"));
 f_n_6k(1,:) = temp_6k(1,:);
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_07_30_2025/freedecay_6k_water.dat"));
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_01_2025_80mm/freedecay_6k_water.dat"));
 f_w_6k(1,:) = temp_6k(1,:);
 
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_01_2025_80mm/freedecay_6k_air.dat"));
 f_n_6k(2,:) = temp_6k(1,:);
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_01_2025_80mm/freedecay_6k_water.dat"));
 f_w_6k(2,:) = temp_6k(1,:);
 
 f_w_6k(3,:) = f_w_6k(2,:);
@@ -65,7 +65,7 @@ f_n_6k(4,:) = f_n_6k(2,:);
 
 m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m %test
 m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m
-m_a_6k(:) = 0.15;
+% m_a_6k(:) = 0.2;
 St = 0.19;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
@@ -274,15 +274,16 @@ for ii=1:test_size
         kk = 1;
         m_a = m_a_1k(matching_tests{ii,4}(jj));
         c = c_1k(matching_tests{ii,4}(jj));
-        f_w = f_w_1k(matching_tests{ii,4}(jj),1);
+        f_w = f_w_1k(matching_tests{ii,4}(jj),1)
     else
         k = k_6k(matching_tests{ii,4}(jj),1);
         kk = 2;
         m_a = m_a_6k(matching_tests{ii,4}(jj));
         c = c_6k(matching_tests{ii,4}(jj));
-        f_w = f_w_6k(matching_tests{ii,4}(jj),1);
+        f_w = f_w_6k(matching_tests{ii,4}(jj),1)
     end
     data = table2array(readtable(topfolder+matching_tests{ii,1}(jj)));
+    data = data(1:10:end,:);
     time = data(:,1);
     encoder = data(:,2);
     if jj==1
@@ -317,7 +318,7 @@ for ii=1:test_size
     %% Freq Investigation
     clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq
     % figure
-    [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
+    [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,2048,1024,1);
     f = f_windowed;
     f_norm = f_windowed./f_w(1);
     meanpwr = mean(mx,2);
@@ -480,7 +481,6 @@ end
 
 
 figure(A_y_star_fig)
-plot_legends=0;
 hold on
 if ii==1
     if plot_reference == 1
@@ -488,8 +488,8 @@ if ii==1
         plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
-    ylabel('$\sqrt{2}A_{rms}/D$')
+    xlabel('$U^*$')
+    ylabel('$A^*$')
     set(get(gca,'ylabel'),'rotation',90)
 end
 plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
@@ -543,7 +543,7 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors) %Freq Ratio plot
 % set(gca)
-xlabel('$U/f_{n,w}D$')
+xlabel('$U^*$')
 ylabel('$f/f_{n,w}$')
 ylim([0.9 1.2])
 set(get(gca,'ylabel'),'rotation',0)
@@ -558,7 +558,7 @@ if ii==1
         plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$C^{\prime}_{total}$')
     set(get(gca,'ylabel'),'rotation',0)
     % legend
@@ -569,7 +569,7 @@ if ii==1
         plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$C^{\prime}_{vortex}$')
     set(get(gca,'ylabel'),'rotation',0)
     % legend
@@ -581,7 +581,7 @@ if ii==1
         plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$\phi_{total}$')
     set(get(gca,'ylabel'),'rotation',0)
     yline(90,'k--','HandleVisibility','off')
@@ -594,7 +594,7 @@ if ii==1
         plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',0)
     yline(90,'k--','HandleVisibility','off')
@@ -631,12 +631,11 @@ yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set l
 
 %Periodicity Plot
 figure(pdicy_fig)
-plot_legends = 1;
 plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
-xlabel('$U/f_{n,w}D$')
-ylabel('$\sqrt{2}A_{rms}/A_{max}$')
-set(get(gca,'ylabel'),'rotation',90)
+xlabel('$U^*$')
+ylabel('$P$')
+set(get(gca,'ylabel'),'rotation',0)
 set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0.4 1])
 % clear results_upper results_lower results_ave results
