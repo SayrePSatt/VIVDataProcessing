@@ -2,7 +2,11 @@ function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plo
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 distance = str2double(extractBetween(name,1,3))/10;
-legend_label = distance+"D";
+if distance == 0
+    legend_label = "Isolated";
+else
+    legend_label = distance+"D";
+end
 
 x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:));
@@ -17,7 +21,7 @@ if errorbars == 1
         'DisplayName',legend_label, ...
         LineStyle='none', ...
         Color='k', ...
-        MarkerSize=7)
+        MarkerSize=10)
 else
     plot(x_data,y_data, ...
         plotting_marker{config_idx}, ...
@@ -27,13 +31,13 @@ else
         LineStyle='-', ...
         LineWidth=2, ...
         Color=plotting_color(config_idx,:), ...
-        MarkerSize=7)
+        MarkerSize=10)
 end
 
 xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
 
 if plot_legend == 1
-    plot_leg = legend('Location','southeast','NumColumns',2);
+    plot_leg = legend('Location','southeast','NumColumns',3);
     set(plot_leg,'Color','none','Box','off')
 end
 

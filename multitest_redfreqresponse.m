@@ -13,15 +13,15 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000" "015" "020" "025" "030" "040" "060" "070"];
+test_distratios = ["000" "015" "040" "070" "100"]; %"020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
 test_diaratios = ["00" "10"];
 
-bgColor = [238 238 238]/255;
+bgColor = [255 255 255]/255;
 
 %% Experiment Specification
 datafolder = "F:\EFDL\vivscratch_3\";
@@ -58,13 +58,14 @@ f_n_6k(2,:) = temp_6k(1,:);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
 f_w_6k(2,:) = temp_6k(1,:);
 
-f_n_6k(3,:) = f_n_6k(2,:);
 f_w_6k(3,:) = f_w_6k(2,:);
-f_n_6k(4,:) = f_n_6k(2,:);
 f_w_6k(4,:) = f_w_6k(2,:);
+f_n_6k(3,:) = f_n_6k(2,:);
+f_n_6k(4,:) = f_n_6k(2,:);
 
 m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m %test
 m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m
+m_a_6k(:) = 0.15;
 St = 0.19;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
@@ -199,13 +200,20 @@ end
 
 uniq_configs = unique(configs);
 uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios)); %Selects only the configurations selected for testing
+uniq_configs = flip(uniq_configs);
+uniq_configs = circshift(uniq_configs,1);
+
 matching_tests = {};
 
 plotting_color(1,:) = [0 0 0];
-plotting_color(2:7,:) = lines(6);
-plotting_color(8,:) = [1 0 0];
+plotting_color(2:length(uniq_configs),:) = lines(length(uniq_configs)-1);
+% plotting_color(length(uniq_configs),:) = [1 0 0];
+plotting_color(2:end,:) = flipud(plotting_color(2:end,:));
 
-marker_style = {"o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"};
+marker_style = ["o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"];
+marker_style = marker_style(1:length(uniq_configs));
+marker_style = flipud(marker_style(1:length(uniq_configs)));
+marker_style = circshift(marker_style,1,1);
 for ii = 1:length(uniq_configs)
     uniq_dist(ii) = extractBetween(uniq_configs(ii),1,3); %Extracting distance ratios
     uniq_dia(ii) = extractBetween(uniq_configs(ii),6,7); %Extracting diameter ratios
@@ -449,15 +457,15 @@ end
 %First plot is Ay_star
 
 if single_test == 1
-    figure(freq_contour_fig)
-    plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
-    if ii==1
-        Ustar_temp = 0:23.5;
-        f_vo_norm = St*Ustar_temp;
-        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
-        yline(1,'k-','HandleVisibility','off')
-        set(gca,'XMinorTick','on','YMinorTick','on')
-    end
+    % figure(freq_contour_fig)
+    % plot_psd_fn(results_ave,1,16,17,ii,plot_legends,plotting_color)
+    % if ii==1
+    %     Ustar_temp = 0:23.5;
+    %     f_vo_norm = St*Ustar_temp;
+    %     plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+    %     yline(1,'k-','HandleVisibility','off')
+    %     set(gca,'XMinorTick','on','YMinorTick','on')
+    % end
 
     figure(A_y_star_pctile_fig)
     plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
@@ -472,6 +480,7 @@ end
 
 
 figure(A_y_star_fig)
+plot_legends=0;
 hold on
 if ii==1
     if plot_reference == 1
@@ -479,12 +488,24 @@ if ii==1
         plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
-    ylabel('$A^*$')
-    set(get(gca,'ylabel'),'rotation',0)
+    xlabel('$U/f_{n,w}D$')
+    ylabel('$\sqrt{2}A_{rms}/D$')
+    set(get(gca,'ylabel'),'rotation',90)
 end
-
 plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+exportgraphics(A_y_star_fig,["figures\A_y_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor);
+set(get(gca,'ylabel'),'rotation',90)
+drawnow
+frame = getframe(gcf);
+im = frame2im(frame);
+    [imind, cm] = rgb2ind(im, 256);
+    
+    % Write to the GIF File
+if ii == 1
+    imwrite(imind, cm, ['figures\' 'A_y_star.gif'], 'gif', 'Loopcount', 0, 'DelayTime', 2);
+else
+    imwrite(imind, cm, ['figures\' 'A_y_star.gif'], 'gif', 'WriteMode', 'append', 'DelayTime', 2);
+end
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
@@ -502,12 +523,12 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
-dim = [0.35 0.75 0.5 0.1];
-annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.17 0.5 0.5 0.1];
-annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.5 0.6 0.5 0.1];
-annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.35 0.75 0.5 0.1];
+% annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.17 0.5 0.5 0.1];
+% annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.5 0.6 0.5 0.1];
+% annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 
 %Plots of frequency ratio
 figure(f_star_fig)
@@ -522,10 +543,11 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors) %Freq Ratio plot
 % set(gca)
-xlabel('$U^*$')
-ylabel('$f^*$')
+xlabel('$U/f_{n,w}D$')
+ylabel('$f/f_{n,w}$')
 ylim([0.9 1.2])
 set(get(gca,'ylabel'),'rotation',0)
+exportgraphics(f_star_fig,["figures\f_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor)
 
 %Plots of lift coefficient
 hold on
@@ -536,8 +558,8 @@ if ii==1
         plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
-    ylabel('$C_{total}$')
+    xlabel('$U/f_{n,w}D$')
+    ylabel('$C^{\prime}_{total}$')
     set(get(gca,'ylabel'),'rotation',0)
     % legend
 
@@ -547,8 +569,8 @@ if ii==1
         plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
-    ylabel('$C_{vortex}$')
+    xlabel('$U/f_{n,w}D$')
+    ylabel('$C^{\prime}_{vortex}$')
     set(get(gca,'ylabel'),'rotation',0)
     % legend
 
@@ -559,7 +581,7 @@ if ii==1
         plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$\phi_{total}$')
     set(get(gca,'ylabel'),'rotation',0)
     yline(90,'k--','HandleVisibility','off')
@@ -572,7 +594,7 @@ if ii==1
         plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',0)
     yline(90,'k--','HandleVisibility','off')
@@ -609,13 +631,14 @@ yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set l
 
 %Periodicity Plot
 figure(pdicy_fig)
+plot_legends = 1;
 plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
 
-xlabel('$U^*$')
-ylabel('$P$')
-set(get(gca,'ylabel'),'rotation',0)
+xlabel('$U/f_{n,w}D$')
+ylabel('$\sqrt{2}A_{rms}/A_{max}$')
+set(get(gca,'ylabel'),'rotation',90)
 set(gca,'XMinorTick','on','YMinorTick','on')
-ylim([0 1])
+ylim([0.4 1])
 % clear results_upper results_lower results_ave results
 end
 
@@ -630,32 +653,36 @@ ylabel('$A^*$')
 set(get(gca,'ylabel'),'rotation',0)
 
 %% Annotation Playing
-figure(A_y_star_fig)
-delete(findall(gcf,'type','annotation'))
-% xlim([2 7])
-ylim([0 1.0])
-dim = [0.35 0.75 0.5 0.1];
-annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.17 0.4 0.5 0.1];
-annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-dim = [0.6 0.6 0.5 0.1];
-annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% figure(A_y_star_fig)
+% delete(findall(gcf,'type','annotation'))
+% % xlim([2 7])
+% ylim([0 1.0])
+% dim = [0.35 0.75 0.5 0.1];
+% annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.17 0.4 0.5 0.1];
+% annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+% dim = [0.6 0.6 0.5 0.1];
+% annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
+figure(total_force_fig)
+legend('Location','southeast','NumColumns',3)
+xlim([0 22.5])
+ylim([-0.01 0.35])
 %% Figure Saving
 figure(A_y_star_fig)
-% delete(findall(gcf,'type','annotation'))
-% arrow_x = [0.775 0.775];
-% arrow_y = [0.85 0.35];
-% arrow_anno = annotation('arrow', arrow_x, arrow_y);
-% arrow_anno.Color = 'black';
-% arrow_anno.LineWidth = 2;
+delete(findall(gcf,'type','annotation'))
+arrow_x = [0.775 0.775];
+arrow_y = [0.85 0.35];
+arrow_anno = annotation('arrow', arrow_x, arrow_y);
+arrow_anno.Color = 'black';
+arrow_anno.LineWidth = 2;
 
 figure(pdicy_fig)
-% delete(findall(gcf,'type','annotation'))
-% arrow_x = [0.775 0.775];
-% arrow_y = [0.6 0.85];
-% arrow_anno = annotation('arrow', arrow_x, arrow_y);
-% arrow_anno.Color = 'black';
-% arrow_anno.LineWidth = 2;
+delete(findall(gcf,'type','annotation'))
+arrow_x = [0.775 0.775];
+arrow_y = [0.6 0.85];
+arrow_anno = annotation('arrow', arrow_x, arrow_y);
+arrow_anno.Color = 'black';
+arrow_anno.LineWidth = 2;
 
 saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
 saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
