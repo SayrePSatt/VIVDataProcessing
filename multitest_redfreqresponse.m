@@ -240,8 +240,10 @@ for ii = 1:length(uniq_configs)
             f_pump = matching_tests{ii,3}(kk);
             if f_pump == 0
                 U = 0.0;
+                U_68 = 0;
             else
-                U = predict(mdl,f_pump);%/(1.117645);
+                [U U_68_temp] = predict(mdl,f_pump,Alpha=0.05);%/(1.117645);
+                U_68 = U-U_68_temp(1);
             end
             matching_tests{ii,6}(kk) = U; %Extracting flow velocity
             matching_tests{ii,4}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),1,2)); %Extracting the test number
