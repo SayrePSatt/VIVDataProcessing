@@ -2,18 +2,18 @@ clear all
 close all
 clc
 
-m = 10;
-fluid = ["water" "air"];
+m = 6;
+fluid = ["water"];
 stiffness = 6;
 
 for i=1:length(fluid)
-    subfolder = "F:\EFDL\vivscratch_3\freeDecay\6k_06_27_2025\";
-    % zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+fluid(i)+"_00.csv");
-    disp_zero_time = 0;%zero(:,1);
-    disp_zero_pos = 0;%zero(:,2);
+    subfolder = "F:\EFDL\freeDecayTesting\6k_08_18_2025\";
+    zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+fluid(i)+"_00.csv");
+    disp_zero_time = zero(:,1);
+    disp_zero_pos = zero(:,2);
     disp_zero_mean = mean(disp_zero_pos);
     
-    for ii=1:5
+    for ii=1:6
         data = csvread(subfolder+"freedecay_"+stiffness+"k_"+fluid(i)+"_0"+ii+".csv");
         time = data(:,1);
         disp = data(:,2);

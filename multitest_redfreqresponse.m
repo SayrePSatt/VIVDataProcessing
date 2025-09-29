@@ -14,7 +14,7 @@ clc
 
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
+plot_reference = 1; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
@@ -24,12 +24,12 @@ test_diaratios = ["00" "10"];
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_3\";
+datafolder = "F:\EFDL\vivscratch_isolated_ind\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
-m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
+m = 2.458347;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
@@ -63,17 +63,29 @@ f_w_6k(4,:) = f_w_6k(2,:);
 f_n_6k(3,:) = f_n_6k(2,:);
 f_n_6k(4,:) = f_n_6k(2,:);
 
+% f_w_6k(:,1) = f_w_6k(:,1)-0.0035;
+% f_n_6k(:,1) = f_n_6k(:,1)-0.0035;
+
 m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m %test
 m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m
-m_a_6k(:) = 0.15;
+
+% ca_1k = m_a_1k/m_d
+% ca_6k = m_a_6k/m_d
+
+% m_a_6k(:) = m_d/2;
+% m_a_1k(:) = m_d/2;
 St = 0.19;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
+% k_1k(:) = 6;
+% k_1k = k_1k-0.6;
 omegana_6k = 2*pi*f_n_6k(:,1);
 k_6k = m*omegana_6k.^2;
+% k_6k = k_6k - 1.0;
+% k_6k(:) = 33.7;
 
-c_1k = f_n_1k(:,2).*2.*sqrt((m).*k_1k);
-c_6k = f_n_6k(:,2).*2.*sqrt((m).*k_6k);
+c_1k = 4*pi*f_n_1k(:,2).*m.*f_n_1k(:,1);
+c_6k = 4*pi*f_n_6k(:,2).*m.*f_n_6k(:,1);
 m_star = m/m_d;
 mass_damp = (m_star+C_A)*f_n_1k(1,2);
 % scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
@@ -229,7 +241,7 @@ for ii = 1:length(uniq_configs)
             if f_pump == 0
                 U = 0.0;
             else
-                U = predict(mdl,f_pump);
+                U = predict(mdl,f_pump);%/(1.117645);
             end
             matching_tests{ii,6}(kk) = U; %Extracting flow velocity
             matching_tests{ii,4}(kk) = str2double(extractBetween(matching_tests{ii,1}(kk),1,2)); %Extracting the test number
@@ -471,7 +483,7 @@ if single_test == 1
     plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
     if ii==1
         set(gca,'XMinorTick','on','YMinorTick','on')
-        xlabel('$U^*$')
+        xlabel('$U/f_{n,w}D$')
         ylabel('$A^*$')
         set(get(gca,'ylabel'),'rotation',0)
     end
@@ -757,7 +769,7 @@ if single_test == 1
     copyobj(allchild(ax3), gca);
     title(ax3.Title.String); % Copy title from original axes
     set(gca,'XMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',90)
     ylim([0 200])
