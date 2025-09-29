@@ -2,12 +2,12 @@ clear all
 close all
 clc
 
-m = 6;
-fluid = ["water"];
+m = 10;
+fluid = ["water" "air"];
 stiffness = 6;
 
 for i=1:length(fluid)
-    subfolder = "F:\EFDL\freeDecayTesting\6k_08_18_2025\";
+    subfolder = "D:\EFDL\freeDecayTesting\6k_08_18_2025\";
     zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+fluid(i)+"_00.csv");
     disp_zero_time = zero(:,1);
     disp_zero_pos = zero(:,2);
