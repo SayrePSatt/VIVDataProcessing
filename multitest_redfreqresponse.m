@@ -14,17 +14,17 @@ clc
 
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_reference = 1; %0 to not plot references
+plot_errors = 1; %0 to not plot errorbars
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000" "015" "040" "100"];% "020" "030"];
+test_distratios = ["000"];% "020" "030"];
 test_diaratios = ["00" "10"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch_isolated_ind\";
+datafolder = "F:\EFDL\vivscratch_isolated_ind\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -36,7 +36,11 @@ f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
+f_n_1k_95 = temp_1k(2,1);
+% zeta_1k_95 = temp_1k(2,2);
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_water.dat"));
+f_w_1k_95 = temp_1k(2,1);
+zeta_1k_95 = temp_1k(2,2);
 f_w_1k(1,:) = temp_1k(1,:);
 f_n_1k(2,:) = f_n_1k(1,:);
 f_w_1k(2,:) = f_w_1k(1,:);
@@ -45,20 +49,24 @@ f_w_1k(3,:) = f_w_1k(1,:);
 f_n_1k(4,:) = f_n_1k(1,:);
 f_w_1k(4,:) = f_w_1k(1,:);
 
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
-f_n_1k(5,:) = temp_1k(1,:);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
-f_w_1k(5,:) = temp_1k(1,:);
-f_n_1k(6,:) = f_n_1k(5,:);
-f_w_1k(6,:) = f_w_1k(5,:);
-f_n_1k(7,:) = f_n_1k(5,:);
-f_w_1k(7,:) = f_w_1k(5,:);
-f_n_1k(8,:) = f_n_1k(5,:);
-f_w_1k(8,:) = f_w_1k(5,:);
+% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
+% f_n_1k(5,:) = temp_1k(1,:);
+% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
+% f_w_1k(5,:) = temp_1k(1,:);
+% f_n_1k(6,:) = f_n_1k(5,:);
+% f_w_1k(6,:) = f_w_1k(5,:);
+% f_n_1k(7,:) = f_n_1k(5,:);
+% f_w_1k(7,:) = f_w_1k(5,:);
+% f_n_1k(8,:) = f_n_1k(5,:);
+% f_w_1k(8,:) = f_w_1k(5,:);
 
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_air.dat"));
 f_n_6k(1,:) = temp_6k(1,:);
+f_n_6k_95 = temp_6k(2,1);
+% zeta_6k_95 = temp_1k(2,2);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_water.dat"));
+f_w_6k_95 = temp_6k(2,1);
+zeta_6k_95 = temp_6k(2,2);
 f_w_6k(1,:) = temp_6k(1,:);
 f_w_6k(2,:) = f_w_6k(1,:);
 f_w_6k(3,:) = f_w_6k(1,:);
@@ -67,16 +75,16 @@ f_n_6k(2,:) = f_n_6k(1,:);
 f_n_6k(3,:) = f_n_6k(1,:);
 f_n_6k(4,:) = f_n_6k(1,:);
 
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
-f_n_6k(5,:) = temp_6k(1,:);
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
-f_w_6k(5,:) = temp_6k(1,:);
-f_w_6k(6,:) = f_w_6k(5,:);
-f_w_6k(7,:) = f_w_6k(5,:);
-f_w_6k(8,:) = f_w_6k(5,:);
-f_n_6k(6,:) = f_n_6k(5,:);
-f_n_6k(7,:) = f_n_6k(5,:);
-f_n_6k(8,:) = f_n_6k(5,:);
+% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
+% f_n_6k(5,:) = temp_6k(1,:);
+% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
+% f_w_6k(5,:) = temp_6k(1,:);
+% f_w_6k(6,:) = f_w_6k(5,:);
+% f_w_6k(7,:) = f_w_6k(5,:);
+% f_w_6k(8,:) = f_w_6k(5,:);
+% f_n_6k(6,:) = f_n_6k(5,:);
+% f_n_6k(7,:) = f_n_6k(5,:);
+% f_n_6k(8,:) = f_n_6k(5,:);
 
 % f_w_1k(:,1) = 0.2413;
 % f_n_1k(:,1) = 0.2495;
@@ -95,6 +103,7 @@ m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m_6k;
 % m_a_6k(:) = m_d/2;
 % m_a_1k(:) = m_d/2;
 St = 0.19;
+St_68 = 0.005;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m_1k*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
 % k_1k(:) = 6;
@@ -311,12 +320,14 @@ for ii=1:test_size
         m_a = m_a_1k(matching_tests{ii,4}(jj));
         c = c_1k(matching_tests{ii,4}(jj));
         f_w = f_w_1k(matching_tests{ii,4}(jj),1);
+        f_w_95 = f_w_1k_95;
     else
         k = k_6k(matching_tests{ii,4}(jj),1);
         kk = 2;
         m_a = m_a_6k(matching_tests{ii,4}(jj));
         c = c_6k(matching_tests{ii,4}(jj));
         f_w = f_w_6k(matching_tests{ii,4}(jj),1);
+        f_w_95 = f_w_6k_95;
     end
     data = table2array(readtable(topfolder+matching_tests{ii,1}(jj)));
     time = data(:,1);
@@ -333,6 +344,7 @@ for ii=1:test_size
     f_testing{ii,kk}(iii,jjj) = f_pump;
     U_testing{ii,kk}(iii,jjj) = U;
     u_red{ii,kk}(iii,jjj) = U/(f_w(1)*d_sph); %Indexing is {configuration, spring constant}(test number, pump speed)
+    u_red_95{ii,kk}(iii,jjj) = sqrt((U_68/(f_w*d_sph))^2+(U*f_w_95/(2*f_w*d_sph))^2)*2;
     pump_f{ii,kk}(iii,jjj) = f_pump;
 
     clear data
@@ -368,8 +380,8 @@ for ii=1:test_size
     
     p_f = polyfit(f(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2);
     p_f_norm = polyfit(f_norm(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2); %Fits a polynomial to the top of the mean power
-
-    f_peak{ii,kk}(iii,jjj) = -p_f(2)/(2*p_f(1)); %Setting 1st derivative slope to be 0, finding the location of 0
+    f_peak_temp = -p_f(2)/(2*p_f(1));
+    f_peak{ii,kk}(iii,jjj) = f_peak_temp; %Setting 1st derivative slope to be 0, finding the location of 0
     f_star_peak{ii,kk}(iii,jjj) = -p_f_norm(2)/(2*p_f_norm(1));
 
     if jjj==1
@@ -381,6 +393,7 @@ for ii=1:test_size
     end
     
     u_norm{ii,kk}(iii,jjj) = (u_red{ii,kk}(iii,jjj)./f_star_peak{ii,kk}(iii,jjj))*St;
+    u_norm_95{ii,kk}(iii,jjj) = sqrt((U_68*St/(f_peak_temp*d_sph))^2+(U*St_68/(f_peak_temp*d_sph))^2)*2;
     
     %% Data Processing
     velo = FivePointDiff(encoder_filt,f_s)';
@@ -479,9 +492,9 @@ for ii=1:test_size
 % end
 %% Determining the average and uncertainty bounds from the tests
 if single_test == 1
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
 else
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95};
 end
 
 for kkk = 1:length(results)
@@ -528,7 +541,7 @@ if ii==1
     ylabel('$A^*$')
     set(get(gca,'ylabel'),'rotation',90)
 end
-plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 exportgraphics(A_y_star_fig,["figures\A_y_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor);
 set(get(gca,'ylabel'),'rotation',90)
 drawnow
@@ -557,7 +570,7 @@ if ii==1
     set(get(gca,'ylabel'),'rotation',0)
 end
 
-plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,15)
 
 % dim = [0.35 0.75 0.5 0.1];
 % annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
@@ -577,7 +590,7 @@ if ii==1
     set(gca,'XMinorTick','on','YMinorTick','on')
 end
 
-plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors) %Freq Ratio plot
+plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14) %Freq Ratio plot
 % set(gca)
 xlabel('$U/f_{n,w}D$')
 ylabel('$f/f_{n,w}$')
@@ -639,15 +652,15 @@ end
 
 figure(total_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 
 figure(vortex_force_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 
 figure(total_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -659,7 +672,7 @@ ax = gca;
 
 figure(vortex_phase_fig)
 hold on
-plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -668,7 +681,7 @@ yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set l
 %Periodicity Plot
 figure(pdicy_fig)
 % plot_legends = 1;
-plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors)
+plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 
 xlabel('$U/f_{n,w}D$')
 ylabel('$P$')

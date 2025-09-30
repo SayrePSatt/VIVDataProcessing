@@ -1,4 +1,4 @@
-function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plot_legend,plotting_color,plotting_marker,errorbars)
+function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plot_legend,plotting_color,plotting_marker,errorbars,xerr)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 distance = str2double(extractBetween(name,1,3))/10;
@@ -12,9 +12,10 @@ x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:));
 lwr_bound = squeeze(lower_bound{y_num}{config_idx}(:));
 up_bound = squeeze(upper_bound{y_num}{config_idx}(:));
+x_err = squeeze(results{xerr}{config_idx}(:));
 
 if errorbars == 1
-    errorbar(x_data,y_data,lwr_bound,up_bound,...
+    errorbar(x_data,y_data,lwr_bound,up_bound,x_err,x_err,...
         plotting_marker{config_idx}, ...
         'MarkerFaceColor',plotting_color(config_idx,:), ...
         'MarkerEdgeColor','k', ...
