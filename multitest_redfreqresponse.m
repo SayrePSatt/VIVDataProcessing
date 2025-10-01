@@ -24,7 +24,7 @@ test_diaratios = ["00" "10" "06" "08"];
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_3\";
+datafolder = "D:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -541,7 +541,7 @@ if ii==1
     ylabel('$A^*$')
     set(get(gca,'ylabel'),'rotation',90)
 end
-% plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 % exportgraphics(A_y_star_fig,["figures\A_y_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor);
 % set(get(gca,'ylabel'),'rotation',90)
 % drawnow
@@ -717,21 +717,21 @@ legend('Location','southeast','NumColumns',3)
 xlim([0 22.5])
 ylim([-0.01 0.35])
 %% Figure Saving
-figure(A_y_star_fig)
-delete(findall(gcf,'type','annotation'))
-arrow_x = [0.775 0.775];
-arrow_y = [0.85 0.35];
-arrow_anno = annotation('arrow', arrow_x, arrow_y);
-arrow_anno.Color = 'black';
-arrow_anno.LineWidth = 2;
-
-figure(pdicy_fig)
-delete(findall(gcf,'type','annotation'))
-arrow_x = [0.775 0.775];
-arrow_y = [0.6 0.85];
-arrow_anno = annotation('arrow', arrow_x, arrow_y);
-arrow_anno.Color = 'black';
-arrow_anno.LineWidth = 2;
+% figure(A_y_star_fig)
+% delete(findall(gcf,'type','annotation'))
+% arrow_x = [0.775 0.775];
+% arrow_y = [0.85 0.35];
+% arrow_anno = annotation('arrow', arrow_x, arrow_y);
+% arrow_anno.Color = 'black';
+% arrow_anno.LineWidth = 2;
+% 
+% figure(pdicy_fig)
+% delete(findall(gcf,'type','annotation'))
+% arrow_x = [0.775 0.775];
+% arrow_y = [0.6 0.85];
+% arrow_anno = annotation('arrow', arrow_x, arrow_y);
+% arrow_anno.Color = 'black';
+% arrow_anno.LineWidth = 2;
 
 saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
 saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
@@ -741,6 +741,7 @@ saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
 saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
 saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
 saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
+saveas(f_star_fig,['figures\' 'fstar.eps'],'epsc')
 if single_test == 1
     saveas(A_y_star_pctile_fig,'A_y_star_pctile.eps','epsc')
     saveas(freq_contour_fig,'freq_contour.eps','epsc')
