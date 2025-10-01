@@ -115,8 +115,10 @@ k_6k = m_6k*omegana_6k.^2;
 
 c_1k = 4*pi*f_n_1k(:,2).*m_1k.*f_n_1k(:,1);
 c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
-m_star = m_1k/m_d;
-mass_damp = (m_star+C_A)*f_n_1k(1,2);
+m_star_1k = m_1k/m_d;
+m_star_6k = m_6k/m_d;
+mass_damp_1k = (m_star_1k+C_A)*f_n_1k(1,2);
+mass_damp_6k = (m_star_6k+C_A)*f_n_6k(1,2);
 % scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
 
 load("pumpFit_freq2velo.mat");
@@ -695,7 +697,7 @@ figure(griffin_fig)
 xscale("log");
 scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
 plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
-plot(mass_damp,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
+plot(mass_damp_1k,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
 set(gca,'XMinorTick','on','YMinorTick','on')
 xlabel('$(m^*+C_A)\zeta$')
 ylabel('$A^*$')

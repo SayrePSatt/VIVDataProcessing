@@ -49,6 +49,7 @@ c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
 test_distratios = ["000" "015" "040" "100"];% "020" "030"];
 test_diaratios = ["00" "10"];
 test_nums = ["02_"];
+U*
 
 all_files = dir(topfolder);
 
