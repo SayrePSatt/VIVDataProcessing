@@ -14,17 +14,17 @@ clc
 
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 1; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
+plot_reference = 0; %0 to not plot references
+plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000"];% "020" "030"];
-test_diaratios = ["00" "10"];
+test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
+test_diaratios = ["00" "10" "06" "08"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_isolated_ind\";
+datafolder = "F:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -520,7 +520,7 @@ if single_test == 1
     plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
     if ii==1
         set(gca,'XMinorTick','on','YMinorTick','on')
-        xlabel('$U/f_{n,w}D$')
+        xlabel('$U^*$')
         ylabel('$A^*$')
         set(get(gca,'ylabel'),'rotation',0)
     end
@@ -537,24 +537,24 @@ if ii==1
         plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$A^*$')
     set(get(gca,'ylabel'),'rotation',90)
 end
-plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
-exportgraphics(A_y_star_fig,["figures\A_y_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor);
-set(get(gca,'ylabel'),'rotation',90)
-drawnow
-frame = getframe(gcf);
-im = frame2im(frame);
-    [imind, cm] = rgb2ind(im, 256);
-    
-    % Write to the GIF File
-if ii == 1
-    imwrite(imind, cm, ['figures\' 'A_y_star.gif'], 'gif', 'Loopcount', 0, 'DelayTime', 2);
-else
-    imwrite(imind, cm, ['figures\' 'A_y_star.gif'], 'gif', 'WriteMode', 'append', 'DelayTime', 2);
-end
+% plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+% exportgraphics(A_y_star_fig,["figures\A_y_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor);
+% set(get(gca,'ylabel'),'rotation',90)
+% drawnow
+% frame = getframe(gcf);
+% im = frame2im(frame);
+%     [imind, cm] = rgb2ind(im, 256);
+% 
+%     % Write to the GIF File
+% if ii == 1
+%     imwrite(imind, cm, ['figures\' 'A_y_star.gif'], 'gif', 'Loopcount', 0, 'DelayTime', 2);
+% else
+%     imwrite(imind, cm, ['figures\' 'A_y_star.gif'], 'gif', 'WriteMode', 'append', 'DelayTime', 2);
+% end
 
 %Plots of normalized reduced velocity
 figure(A_y_norm_fig)
@@ -592,11 +592,11 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14) %Freq Ratio plot
 % set(gca)
-xlabel('$U/f_{n,w}D$')
-ylabel('$f/f_{n,w}$')
+xlabel('$U^*$')
+ylabel('$f^*$')
 ylim([0.9 1.2])
 set(get(gca,'ylabel'),'rotation',0)
-exportgraphics(f_star_fig,["figures\f_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor)
+% exportgraphics(f_star_fig,["figures\f_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor)
 
 %Plots of lift coefficient
 hold on
@@ -607,9 +607,9 @@ if ii==1
         plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$C^{\prime}_{total}$')
-    set(get(gca,'ylabel'),'rotation',0)
+    set(get(gca,'ylabel'),'rotation',90)
     % legend
 
     figure(vortex_force_fig)
@@ -618,9 +618,9 @@ if ii==1
         plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$C^{\prime}_{vortex}$')
-    set(get(gca,'ylabel'),'rotation',0)
+    set(get(gca,'ylabel'),'rotation',90)
     % legend
 
     figure(total_phase_fig)
@@ -630,9 +630,9 @@ if ii==1
         plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$\phi_{total}$')
-    set(get(gca,'ylabel'),'rotation',0)
+    set(get(gca,'ylabel'),'rotation',90)
     yline(90,'k--','HandleVisibility','off')
     % legend
 
@@ -643,9 +643,9 @@ if ii==1
         plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$\phi_{vortex}$')
-    set(get(gca,'ylabel'),'rotation',0)
+    set(get(gca,'ylabel'),'rotation',90)
     yline(90,'k--','HandleVisibility','off')
     % legend
 end
@@ -683,9 +683,9 @@ figure(pdicy_fig)
 % plot_legends = 1;
 plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 
-xlabel('$U/f_{n,w}D$')
+xlabel('$U^*$')
 ylabel('$P$')
-set(get(gca,'ylabel'),'rotation',90)
+set(get(gca,'ylabel'),'rotation',0)
 set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0.4 1])
 % clear results_upper results_lower results_ave results

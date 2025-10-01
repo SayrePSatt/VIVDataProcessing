@@ -4,7 +4,7 @@ clc
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
-m = 2.42947;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
+m = 2.458347;;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
 m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;
@@ -21,14 +21,14 @@ decay_location = strcat(extractBefore(location,'testData\'),'freeDecay\');
 pump_f = str2double(extractBetween(file,25,29)); %extracting pump frequency
 pump_U = predict(mdl,pump_f);
 
-test_num = extractBefore(file,3);
+% test_num = extractBefore(file,3);
 spring_num = char(extractBetween(file,13,13));
 distance = str2double(char(extractBetween(file,4,6)))/10;
 
-freedecay_location = strcat(decay_location,test_num,'_test\freedecay_',spring_num,'k_water.dat');
+freedecay_location = strcat(decay_location,'latestFreedecay\freedecay_',spring_num,'k_water.dat');
 f_w = table2array(readtable(freedecay_location));
 f_w = f_w(1,1);
-freedecay_location = strcat(decay_location,test_num,'_test\freedecay_',spring_num,'k_air.dat');
+freedecay_location = strcat(decay_location,'latestFreedecay\freedecay_',spring_num,'k_air.dat');
 f_n = table2array(readtable(freedecay_location));
 zeta = f_n(1,2);
 f_n = f_n(1,1);
@@ -104,7 +104,7 @@ t = time(idx);
 t = t-t(1);
 encoder_filt_cont = encoder_filt(idx)/d_sph;
 %% Plotting time history
-plot_color = [238 238 238]/255;
+plot_color = [255 255 255]/255;
 close all
 timeSeries = figure;
 set(gcf, 'color', plot_color);
@@ -118,12 +118,17 @@ ylim([-limits limits])
 yticks([-limits 0 limits])
 xlabel('$t/T$')
 ylabel('$y/D$')
-title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
+if distance == 0
+    L_star = 'Isolated ';
+else
+    L_star = ['$L^*=$' +num2str(distance) ' '];
+end
+title([L_star '$U^*=$' num2str(U_star)])
 set(gcf, 'color', plot_color);
 set(gca, 'color', plot_color);
 
 figurename = [extractBefore(file,11) '_' num2str(U_star*10) '_timeseries'];
-exportgraphics(timeSeries,['figures\' figurename '.png'],'Resolution',300,'BackgroundColor',[238 238 238]/255);
+exportgraphics(timeSeries,['figures\' figurename '.png'],'Resolution',300,'BackgroundColor',[255 255 255]/255);
 saveas(timeSeries,['figures\' figurename '.eps'],'epsc');
 
 %% Plotting Lissajous Curves
@@ -135,7 +140,7 @@ y = C_y(1000:end-1000);
 plot(x,y,'LineWidth',3,'Color','k')
 xlabel('$y/D$')
 ylabel('$C_y$')
-title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
+title([L_star '$U^*=$' num2str(U_star)])
 xbounds = max(x+0.1);
 ybounds = max(y+0.1);
 xlim([-xbounds xbounds]);
@@ -145,44 +150,44 @@ set(gcf, 'color', plot_color);
 set(gca, 'color', plot_color);
 figsize = get(gcf,'Position');
 figurename = [extractBefore(file,11) '_' num2str(U_star*10) '_lissajous'];
-exportgraphics(lissajous_fig,['figures\' figurename '.png'],'Resolution',300,'BackgroundColor',[238 238 238]/255);
+exportgraphics(lissajous_fig,['figures\' figurename '.png'],'Resolution',300,'BackgroundColor',[255 255 255]/255);
 saveas(lissajous_fig,['figures\' figurename '.eps'],'epsc');
 
 %% Animated plots
 
-lissajous_ani_fig = figure;
-lissajous_ani_fig.Position = figsize;
-axis square
-box on
-xlim([-xbounds xbounds]);
-ylim([-ybounds ybounds]);
-title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
-xlabel('$y/D$')
-ylabel('$C_y$')
-set(gcf, 'color', plot_color);
-set(gca, 'color', plot_color);
-
-lissajous_ani = animatedline('Color','k','LineWidth',3,'MaximumNumPoints',20000);
-lissajous_ani_point = animatedline('Color','r','LineStyle','none','MaximumNumPoints',1,'Marker','o','MarkerSize',12,'MarkerFaceColor','b');
-numpoints=100000;
-
-filename = 'figures\lissajous.gif';
-framerate = 60;
-
-for k = 1:50:50*700
-    xvec = x(k:k+99);
-    yvec = y(k:k+99);
-    addpoints(lissajous_ani, xvec, yvec);
-    addpoints(lissajous_ani_point, xvec(end), yvec(end));
-    drawnow
-    % Capture the plot as an image
-    frame = getframe(lissajous_ani_fig);
-    img = frame2im(frame);
-    [imind, cm] = rgb2ind(img, 256);
-    % Write to the GIF File
-    if k == 1
-        imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 1/framerate); % Adjust DelayTime as needed
-    else
-        imwrite(imind, cm, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 1/framerate);
-    end
-end
+% lissajous_ani_fig = figure;
+% lissajous_ani_fig.Position = figsize;
+% axis square
+% box on
+% xlim([-xbounds xbounds]);
+% ylim([-ybounds ybounds]);
+% title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
+% xlabel('$y/D$')
+% ylabel('$C_y$')
+% set(gcf, 'color', plot_color);
+% set(gca, 'color', plot_color);
+% 
+% lissajous_ani = animatedline('Color','k','LineWidth',3,'MaximumNumPoints',20000);
+% lissajous_ani_point = animatedline('Color','r','LineStyle','none','MaximumNumPoints',1,'Marker','o','MarkerSize',12,'MarkerFaceColor','b');
+% numpoints=100000;
+% 
+% filename = 'figures\lissajous.gif';
+% framerate = 60;
+% 
+% for k = 1:50:50*700
+%     xvec = x(k:k+99);
+%     yvec = y(k:k+99);
+%     addpoints(lissajous_ani, xvec, yvec);
+%     addpoints(lissajous_ani_point, xvec(end), yvec(end));
+%     drawnow
+%     % Capture the plot as an image
+%     frame = getframe(lissajous_ani_fig);
+%     img = frame2im(frame);
+%     [imind, cm] = rgb2ind(img, 256);
+%     % Write to the GIF File
+%     if k == 1
+%         imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 1/framerate); % Adjust DelayTime as needed
+%     else
+%         imwrite(imind, cm, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 1/framerate);
+%     end
+% end
