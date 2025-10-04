@@ -19,12 +19,13 @@ plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
 test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
-test_diaratios = ["00" "10" "06" "08"];
+test_diaratios = ["00" "10"]; %"06" "08"];
+test_spring = ["_"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch_3\";
+datafolder = "F:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -242,7 +243,7 @@ for ii = 3:length(all_files)
 end
 
 uniq_configs = unique(configs);
-uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios)); %Selects only the configurations selected for testing
+uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios) & contains(uniq_configs,test_spring)); %Selects only the configurations selected for testing
 uniq_configs = flip(uniq_configs);
 uniq_configs = circshift(uniq_configs,1);
 
