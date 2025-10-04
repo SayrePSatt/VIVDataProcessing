@@ -18,14 +18,14 @@ plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
+test_distratios = ["000" "015" "020" "040"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
 test_diaratios = ["00" "10"]; %"06" "08"];
 test_spring = ["_"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_3\";
+datafolder = "D:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
