@@ -18,14 +18,14 @@ plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000" "015" "020" "040"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
+test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
 test_diaratios = ["00" "10"]; %"06" "08"];
-test_spring = ["_"];%["6k" "1k"];
+test_spring = ["6k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "D:\EFDL\vivscratch_3\";
+datafolder = "F:\EFDL\vivscratch_3\";
 topfolder = datafolder+"testData\";
 
 rho = 998;
@@ -238,7 +238,7 @@ all_files = dir(topfolder);
 
 for ii = 3:length(all_files)
     temp_config = all_files(ii).name;
-    configs(ii-2) = convertCharsToStrings(temp_config(4:11));
+    configs(ii-2) = convertCharsToStrings(temp_config(4:14));
     % distances =
 end
 
@@ -335,7 +335,7 @@ for ii=1:test_size
     data = table2array(readtable(topfolder+matching_tests{ii,1}(jj)));
     time = data(:,1);
     encoder = data(:,2);
-    if jj==1
+    if f_pump==0
         encoder_offset = mean(encoder);
     else
         encoder = encoder-encoder_offset;
