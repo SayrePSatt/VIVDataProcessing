@@ -29,7 +29,7 @@ phase_VT = mod(phase_VT, 360);  % Get result in the range [0, 360)
 if (phase_VT > 180)
     phase_VT = 360 - phase_VT;
 end
-% 
+
 % for N = 1:length(phase_VT)
 %     if 270<=phase_VT(N)
 %       phase_VT(N)=phase_VT(N)-360;

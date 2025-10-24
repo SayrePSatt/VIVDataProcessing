@@ -15,18 +15,18 @@ clc
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
+plot_errors = 1; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
 test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
-test_diaratios = ["00" "10"]; %"06" "08"];
+test_diaratios = ["_00"]; %"06" "08"];
 test_spring = ["6k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_3\";
-topfolder = datafolder+"testDataZeroed\";
+datafolder = "D:\vivscratch_complete\";
+topfolder = datafolder+"aftertare\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -697,6 +697,7 @@ plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_leg
 figure(total_phase_fig)
 hold on
 plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+% plot_fn(results_ave,results_lower,results_upper,1,11,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
@@ -709,6 +710,7 @@ ax = gca;
 figure(vortex_phase_fig)
 hold on
 plot_fn(results_ave,results_lower,results_upper,1,8,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+% plot_fn(results_ave,results_lower,results_upper,1,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 ylim([0 180])
 yticks(0:15:180);  % Set ticks every 15 units
 yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180

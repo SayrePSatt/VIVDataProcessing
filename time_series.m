@@ -12,8 +12,8 @@ C_A = 0.5;
 bgColor = [255 255 255]/255;
 load("pumpFit_freq2velo.mat");
 
-datafolder = "D:\EFDL\vivscratch_3\";
-topfolder = datafolder+"testData\";
+datafolder = "D:\vivscratch_complete\";
+topfolder = datafolder+"aftertare\";
 %% Free Decay
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
@@ -46,21 +46,21 @@ k_6k = m_6k*omegana_6k.^2;
 c_1k = 4*pi*f_n_1k(:,2).*m_1k.*f_n_1k(:,1);
 c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
 %% Setting up files to read
-test_distratios = ["000" "015" "040" "100"];% "020" "030"];
-test_diaratios = ["00" "10"];
+test_distratios = ["000"];% "015" "040" "100"];% "020" "030"];
+test_diaratios = ["00"]% "10"];
+test_spring = ["6k"];
 test_nums = ["02_"];
-U*
 
 all_files = dir(topfolder);
 
 for ii = 3:length(all_files)
     temp_config = all_files(ii).name;
-    configs(ii-2) = convertCharsToStrings(temp_config(1:11));
+    configs(ii-2) = convertCharsToStrings(temp_config(1:14));
     % distances =
 end
 
 uniq_configs = unique(configs);
-uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios) & contains(uniq_configs,test_nums)); %Selects only the configurations selected for testing
+uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios) & contains(uniq_configs,test_nums) & contains(uniq_configs,test_spring)); %Selects only the configurations selected for testing
 uniq_configs = flip(uniq_configs);
 uniq_configs = circshift(uniq_configs,1);
 % uniq_configs = strrep(uniq_configs,test_nums,"");
@@ -71,7 +71,7 @@ for ii = 1:length(uniq_configs)
     kk = 1;
     for jj = 3:length(all_files)
         filename = all_files(jj).name;
-        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv')
+        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv') && (contains(filename,'6.88') || contains(filename,'7.94'))
             run = convertCharsToStrings(filename);
             k_temp = str2double(extractBetween(run,13,13)); %Extracting the spring constant
             f_pump = str2double(extractBetween(run,25,29)); %Extracting Pump Speed
@@ -99,12 +99,12 @@ for ii = 1:length(uniq_configs)
             
             data = table2array(readtable(topfolder+run));
 
-            zerofile = extractBefore(run,25);
-            zerofile = strcat(zerofile, '00.00.csv');
-            zero = table2array(readtable(topfolder+zerofile));
+            % zerofile = extractBefore(run,25);
+            % zerofile = strcat(zerofile, '00.00.csv');
+            % zero = table2array(readtable(topfolder+zerofile));
             time = data(:,1);
             encoder = data(:,2);
-            encoderoffset = mean(zero(:,2));
+            encoderoffset = 0;%mean(zero(:,2));
             
             encoder = encoder-encoderoffset;
 
@@ -116,9 +116,9 @@ dt = 1/f_s;
 n = length(time);
 fhat = fft(encoder, n); % Compute the fast fourier transform
 PSD = fhat.*conj(fhat)/n; % Power Spectrum(power per freq)
-
-freq = 1/(dt*n)*(0:n); % Create x-qxis of frequencies in Hz
+freq = (1/(dt*n)*(0:n))/f_w; % Create x-qxis of frequencies in Hz
 L = 1:floor(n/2); %only plot the first half of freqs
+
 f_c = 2;   %Cutoff frequency
 [b,a] = butter(4,f_c/(f_s/2),"low");
 
@@ -144,6 +144,7 @@ C_pot = F_pot/force_norm;
 C_vortex = F_vortex/force_norm;
 
 [totalphase, vortexphase] = retrievephase1(encoder_filt,C_y,C_vortex);
+
 %% Freq Investigation
 [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
 timeSeries = f_windowed;
@@ -151,7 +152,7 @@ meanpwr = mean(mx,2);
 
 nfft = 500000;
 [PSD_freq, PSD_norm] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
-
+PSD_freq = PSD_freq/f_w;
 [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
 
 p_f = polyfit(timeSeries(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2);
@@ -163,19 +164,43 @@ idx = (10*T-time(1))<time & time<((10+cycles)*T(1));
 t = time(idx);
 t = t-t(1);
 encoder_filt_cont = encoder_filt(idx)/d_sph;
+
+n = length(time);
+fhat = fft(encoder, n); % Compute the fast fourier transform
+PSD = fhat.*conj(fhat)/n; % Power Spectrum(power per freq)
+L = 1:floor(n/2);
+freq = 1/(dt*n)*(0:n);
+
+%PSD Investigation
+[~, PSD_norm_C_y] = norm_PSD_calc(f_s,C_y,nfft,2);
+[PSD_freq_filt, PSD_norm_C_vortex] = norm_PSD_calc(f_s,C_vortex,nfft,2);
+PSD_freq_filt = PSD_freq_filt/f_w;
+
+n = length(time);
+fhat = fft(C_y, n); % Compute the fast fourier transform
+PSD_C_y_filt = fhat.*conj(fhat)/n; % Power Spectrum(power per freq)
+fhat = fft(C_vortex, n); % Compute the fast fourier transform
+PSD_C_vortex_filt = fhat.*conj(fhat)/n; % Power Spectrum(power per freq)
+L_filt = 1:floor(n/2);
+freq_filt = 1/(dt*n)*(0:n);
+
+% df = (dt*n);
+% PSD_C_y_filt = PSD_C_y_filt / sum(PSD_C_y_filt*df);
+% PSD_C_votex_filt = PSD_C_vortex_filt / sum(PSD_C_vortex_filt*df);
 %% Plotting time history
 close all
 timeSeries = figure;
+subplot(3,1,1)
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
-timeSeries.Position = [100 100 500 250];
+% timeSeries.Position = [100 100 500 250];
 plot(t/T,encoder_filt_cont,'k-')
 xlim([0 cycles])
 limits = ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
 % limits = 0.1;
 ylim([-limits limits])
 yticks([-limits 0 limits])
-xlabel('$t/T$')
+% xlabel('$t/T$')
 ylabel('$y/D$')
 distance = str2double(char(uniq_dist))/10;
 if distance == 0
@@ -183,7 +208,63 @@ if distance == 0
 else
     L_star = ['$L^*=$' +num2str(distance) ' '];
 end
-title([L_star '$U^*=$' num2str(U_star)])
+title([L_star ' ' num2str(k_temp) 'k Config ' '$U^*=$' num2str(U_star)])
+set(gca,'xticklabel',[])
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+
+% figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_timeseries');
+% exportgraphics(timeSeries,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
+% saveas(timeSeries,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
+
+%Phase time series plot
+subplot(3,1,2)
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+% timeSeries.Position = [100 100 500 250];
+plot(t/T,totalphase(idx),'k-')
+yline(mean(totalphase),'r--')
+yline(90,'b:')
+xlim([0 cycles])
+limits = 180;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% limits = 0.1;
+ylim([-90 270])
+yticks([-90 0 90 180 270])
+% xlabel('$t/T$')
+ylabel('$\phi_{total}$')
+% distance = str2double(char(uniq_dist))/10;
+% if distance == 0
+%     L_star = 'Isolated ';
+% else
+%     L_star = ['$L^*=$' +num2str(distance) ' '];
+% end
+% title([L_star '$U^*=$' num2str(U_star)])
+set(gca,'xticklabel',[])
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+
+%Vortex Phase Time Series
+subplot(3,1,3)
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+timeSeries.Position = [100 100 500 400];
+plot(t/T,vortexphase(idx),'k-')
+yline(mean(vortexphase),'r--')
+yline(90,'b:')
+xlim([0 cycles])
+limits = 180;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% limits = 0.1;
+ylim([-90 270])
+yticks([-90 0 90 180 270])
+xlabel('$t/T$')
+ylabel('$\phi_{vortex}$')
+% distance = str2double(char(uniq_dist))/10;
+% if distance == 0
+%     L_star = 'Isolated ';
+% else
+%     L_star = ['$L^*=$' +num2str(distance) ' '];
+% end
+% title([L_star '$U^*=$' num2str(U_star)])
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 
@@ -191,28 +272,134 @@ figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str
 exportgraphics(timeSeries,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
 saveas(timeSeries,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
 
-%% Plotting Lissajous Curves
-lissajous_fig = figure;
+% % Plotting Lissajous Curves
+% lissajous_fig = figure;
+% 
+% x = encoder_filt(1000:end-1000)/d_sph;
+% y = C_y(1000:end-1000);
+% 
+% plot(x,y,'LineWidth',1.5,'Color','k')
+% xlabel('$y/D$')
+% ylabel('$C_y$')
+% title([L_star '$U^*=$' num2str(U_star)])
+% xbounds = max(x+0.1);
+% ybounds = max(y+0.1);
+% xlim([-xbounds xbounds]);
+% ylim([-ybounds ybounds]);
+% axis square
+% set(gcf, 'color', bgColor);
+% set(gca, 'color', bgColor);
+% figsize = get(gcf,'Position');
+% figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_lissajous');
+% exportgraphics(lissajous_fig,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
+% saveas(lissajous_fig,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
 
-x = encoder_filt(1000:end-1000)/d_sph;
-y = C_y(1000:end-1000);
-
-plot(x,y,'LineWidth',1.5,'Color','k')
-xlabel('$y/D$')
-ylabel('$C_y$')
-title([L_star '$U^*=$' num2str(U_star)])
-xbounds = max(x+0.1);
-ybounds = max(y+0.1);
-xlim([-xbounds xbounds]);
-ylim([-ybounds ybounds]);
-axis square
+%% Frequency and PSD Plotting
+PSD_figure = figure;
+tl = tiledlayout(3,1);
+nexttile
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
-figsize = get(gcf,'Position');
-figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_lissajous');
-exportgraphics(lissajous_fig,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
-saveas(lissajous_fig,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
+% timeSeries.Position = [100 100 500 250];
+semilogy(freq(L)/f_w,PSD(L),'k-')
+hold on
+semilogy(PSD_freq,PSD_norm,'r-')
+% xline(f_peak,'r-')
+% xline(St*U/d_sph,'b:')
+xlim([0 5])
+% limits = ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% % limits = 0.1;
+% ylim([-limits limits])
+% yticks([-limits 0 limits])
+% xlabel('$t/T$')
+ylabel('$x_{PSD}$')
+distance = str2double(char(uniq_dist))/10;
+if distance == 0
+    L_star = 'Isolated ';
+else
+    L_star = ['$L^*=$' +num2str(distance) ' '];
+end
+title([L_star ' ' num2str(k_temp) 'k Config ' '$U^*=$' num2str(U_star)])
+set(gca,'xticklabel',[])
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
 
+% figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_timeseries');
+% exportgraphics(timeSeries,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
+% saveas(timeSeries,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
+
+%Phase time series plot
+nexttile
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+% timeSeries.Position = [100 100 500 250];
+semilogy(freq_filt(L)/f_w,PSD_C_y_filt(L),'k-')
+hold on
+semilogy(PSD_freq_filt,PSD_norm_C_y,'r-')
+% xline(f_peak,'r-')
+% xline(St*U/d_sph,'b:')
+xlim([0 5])
+% limits = ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% % limits = 0.1;
+% ylim([-limits limits])
+% yticks([-limits 0 limits])
+% xlabel('$t/T$')
+ylabel('$C_{y,PSD}$')
+distance = str2double(char(uniq_dist))/10;
+if distance == 0
+    L_star = 'Isolated ';
+else
+    L_star = ['$L^*=$' +num2str(distance) ' '];
+end
+% title([L_star '$U^*=$' num2str(U_star)])
+set(gca,'xticklabel',[])
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+
+%Vortex Phase Time Series
+nexttile
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+% timeSeries.Position = [100 100 500 250];
+semilogy(freq_filt(L)/f_w,PSD_C_vortex_filt(L),'k-')
+hold on
+semilogy(PSD_freq_filt,PSD_norm_C_vortex,'r-')
+% xline(f_peak,'r-')
+% xline(St*U/d_sph,'b:')
+xlim([0 5])
+% limits = ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% % limits = 0.1;
+% ylim([-limits limits])
+% yticks([-limits 0 limits])
+xlabel('$f^*$')
+ylabel('$C_{vortex,PSD}$')
+distance = str2double(char(uniq_dist))/10;
+if distance == 0
+    L_star = 'Isolated ';
+else
+    L_star = ['$L^*=$' +num2str(distance) ' '];
+end
+% title([L_star '$U^*=$' num2str(U_star)])
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+
+position_temp = tl.InnerPosition;
+norm_bottom = position_temp(2);
+norm_top = position_temp(2)+position_temp(4);
+ax_offset = get(tl,'Position');
+ax = gca;
+ax_limits = get(ax,'XLim');
+axis_upper = ax_limits(2);
+axis_lower = ax_limits(1);
+St_norm_value = ax_offset(1)+((St*U/d_sph/f_w)-axis_lower)/(axis_upper-axis_lower)*ax_offset(3);
+fstar_norm_value = ax_offset(1)+((f_peak/f_w)-axis_lower)/(axis_upper-axis_lower)*ax_offset(3);
+
+annotation(PSD_figure, 'line', [St_norm_value St_norm_value], [norm_bottom norm_top], 'Color', 'b', 'LineWidth', 1.5,'LineStyle',':');
+annotation(PSD_figure, 'line', [fstar_norm_value fstar_norm_value], [norm_bottom norm_top], 'Color', 'r', 'LineWidth', 1.5,'LineStyle','--');
+
+figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_spectral');
+exportgraphics(PSD_figure,strcat('figures\spectralAnalysis\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
+saveas(PSD_figure,strcat('figures\spectralAnalysis\', figurename, '.eps'),'epsc');
         end
     end
 end
