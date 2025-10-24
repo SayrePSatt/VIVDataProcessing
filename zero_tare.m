@@ -2,8 +2,8 @@
 % This script finds the mean for all tests and subtracts the appropriate
 % amount
 
-datafolder = "D:\EFDL\vivscratch_3\";
-topfolder = datafolder+"6k_slow\";
+datafolder = "E:\vivscratch_complete\";
+topfolder = datafolder+"beforetare\";
 
 all_files = dir(topfolder);
 
@@ -44,7 +44,7 @@ for ii=1:test_size
 
     data = [time encoder];
     if f_pump ~= 0.00
-        writematrix(data,datafolder+"testDataZeroed\"+matching_tests{ii}(jj))
+        writematrix(data,datafolder+"aftertare\"+matching_tests{ii}(jj))
     end
     end
 end
