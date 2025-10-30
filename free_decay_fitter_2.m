@@ -5,9 +5,10 @@ clc
 m = 1;
 fluid = ["air"];
 stiffness = 6;
+folder = uigetdir;
 
 for i=1:length(fluid)
-    subfolder = "F:\EFDL\freeDecayTesting\6k_09_26_2025\";
+    subfolder = folder;
     zero = csvread(subfolder+"freedecay_"+stiffness+"k_"+fluid(i)+"_00.csv");
     disp_zero_time = zero(:,1);
     disp_zero_pos = zero(:,2);
@@ -22,7 +23,7 @@ for i=1:length(fluid)
         
         [peak peakidx] = findpeaks(disp,'MinPeakHeight',0);
         for jj = 1:length(peakidx)-m
-            if time(peakidx(jj)) > 50 && time(peakidx(jj)) < 200 && disp(peakidx(jj)) > 0.0005
+            if time(peakidx(jj)) > 0 && time(peakidx(jj)) < 200 && disp(peakidx(jj)) > 0.0005
                 f_d(jj) = 1/((time(peakidx(jj+m))-time(peakidx(jj)))/m);
                 log_decrement(jj) = log(peak(jj)/peak(jj+m))/m;
             else

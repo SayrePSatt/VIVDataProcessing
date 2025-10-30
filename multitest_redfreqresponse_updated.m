@@ -16,10 +16,10 @@ clc
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 1; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 
-test_distratios = ["000" "105" "095"]% "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
-test_diaratios = ["_00"]; %"06" "08"];
+test_distratios = ["000" "015" "020"]% "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["6k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
@@ -35,22 +35,20 @@ m_6k = 2.458347;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm set
 m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
-
-calibration_reps = 12;
-nat_freq_change = 0.005;
-
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_air.dat"));
-f_n_1k(:,:) = ones(calibration_reps,1)*temp_1k(1,:);
-f_n_1k(5:8,:) = f_n_1k(5:8,:)*(1+nat_freq_change);
-f_n_1k(9:12,:) = f_n_1k(9:12,:)*(1-nat_freq_change);
-f_n_1k_95 = ones(calibration_reps,1)*temp_1k(2,1);
-zeta_1k_95 = ones(calibration_reps,1)*temp_1k(2,2);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_water.dat"));
-f_w_1k_95 = ones(calibration_reps,1)*temp_1k(2,1);
-f_w_1k(:,:) = ones(calibration_reps,1)*temp_1k(1,:);
-f_w_1k(5:8,:) = f_w_1k(5:8,:)*(1+nat_freq_change);
-f_w_1k(9:12,:) = f_w_1k(9:12,:)*(1-nat_freq_change);
+f_n_1k(1,:) = temp_1k(1,:);
+f_n_1k_95 = temp_1k(2,1)*ones(4,1);
 % zeta_1k_95 = temp_1k(2,2);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_water.dat"));
+f_w_1k_95 = temp_1k(2,1)*ones(4,1);
+zeta_1k_95 = temp_1k(2,2);
+f_w_1k(1,:) = temp_1k(1,:);
+f_n_1k(2,:) = f_n_1k(1,:);
+f_w_1k(2,:) = f_w_1k(1,:);
+f_n_1k(3,:) = f_n_1k(1,:);
+f_w_1k(3,:) = f_w_1k(1,:);
+f_n_1k(4,:) = f_n_1k(1,:);
+f_w_1k(4,:) = f_w_1k(1,:);
 
 % temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
 % f_n_1k(5,:) = temp_1k(1,:);
@@ -64,17 +62,19 @@ f_w_1k(9:12,:) = f_w_1k(9:12,:)*(1-nat_freq_change);
 % f_w_1k(8,:) = f_w_1k(5,:);
 
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_air.dat"));
-f_n_6k(:,:) = ones(calibration_reps,1)*temp_6k(1,:);
-f_n_6k(5:8,:) = f_n_6k(5:8,:)*(1+nat_freq_change);
-f_n_6k(9:12,:) = f_n_1k(9:12,:)*(1-nat_freq_change);
-f_n_6k_95 = ones(calibration_reps,1)*temp_6k(2,1);
-zeta_6k_95 = ones(calibration_reps,1)*temp_1k(2,2);
+f_n_6k(1,:) = temp_6k(1,:);
+f_n_6k_95 = temp_6k(2,1)*ones(4,1);
+% zeta_6k_95 = temp_1k(2,2);
 temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_water.dat"));
-f_w_6k_95 = ones(calibration_reps,1)*temp_6k(2,1);
-% zeta_6k_95 = temp_6k(2,2);
-f_w_6k(:,:) = ones(calibration_reps,1)*temp_6k(1,:);
-f_w_6k(5:8,:) = f_w_6k(5:8,:)*(1+nat_freq_change);
-f_w_6k(9:12,:) = f_w_6k(9:12,:)*(1-nat_freq_change);
+f_w_6k_95 = temp_6k(2,1)*ones(4,1);
+zeta_6k_95 = temp_6k(2,2);
+f_w_6k(1,:) = temp_6k(1,:);
+f_w_6k(2,:) = f_w_6k(1,:);
+f_w_6k(3,:) = f_w_6k(1,:);
+f_w_6k(4,:) = f_w_6k(1,:);
+f_n_6k(2,:) = f_n_6k(1,:);
+f_n_6k(3,:) = f_n_6k(1,:);
+f_n_6k(4,:) = f_n_6k(1,:);
 
 f_n_1k_sigma68 = f_n_1k_95/2;
 f_n_6k_sigma68 = f_n_6k_95/2;
