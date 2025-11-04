@@ -3,25 +3,26 @@ close all
 clc
 
 m = 1;
-fluid = ["air"];
-stiffness = ["6k"];
+stiffness = ["1k"];
 folder = uigetdir;
 allfiles = dir(folder);
 [~, date, ~] = fileparts(folder);
 date = string(date);
 %%
+fluid = ["air"];
 idx = 1;
-for i=3:length(allfiles);
+for i=3:length(allfiles)
     filename = "\"+string(allfiles(i).name);
-    clear f_d f_n log_decrement
-    if contains(filename,fluid) && endsWith(filename,'.dat') && contains(filename,stiffness) && ~contains(filename,"_0.0_")
+    clear f_d f_n log_decrement data
+    searchbool = contains(filename,fluid) && endsWith(filename,'.dat') && contains(filename,stiffness) && ~contains(filename,"results");
+    if  searchbool && ~contains(filename,"_00.0_")
         data = readtable(folder+filename);
         data = table2array(data);
         time = data(:,1);
         disp = data(:,2);
         [peak, peakidx] = findpeaks(disp,'MinPeakHeight',0);
         for jj = 1:length(peakidx)-m
-            if time(peakidx(jj)) > 30 && time(peakidx(jj)) < 200 && disp(peakidx(jj)) > 0.0005
+            if time(peakidx(jj)) > 125 && time(peakidx(jj)) < 300 && disp(peakidx(jj)) > 0.0005
                 f_d(jj) = 1/((time(peakidx(jj+m))-time(peakidx(jj)))/m);
                 log_decrement(jj) = log(peak(jj)/peak(jj+m))/m;
             else
@@ -69,16 +70,22 @@ for i=3:length(allfiles);
         semilogy(time(peakidx),peak,'LineStyle','none','Color','r','Marker','.')
         hold on
         idx = idx + 1;
+    elseif searchbool && contains(filename,"_00.0_")
+        data = readtable(folder+filename,'NumHeaderLines',9,'Range','A:B');
+        data = table2array(data);
+        data = data(1:2,:);
+        mass = data(:,1);
+        diameter = data(:,2);
     end
 end
 f_d_ave_all = std_multimean(num_samples,f_d_ave,f_d_std);
 f_n_ave_all = std_multimean(num_samples,f_n_ave,f_n_std);
 zeta_ave_all = std_multimean(num_samples,zeta_ave,zeta_std);
 
-T = table(f_n_ave_all,zeta_ave_all,f_d_ave_all,'VariableNames',{'f_n', 'zeta', 'f_d'});
+T = table(f_n_ave_all,zeta_ave_all,mass,diameter,f_d_ave_all,'VariableNames',{'f_n (Hz)', 'zeta', 'mass (kg)', 'diameter (m)', 'f_d (Hz)'});
 
 % writemtx = [f_n_ave_all(idx), zeta_ave_all(idx); f_n_95(idx), zeta_95(idx)];
-writetable(T,folder+"\"+date+"_freedecay_"+stiffness+"_"+fluid(1)+".dat");
+writetable(T,folder+"\"+date+"_freedecay_results_"+stiffness+"_"+fluid(1)+".dat");
 
 %% Reduced velocity calculator
 

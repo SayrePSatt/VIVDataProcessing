@@ -16,10 +16,17 @@ x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:));
 lwr_bound = squeeze(lower_bound{y_num}{config_idx}(:));
 up_bound = squeeze(upper_bound{y_num}{config_idx}(:));
-x_err = squeeze(results{xerr}{config_idx}(:));
+lwr_x_err = squeeze(lower_bound{xerr}{config_idx}(:));
+up_x_err = squeeze(upper_bound{xerr}{config_idx}(:));
+% xlen = length(x_data)
+% ylen = length(y_data)
+% ylower_len = length(lwr_bound)
+% yupper_len = length(up_bound)
+% xerr_len = length(x_err)
 
 if errorbars == 1
-    errorbar(x_data,y_data,lwr_bound,up_bound,x_err,x_err,...
+    
+    errorbar(x_data,y_data,lwr_bound,up_bound,lwr_x_err,up_x_err,...
         plotting_marker{config_idx}, ...
         'MarkerFaceColor',plotting_color(config_idx,:), ...
         'MarkerEdgeColor','k', ...
