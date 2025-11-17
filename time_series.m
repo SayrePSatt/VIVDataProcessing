@@ -12,8 +12,8 @@ C_A = 0.5;
 bgColor = [255 255 255]/255;
 load("pumpFit_freq2velo.mat");
 
-datafolder = "D:\vivscratch_complete\";
-topfolder = datafolder+"aftertare\";
+datafolder = "F:\EFDL\vivscratch_3\";
+topfolder = datafolder+"testDataZeroed\";
 %% Free Decay
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
@@ -46,8 +46,8 @@ k_6k = m_6k*omegana_6k.^2;
 c_1k = 4*pi*f_n_1k(:,2).*m_1k.*f_n_1k(:,1);
 c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
 %% Setting up files to read
-test_distratios = ["000"];% "015" "040" "100"];% "020" "030"];
-test_diaratios = ["00"]% "10"];
+test_distratios = ["000" "015" "040"];% "020" "030"];
+test_diaratios = ["00" "10"];
 test_spring = ["6k"];
 test_nums = ["02_"];
 
@@ -70,8 +70,8 @@ for ii = 1:length(uniq_configs)
     uniq_dia = extractBetween(uniq_configs(ii),9,10); %Extracting diameter ratios
     kk = 1;
     for jj = 3:length(all_files)
-        filename = all_files(jj).name;
-        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv') && (contains(filename,'6.88') || contains(filename,'7.94'))
+        filename = all_files(jj).name
+        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv')% && (contains(filename,'6.88') || contains(filename,'7.94'))
             run = convertCharsToStrings(filename);
             k_temp = str2double(extractBetween(run,13,13)); %Extracting the spring constant
             f_pump = str2double(extractBetween(run,25,29)); %Extracting Pump Speed
@@ -190,7 +190,8 @@ freq_filt = 1/(dt*n)*(0:n);
 %% Plotting time history
 close all
 timeSeries = figure;
-subplot(3,1,1)
+timeSeries.Position = [100 100 540 250];
+% subplot(3,1,1)
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 % timeSeries.Position = [100 100 500 250];
@@ -200,16 +201,17 @@ limits = ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
 % limits = 0.1;
 ylim([-limits limits])
 yticks([-limits 0 limits])
-% xlabel('$t/T$')
+xlabel('$t/T$')
 ylabel('$y/D$')
 distance = str2double(char(uniq_dist))/10;
 if distance == 0
     L_star = 'Isolated ';
 else
-    L_star = ['$L^*=$' +num2str(distance) ' '];
+    L_star = ['$L^*=$' num2str(distance) ' '];
 end
-title([L_star ' ' num2str(k_temp) 'k Config ' '$U^*=$' num2str(U_star)])
-set(gca,'xticklabel',[])
+% title([L_star ' ' num2str(k_temp) 'k Config ' '$U^*=$' num2str(U_star)])
+title([L_star ' ' '$U^*=$' num2str(U_star)])
+% set(gca,'xticklabel',[])
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 
@@ -217,82 +219,100 @@ set(gca, 'color', bgColor);
 % exportgraphics(timeSeries,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
 % saveas(timeSeries,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
 
-%Phase time series plot
-subplot(3,1,2)
-set(gcf, 'color', bgColor);
-set(gca, 'color', bgColor);
-% timeSeries.Position = [100 100 500 250];
-plot(t/T,totalphase(idx),'k-')
-yline(mean(totalphase),'r--')
-yline(90,'b:')
-xlim([0 cycles])
-limits = 180;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
-% limits = 0.1;
-ylim([-90 270])
-yticks([-90 0 90 180 270])
+% %Phase time series plot
+% subplot(3,1,2)
+% set(gcf, 'color', bgColor);
+% set(gca, 'color', bgColor);
+% % timeSeries.Position = [100 100 500 250];
+% plot(t/T,totalphase(idx),'k-')
+% yline(mean(totalphase),'r--')
+% yline(90,'b:')
+% xlim([0 cycles])
+% limits = 180;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% % limits = 0.1;
+% ylim([-90 270])
+% yticks([-90 0 90 180 270])
+% % xlabel('$t/T$')
+% ylabel('$\phi_{total}$')
+% % distance = str2double(char(uniq_dist))/10;
+% % if distance == 0
+% %     L_star = 'Isolated ';
+% % else
+% %     L_star = ['$L^*=$' +num2str(distance) ' '];
+% % end
+% % title([L_star '$U^*=$' num2str(U_star)])
+% set(gca,'xticklabel',[])
+% set(gcf, 'color', bgColor);
+% set(gca, 'color', bgColor);
+% 
+% %Vortex Phase Time Series
+% subplot(3,1,3)
+% set(gcf, 'color', bgColor);
+% set(gca, 'color', bgColor);
+% timeSeries.Position = [100 100 500 400];
+% plot(t/T,vortexphase(idx),'k-')
+% yline(mean(vortexphase),'r--')
+% yline(90,'b:')
+% xlim([0 cycles])
+% limits = 180;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+% % limits = 0.1;
+% ylim([-90 270])
+% yticks([-90 0 90 180 270])
 % xlabel('$t/T$')
-ylabel('$\phi_{total}$')
-% distance = str2double(char(uniq_dist))/10;
-% if distance == 0
-%     L_star = 'Isolated ';
-% else
-%     L_star = ['$L^*=$' +num2str(distance) ' '];
-% end
-% title([L_star '$U^*=$' num2str(U_star)])
-set(gca,'xticklabel',[])
-set(gcf, 'color', bgColor);
-set(gca, 'color', bgColor);
-
-%Vortex Phase Time Series
-subplot(3,1,3)
-set(gcf, 'color', bgColor);
-set(gca, 'color', bgColor);
-timeSeries.Position = [100 100 500 400];
-plot(t/T,vortexphase(idx),'k-')
-yline(mean(vortexphase),'r--')
-yline(90,'b:')
-xlim([0 cycles])
-limits = 180;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
-% limits = 0.1;
-ylim([-90 270])
-yticks([-90 0 90 180 270])
-xlabel('$t/T$')
-ylabel('$\phi_{vortex}$')
-% distance = str2double(char(uniq_dist))/10;
-% if distance == 0
-%     L_star = 'Isolated ';
-% else
-%     L_star = ['$L^*=$' +num2str(distance) ' '];
-% end
-% title([L_star '$U^*=$' num2str(U_star)])
-set(gcf, 'color', bgColor);
-set(gca, 'color', bgColor);
+% ylabel('$\phi_{vortex}$')
+% % distance = str2double(char(uniq_dist))/10;
+% % if distance == 0
+% %     L_star = 'Isolated ';
+% % else
+% %     L_star = ['$L^*=$' +num2str(distance) ' '];
+% % end
+% % title([L_star '$U^*=$' num2str(U_star)])
+% set(gcf, 'color', bgColor);
+% set(gca, 'color', bgColor);
 
 figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_timeseries');
 exportgraphics(timeSeries,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
 saveas(timeSeries,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
 
 % % Plotting Lissajous Curves
-% lissajous_fig = figure;
-% 
-% x = encoder_filt(1000:end-1000)/d_sph;
-% y = C_y(1000:end-1000);
-% 
-% plot(x,y,'LineWidth',1.5,'Color','k')
-% xlabel('$y/D$')
-% ylabel('$C_y$')
-% title([L_star '$U^*=$' num2str(U_star)])
-% xbounds = max(x+0.1);
-% ybounds = max(y+0.1);
-% xlim([-xbounds xbounds]);
-% ylim([-ybounds ybounds]);
-% axis square
-% set(gcf, 'color', bgColor);
-% set(gca, 'color', bgColor);
-% figsize = get(gcf,'Position');
-% figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_lissajous');
-% exportgraphics(lissajous_fig,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
-% saveas(lissajous_fig,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
+lissajous_fig = figure;
+
+x = encoder_filt(1000:end-1000)/d_sph;
+y = C_y(1000:end-1000);
+
+plot(x,y,'LineWidth',1.5,'Color','k')
+xlabel('$y/D$')
+ylabel('$C_{total}$')
+title([L_star '$U^*=$' num2str(U_star)])
+xbounds = max(x+0.1);
+ybounds = max(y+0.1);
+xlim([-xbounds xbounds]);
+ylim([-ybounds ybounds]);
+axis square
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+figsize = get(gcf,'Position');
+figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_lissajous');
+exportgraphics(lissajous_fig,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
+saveas(lissajous_fig,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
+
+lissajous_fig_vortex = figure;
+y = C_vortex(1000:end-1000);
+plot(x,y,'LineWidth',1.5,'Color','k')
+xlabel('$y/D$')
+ylabel('$C_{vortex}$')
+title([L_star '$U^*=$' num2str(U_star)])
+xbounds = max(x+0.1);
+ybounds = max(y+0.1);
+xlim([-xbounds xbounds]);
+ylim([-ybounds ybounds]);
+axis square
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+figsize = get(gcf,'Position');
+figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_vortex_lissajous');
+exportgraphics(lissajous_fig_vortex,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
+saveas(lissajous_fig_vortex,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
 
 %% Frequency and PSD Plotting
 PSD_figure = figure;

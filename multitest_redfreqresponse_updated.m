@@ -18,9 +18,10 @@ plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 1; %0 to not plot references
 plot_errors = 1; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
+squareaxis = 0;
 
-test_distratios = ["000"];% "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
+test_diaratios = ["_00"];% "_10"]; %"06" "08"];
 test_spring = ["6k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
@@ -86,57 +87,90 @@ griffin_Astar_fit = rmmissing(griffin_plot(:,4));
 A_y_star_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 A_y_norm_fig = figure;
 A_y_norm_fig.Position = [100 100 600 400];
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 phase_subplot_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 total_force_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 vortex_force_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 total_phase_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 vortex_phase_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 pdicy_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 f_star_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 test_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 griffin_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 if single_test == 1
@@ -218,7 +252,7 @@ for ii=1:num_uniq_configs %each configuration
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
-                filename = all_files(data_idx).name;
+                filename = all_files(data_idx).name
                 testing = [testing string(filename)];
                 metadata = table2array(readtable(topfolder+filename,'Range','A12:F13'));
                 data = table2array(readtable(topfolder+filename,'NumHeaderLines',14)); %Imports one file with corresponding data
@@ -450,7 +484,7 @@ for ii=1:num_uniq_configs %each configuration
     plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1) %Freq Ratio plot
     % set(gca)
     xlabel('$U^*$')
-    ylabel('$f^*$')
+    ylabel('$f/f_{n,w}$')
     ylim([0.9 1.2])
     set(get(gca,'ylabel'),'rotation',0)
 
@@ -547,16 +581,16 @@ for ii=1:num_uniq_configs %each configuration
     set(gca,'XMinorTick','on','YMinorTick','on')
     ylim([0.4 1])
 end
-% 
-% figure(griffin_fig)
-% xscale("log");
-% scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
-% plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
-% plot(mass_damp_1k,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
-% set(gca,'XMinorTick','on','YMinorTick','on')
-% xlabel('$(m^*+C_A)\zeta$')
-% ylabel('$A^*$')
-% set(get(gca,'ylabel'),'rotation',0)
+
+figure(griffin_fig)
+xscale("log");
+scatter(griffin_massdamp_samp,griffin_Astar_samp,'kd','DisplayName','Govhardan 2005');
+plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005');
+plot(mass_damp,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
+set(gca,'XMinorTick','on','YMinorTick','on')
+xlabel('$(m^*+C_A)\zeta$')
+ylabel('$A^*$')
+set(get(gca,'ylabel'),'rotation',0)
 
 %% Annotation Playing
 % figure(A_y_star_fig)

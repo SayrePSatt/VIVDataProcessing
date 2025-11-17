@@ -3,16 +3,16 @@ close all
 clc
 
 m = 1;
-stiffness = ["6k"];
+stiffness = ["1k"];
 folder = uigetdir;
 allfiles = dir(folder);
 [~, date, ~] = fileparts(folder);
 date = string(date);
 %%
-fluid = ["air"];
+fluid = ["water"];
 idx = 1;
 for i=3:length(allfiles)
-    filename = "\"+string(allfiles(i).name);
+    filename = "\"+string(allfiles(i).name)
     clear f_d f_n log_decrement data
     searchbool = contains(filename,fluid) && endsWith(filename,'.dat') && contains(filename,stiffness) && ~contains(filename,"results");
     if  searchbool && ~contains(filename,"_00.0_")
