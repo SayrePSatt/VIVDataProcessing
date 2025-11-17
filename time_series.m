@@ -12,48 +12,48 @@ C_A = 0.5;
 bgColor = [255 255 255]/255;
 load("pumpFit_freq2velo.mat");
 
-datafolder = "F:\EFDL\vivscratch_3\";
-topfolder = datafolder+"testDataZeroed\";
+datafolder = "F:\EFDL\vivscratch_1k\";
+topfolder = datafolder+"data\";
 %% Free Decay
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_air.dat"));
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
 f_n_1k_95 = temp_1k(2,1);
 % zeta_1k_95 = temp_1k(2,2);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_water.dat"));
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
 f_w_1k(1,:) = temp_1k(1,:);
 f_w_1k_95 = temp_1k(2,1);
 zeta_1k_95 = temp_1k(2,2);
 
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_air.dat"));
-f_n_6k(1,:) = temp_6k(1,:);
-f_n_6k_95 = temp_6k(2,1);
-% zeta_6k_95 = temp_1k(2,2);
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_water.dat"));
-f_w_6k(1,:) = temp_6k(1,:);
-f_w_6k_95 = temp_6k(2,1);
-zeta_6k_95 = temp_6k(2,2);
+% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
+% f_n_6k(1,:) = temp_6k(1,:);
+% f_n_6k_95 = temp_6k(2,1);
+% % zeta_6k_95 = temp_1k(2,2);
+% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
+% f_w_6k(1,:) = temp_6k(1,:);
+% f_w_6k_95 = temp_6k(2,1);
+% zeta_6k_95 = temp_6k(2,2);
 
 m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m_1k; %test
-m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m_6k;
+% m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m_6k;
 
 St = 0.19;
 St_68 = 0.005;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m_1k*omegana_1k.^2;
-omegana_6k = 2*pi*f_n_6k(:,1);
-k_6k = m_6k*omegana_6k.^2;
+% omegana_6k = 2*pi*f_n_6k(:,1);
+% k_6k = m_6k*omegana_6k.^2;
 
 c_1k = 4*pi*f_n_1k(:,2).*m_1k.*f_n_1k(:,1);
-c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
+% c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
 %% Setting up files to read
 test_distratios = ["000" "015" "040"];% "020" "030"];
 test_diaratios = ["00" "10"];
-test_spring = ["6k"];
+test_spring = ["1k"];
 test_nums = ["02_"];
 
 all_files = dir(topfolder);
 
-for ii = 3:length(all_files)
+for ii = 3:length(all_files)-1
     temp_config = all_files(ii).name;
     configs(ii-2) = convertCharsToStrings(temp_config(1:14));
     % distances =
@@ -76,6 +76,8 @@ for ii = 1:length(uniq_configs)
             k_temp = str2double(extractBetween(run,13,13)); %Extracting the spring constant
             f_pump = str2double(extractBetween(run,25,29)); %Extracting Pump Speed
             if f_pump == 0
+                data = table2array(readtable(topfolder+run));
+                encoderoffset = mean(data(:,2));
                 continue
             else
                 [U U_68_temp] = predict(mdl,f_pump,Alpha=0.05);%/(1.117645);
@@ -103,10 +105,8 @@ for ii = 1:length(uniq_configs)
             % zerofile = strcat(zerofile, '00.00.csv');
             % zero = table2array(readtable(topfolder+zerofile));
             time = data(:,1);
-            encoder = data(:,2);
-            encoderoffset = 0;%mean(zero(:,2));
             
-            encoder = encoder-encoderoffset;
+            encoder = data(:,2)-encoderoffset;
 
 %% Filtering
 cycles = 50;

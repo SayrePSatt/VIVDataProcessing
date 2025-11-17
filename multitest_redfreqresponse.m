@@ -13,20 +13,21 @@ close all
 clc
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
+plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+squareaxis = 1;
 
-test_distratios = ["000" "105" "095"]% "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
-test_diaratios = ["_00"]; %"06" "08"];
-test_spring = ["6k"];%["6k" "1k"];
+test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_spring = ["1k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "E:\vivscratch_complete\";
-topfolder = datafolder+"aftertare_test\";
+datafolder = "F:\EFDL\vivscratch_1k\";
+topfolder = datafolder+"data\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -36,71 +37,45 @@ m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
 f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
 
-calibration_reps = 12;
-nat_freq_change = 0.005;
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
+f_n_1k = temp_1k(1,:);
+f_n_1k_95 = temp_1k(2,1);
+zeta_1k_95 = temp_1k(2,2);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
+f_w_1k_95 = temp_1k(2,1);
+f_w_1k = temp_1k(1,:);
 
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_air.dat"));
-f_n_1k(:,:) = ones(calibration_reps,1)*temp_1k(1,:);
-f_n_1k(5:8,:) = f_n_1k(5:8,:)*(1+nat_freq_change);
-f_n_1k(9:12,:) = f_n_1k(9:12,:)*(1-nat_freq_change);
-f_n_1k_95 = ones(calibration_reps,1)*temp_1k(2,1);
-zeta_1k_95 = ones(calibration_reps,1)*temp_1k(2,2);
-temp_1k = table2array(readtable(datafolder+"freeDecay/1k_09_26_2025/freedecay_1k_water.dat"));
-f_w_1k_95 = ones(calibration_reps,1)*temp_1k(2,1);
-f_w_1k(:,:) = ones(calibration_reps,1)*temp_1k(1,:);
-f_w_1k(5:8,:) = f_w_1k(5:8,:)*(1+nat_freq_change);
-f_w_1k(9:12,:) = f_w_1k(9:12,:)*(1-nat_freq_change);
-% zeta_1k_95 = temp_1k(2,2);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
+f_n_1k(2,:) = temp_1k(1,:);
+f_n_1k_95(2) = temp_1k(2,1);
+zeta_1k_95(2) = temp_1k(2,2);
+temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
+f_w_1k_95(2) = temp_1k(2,1);
+f_w_1k(2,:) = temp_1k(1,:);
 
-% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
-% f_n_1k(5,:) = temp_1k(1,:);
-% temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_water.dat"));
-% f_w_1k(5,:) = temp_1k(1,:);
-% f_n_1k(6,:) = f_n_1k(5,:);
-% f_w_1k(6,:) = f_w_1k(5,:);
-% f_n_1k(7,:) = f_n_1k(5,:);
-% f_w_1k(7,:) = f_w_1k(5,:);
-% f_n_1k(8,:) = f_n_1k(5,:);
-% f_w_1k(8,:) = f_w_1k(5,:);
-
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_air.dat"));
-f_n_6k(:,:) = ones(calibration_reps,1)*temp_6k(1,:);
-f_n_6k(5:8,:) = f_n_6k(5:8,:)*(1+nat_freq_change);
-f_n_6k(9:12,:) = f_n_1k(9:12,:)*(1-nat_freq_change);
-f_n_6k_95 = ones(calibration_reps,1)*temp_6k(2,1);
-zeta_6k_95 = ones(calibration_reps,1)*temp_1k(2,2);
-temp_6k = table2array(readtable(datafolder+"freeDecay/6k_09_26_2025/freedecay_6k_water.dat"));
-f_w_6k_95 = ones(calibration_reps,1)*temp_6k(2,1);
-% zeta_6k_95 = temp_6k(2,2);
-f_w_6k(:,:) = ones(calibration_reps,1)*temp_6k(1,:);
-f_w_6k(5:8,:) = f_w_6k(5:8,:)*(1+nat_freq_change);
-f_w_6k(9:12,:) = f_w_6k(9:12,:)*(1-nat_freq_change);
-
-f_n_1k_sigma68 = f_n_1k_95/2;
-f_n_6k_sigma68 = f_n_6k_95/2;
-f_w_1k_sigma68 = f_w_1k_95/2;
-f_w_6k_sigma68 = f_w_6k_95/2;
+f_n_1k(3,:)=f_n_1k(2,:);
+f_n_1k(4,:)=f_n_1k(2,:);
+f_w_1k(3,:)=f_w_1k(2,:);
+f_w_1k(4,:)=f_w_1k(2,:);
+f_n_1k_95(3) = f_n_1k_95(2);
+f_n_1k_95(4) = f_n_1k_95(2);
+f_w_1k_95(3) = f_w_1k_95(2);
+f_w_1k_95(4) = f_w_1k_95(2);
 
 zeta_1k = f_n_1k(:,2);
-zeta_6k = f_n_6k(:,2);
+zeta_1k_95(3) = zeta_1k_95(2);
+zeta_1k_95(4) = zeta_1k_95(2);
 
 m_star_1k = m_1k/m_d;
-m_star_6k = m_6k/m_d;
 C_A_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m_star_1k; %test
-C_A_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m_star_6k;
 
 St = 0.19;
 St_68 = 0.005;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m_1k*omegana_1k.^2; %5.375; %(f_n(1)*2*pi)^2*m
-omegana_6k = 2*pi*f_n_6k(:,1);
-k_6k = m_6k*omegana_6k.^2;
 
 c_1k = 4*pi*f_n_1k(:,2).*m_1k.*f_n_1k(:,1);
-c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
 mass_damp_1k = (m_star_1k+C_A)*f_n_1k(1,2);
-mass_damp_6k = (m_star_6k+C_A)*f_n_6k(1,2);
-% scruton = 2*m*f_n_1k(2)/(rho*d_sph^2); 
 
 load("pumpFit_freq2velo.mat");
 
@@ -113,19 +88,13 @@ markers = ['s' 'd' '*'];
 U_sigma68 = mdl.MSE;
 m_sigma68 = 0.5e-3;
 
-f_n_6k_sigma68 = f_n_6k_95/2;
 f_n_1k_sigma68 = f_n_1k_95/2;
+f_w_1k_sigma68 = f_w_1k_95/2;
 
-zeta_6k_sigma68 = zeta_6k_95/2;
 zeta_1k_sigma68 = zeta_1k_95/2;
 
 % Derived uncertainties
-k_6k_sigma68 = sqrt((4*pi^2*f_n_6k(:,1).^2*m_sigma68).^2+(8*pi^2*f_n_6k(:,1)*m_1k.*f_n_6k_sigma68).^2);
 k_1k_sigma68 = sqrt((4*pi^2*f_n_1k(:,1).^2*m_sigma68).^2+(8*pi^2*f_n_1k(:,1)*m_1k.*f_n_1k_sigma68).^2);
-
-c_6k_sigma68 = sqrt((2*sqrt(m_6k*k_6k).*zeta_6k_sigma68).^2 ...
-                   +(zeta_6k.*sqrt(k_6k/m_6k).*m_sigma68).^2 ...
-                   +(zeta_6k.*sqrt(m_6k./k_6k).*k_6k_sigma68).^2 );
 
 c_1k_sigma68 = sqrt((2*sqrt(m_1k*k_1k).*zeta_1k_sigma68).^2 ...
                    +(zeta_1k.*sqrt(k_1k/m_1k).*m_sigma68).^2 ...
@@ -134,10 +103,6 @@ c_1k_sigma68 = sqrt((2*sqrt(m_1k*k_1k).*zeta_1k_sigma68).^2 ...
 C_A_1k_sigma68 = sqrt((2*f_n_1k(:,1).*m_star_1k.*f_n_1k_sigma68./f_w_1k(:,1)).^2 ...
                      +(-2*f_n_1k(:,1)*m_star_1k.*f_w_1k_sigma68./f_w_1k(:,1).^3).^2 ...
                      +((f_n_1k(:,1)./f_w_1k(:,1)-1).*m_sigma68).^2);
-
-C_A_6k_sigma68 = sqrt((2*f_n_6k(:,1).*m_star_6k.*f_n_6k_sigma68./f_w_6k(:,1)).^2 ...
-                     +(-2*f_n_6k(:,1)*m_star_6k.*f_w_6k_sigma68./f_w_6k(:,1).^3).^2 ...
-                     +((f_n_6k(:,1)./f_w_6k(:,1)-1).*m_sigma68/m_d).^2);
 
 %% Importing external data for comparison
 sareen = csvread('sareen2018b_ampphase.csv',3); %#ok<CSVRD>
@@ -180,57 +145,90 @@ griffin_Astar_fit = rmmissing(griffin_plot(:,4));
 A_y_star_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 A_y_norm_fig = figure;
 A_y_norm_fig.Position = [100 100 600 400];
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 phase_subplot_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 total_force_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 vortex_force_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 total_phase_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 vortex_phase_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 pdicy_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 f_star_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 test_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 griffin_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
 hold on;
 
 if single_test == 1
@@ -248,7 +246,7 @@ end
 all_files = dir(topfolder);
 
 
-for ii = 3:length(all_files)
+for ii = 3:length(all_files)-1
     temp_config = all_files(ii).name;
     configs(ii-2) = convertCharsToStrings(temp_config(4:14));
     % distances =
@@ -296,9 +294,6 @@ for ii = 1:length(uniq_configs)
             if k_temp == 1
                 f_w = f_w_1k(matching_tests{ii,4}(kk),1)
                 m = m_1k;
-            else
-                f_w = f_w_6k(matching_tests{ii,4}(kk),1);
-                m = m_6k;
             end
             matching_tests{ii,7}(kk) = matching_tests{ii,6}(kk)/(f_w*d_sph); %Extracting reduced velocity
             kk = kk+1;
@@ -396,11 +391,11 @@ for ii=1:test_size
     f_norm = f_windowed./f_w(1);
     meanpwr = mean(mx,2);
 
-    if single_test == 1
-        nfft = 500000;
-        [PSD_freq, PSD_norm{ii,kk}(iii,jjj,:)] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
-        PSD_freq_norm{ii,kk}(iii,jjj,:) = PSD_freq/f_w(1);
-    end
+    % if single_test == 1
+    %     nfft = 500000;
+    %     [PSD_freq, PSD_norm{ii,kk}(iii,jjj,:)] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
+    %     PSD_freq_norm{ii,kk}(iii,jjj,:) = PSD_freq/f_w(1);
+    % end
 
     [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
     
@@ -528,7 +523,7 @@ for ii=1:test_size
 % end
 %% Determining the average and uncertainty bounds from the tests
 if single_test == 1
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95, peaks_10, peaks_90, PSD_freq_norm, PSD_norm};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95, peaks_10, peaks_90};%, PSD_freq_norm, PSD_norm};
 else
     results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95};
 end

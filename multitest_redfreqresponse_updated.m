@@ -18,10 +18,10 @@ plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 1; %0 to not plot references
 plot_errors = 1; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
-squareaxis = 0;
+squareaxis = 1;
 
 test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
-test_diaratios = ["_00"];% "_10"]; %"06" "08"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["6k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
