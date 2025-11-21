@@ -14,20 +14,21 @@ clc
 
 %% Options for plotting
 plot_legends = 0; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_reference = 1; %0 to not plot references
+plot_errors = 0; %0 to not plot errorba
+% rs
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 1;
 
 test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "025" "030" "040" "050" "060" "070" "100"];% "020" "030"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_diaratios = ["_00"];% "_10"]; %"06" "08"];
 test_spring = ["1k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
-datafolder = "F:\EFDL\vivscratch_1k\";
-topfolder = datafolder+"data\";
+datafolder = "E:\vivscratch_complete\";
+topfolder = datafolder+"aftertare\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
@@ -200,6 +201,14 @@ end
 hold on;
 
 pdicy_fig = figure;
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+power_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -439,6 +448,7 @@ for ii=1:test_size
     F_pot = -m_a*acc;%-C_A*m_d*acc;
     F_vortex = F - F_pot;
     F_vortex_sigma68 = sqrt((acc.*m_sigma68).^2+(acc.*m_a_sigma68).^2+(velo.*c_sigma68).^2+(encoder_filt.*k_sigma68).^2);
+    Pow = F.*velo;
     % F_vortex = (m+m_d).*acc+f_n(2).*velo+k*encoder_filt;
  
     force_norm = 0.5*rho*(U^2)*pi*d_sph^2/4;
@@ -446,10 +456,13 @@ for ii=1:test_size
     C_pot = F_pot/force_norm;
     C_vortex = F_vortex/force_norm;
 
+    C_p = Pow/(0.5*rho*U.^3*pi*(d_sph^2/4));
+
     C_y_sigma68 = sqrt((-F.*U_sigma68./(rho*U^3*pi*d_sph^2)).^2 ...
                        +(F_sigma68./(0.5*rho*U^2*pi*d_sph^2)).^2);
     C_vortex_sigma68 = sqrt((-F_vortex.*U_sigma68./(rho*U^3*pi*d_sph^2)).^2 ...
                            +(F_vortex_sigma68./(0.5*rho*U^2*pi*d_sph^2)).^2);
+
     
     % if kk == 1 && diagnose == true
     %     limits = 10000:100000;
@@ -473,6 +486,7 @@ for ii=1:test_size
     C_y_rms{ii,kk}(iii,jjj) = rms(C_y-mean(C_y));
     C_pot_rms{ii,kk}(iii,jjj) = rms(C_pot-mean(C_pot));
     C_vortex_rms{ii,kk}(iii,jjj) = rms(C_vortex-mean(C_vortex));
+    C_pow_mean{ii,kk}(iii,jjj) = mean(C_pot);
 
     C_y_rms_sigma68{ii,kk}(iii,jjj) = sum(C_y.*C_y_sigma68)./(2*rms(C_y-mean(C_y))*sqrt(data_length));
     C_vortex_rms_sigma68{ii,kk}(iii,jjj) = sum(C_vortex.*C_vortex_sigma68)./(2*rms(C_vortex-mean(C_vortex))*sqrt(data_length));
@@ -525,7 +539,7 @@ for ii=1:test_size
 if single_test == 1
     results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95, peaks_10, peaks_90};%, PSD_freq_norm, PSD_norm};
 else
-    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95};
+    results = {u_red, u_norm, pdicy, C_y_rms, C_pot_rms, C_vortex_rms, C_y_phase, C_vortex_phase, A_y_star, f_star_peak, C_y_phase_alt, C_vortex_phase_alt, pump_f, u_red_95, u_norm_95, C_pow_mean};
 end
 
 for kkk = 1:length(results)
@@ -551,8 +565,8 @@ if single_test == 1
     plot_fn_prc(results_ave,1,9,14,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
     if ii==1
         set(gca,'XMinorTick','on','YMinorTick','on')
-        xlabel('$U^*$')
-        ylabel('$A^*$')
+        xlabel('$U/f_{n,w}D$')
+        ylabel('$\sqrt{2}A_{rms}/D$')
         set(get(gca,'ylabel'),'rotation',0)
     end
 
@@ -568,8 +582,8 @@ if ii==1
         plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
-    ylabel('$A^*$')
+    xlabel('$U/f_{n,w}D$')
+    ylabel('$\sqrt{2}A_{rms}/D$')
     set(get(gca,'ylabel'),'rotation',90)
 end
 plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
@@ -596,8 +610,8 @@ if ii==1
         plot(unorm_unorm_govwill,unorm_Astar_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$(U^*/f^*)St$')
-    ylabel('$A^*$')
+    xlabel('$(U/f_{n,w}D/f/f_{n,w})St$')
+    ylabel('$\sqrt{2}A_{rms}/D$')
     set(get(gca,'ylabel'),'rotation',0)
 end
 
@@ -623,11 +637,26 @@ end
 
 plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14) %Freq Ratio plot
 % set(gca)
-xlabel('$U^*$')
-ylabel('$f^*$')
+xlabel('$U/f_{n,w}D$')
+ylabel('$f/f_{n,w}$')
 ylim([0.9 1.2])
-set(get(gca,'ylabel'),'rotation',0)
+set(get(gca,'ylabel'),'rotation',90)
 % exportgraphics(f_star_fig,["figures\f_star_"+uniq_configs(ii)+".png"],'Resolution',300,'BackgroundColor', bgColor)
+
+%Plots of Power Coefficient
+figure(power_fig)
+hold on
+if ii==1
+    Ustar_temp = 0:23.5;
+    set(gca,'XMinorTick','on','YMinorTick','on')
+end
+
+plot_fn(results_ave,results_lower,results_upper,1,16,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14) %Freq Ratio plot
+% set(gca)
+xlabel('$U/f_{n,w}D$')
+ylabel('$\bar{C_p}$')
+% ylim([0.9 1.2])
+set(get(gca,'ylabel'),'rotation',90)
 
 %Plots of lift coefficient
 hold on
@@ -638,7 +667,7 @@ if ii==1
         plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$C^{\prime}_{total}$')
     set(get(gca,'ylabel'),'rotation',90)
     % legend
@@ -649,7 +678,7 @@ if ii==1
         plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on','YMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$C^{\prime}_{vortex}$')
     set(get(gca,'ylabel'),'rotation',90)
     % legend
@@ -661,7 +690,7 @@ if ii==1
         plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$\phi_{total}$')
     set(get(gca,'ylabel'),'rotation',90)
     yline(90,'k--','HandleVisibility','off')
@@ -674,7 +703,7 @@ if ii==1
         plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
     end
     set(gca,'XMinorTick','on')
-    xlabel('$U^*$')
+    xlabel('$U/f_{n,w}D$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',90)
     yline(90,'k--','HandleVisibility','off')
@@ -716,9 +745,9 @@ figure(pdicy_fig)
 % plot_legends = 1;
 plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
 
-xlabel('$U^*$')
-ylabel('$P$')
-set(get(gca,'ylabel'),'rotation',0)
+xlabel('$U/f_{n,w}D$')
+ylabel('$\sqrt{2} A_{rms}/A_{max}$')
+set(get(gca,'ylabel'),'rotation',90)
 set(gca,'XMinorTick','on','YMinorTick','on')
 ylim([0.4 1])
 % clear results_upper results_lower results_ave results
@@ -731,7 +760,7 @@ plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005')
 plot(mass_damp_1k,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
 set(gca,'XMinorTick','on','YMinorTick','on')
 xlabel('$(m^*+C_A)\zeta$')
-ylabel('$A^*$')
+ylabel('$\sqrt{2}A_{rms}/D$')
 set(get(gca,'ylabel'),'rotation',0)
 
 %% Annotation Playing
@@ -745,10 +774,10 @@ set(get(gca,'ylabel'),'rotation',0)
 % annotation('textbox',dim,'String','Mode I','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
 % dim = [0.6 0.6 0.5 0.1];
 % annotation('textbox',dim,'String','Mode III/Plateau','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
-figure(total_force_fig)
-legend('Location','southeast','NumColumns',3)
-xlim([0 22.5])
-ylim([-0.01 0.35])
+% figure(total_force_fig)
+% legend('Location','southeast','NumColumns',3)
+% xlim([0 22.5])
+% ylim([-0.01 0.35])
 %% Figure Saving
 % figure(A_y_star_fig)
 % delete(findall(gcf,'type','annotation'))
@@ -766,18 +795,19 @@ ylim([-0.01 0.35])
 % arrow_anno.Color = 'black';
 % arrow_anno.LineWidth = 2;
 
-saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
-saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
-saveas(vortex_force_fig,['figures\' 'vortex_force.eps'],'epsc')
-saveas(total_phase_fig,['figures\' 'total_phase.eps'],'epsc')
-saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
-saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
-saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
-saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
-saveas(f_star_fig,['figures\' 'fstar.eps'],'epsc')
+saveas(A_y_star_fig,['figures\' 'A_y_star.svg'],'svg')
+saveas(total_force_fig,['figures\' 'total_force.svg'],'svg')
+saveas(vortex_force_fig,['figures\' 'vortex_force.svg'],'svg')
+saveas(total_phase_fig,['figures\' 'total_phase.svg'],'svg')
+saveas(vortex_phase_fig,['figures\' 'vortex_phase.svg'],'svg')
+saveas(A_y_norm_fig,['figures\' 'A_y_norm.svg'],'svg')
+saveas(griffin_fig,['figures\' 'griffin.svg'],'svg')
+saveas(pdicy_fig,['figures\' 'pdicy.svg'],'svg')
+saveas(f_star_fig,['figures\' 'fstar.svg'],'svg')
+saveas(power_fig,['figures\' 'power.svg'],'svg')
 if single_test == 1
-    saveas(A_y_star_pctile_fig,'A_y_star_pctile.eps','epsc')
-    saveas(freq_contour_fig,'freq_contour.eps','epsc')
+    saveas(A_y_star_pctile_fig,'A_y_star_pctile.svg','svg')
+    saveas(freq_contour_fig,'freq_contour.svg','svg')
 end
 
 exportgraphics(A_y_star_fig,['figures\' 'A_y_star.png'],'Resolution',300,'BackgroundColor', bgColor);
@@ -805,13 +835,13 @@ if single_test == 1
     ax1 = get(A_y_star_fig, 'CurrentAxes');
     copyobj(allchild(ax1), gca);
     title(ax1.Title.String); % Copy title from original axes
-    ylabel('$A^*$')
+    ylabel('$\sqrt{2}A_{rms}/D$')
     xlabel('')
     xticklabels({})
     xlim(ax1.XLim)
     text(-0.15, 1.0, 'a)', 'Units', 'normalized', 'FontWeight', 'bold');
     set(gca,'XMinorTick','on','YMinorTick','on')
-    set(get(gca,'ylabel'),'rotation',0)
+    set(get(gca,'ylabel'),'rotation',90)
     box on
     % legend
     
@@ -869,7 +899,7 @@ if single_test == 1
     % annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
     % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
     % legend
-    saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
+    saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.svg'],'svg')
     exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
 % 

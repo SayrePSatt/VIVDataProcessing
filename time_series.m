@@ -11,9 +11,9 @@ f_s = 1000;     %Sampling Frequency
 C_A = 0.5;
 bgColor = [255 255 255]/255;
 load("pumpFit_freq2velo.mat");
-
-datafolder = "F:\EFDL\vivscratch_1k\";
-topfolder = datafolder+"data\";
+plot_color = [255 255 255]/255;
+datafolder = "E:\vivscratch_complete\";
+topfolder = datafolder+"aftertare\";
 %% Free Decay
 temp_1k = table2array(readtable(datafolder+"freeDecay/1k_08_18_2025/freedecay_1k_air.dat"));
 f_n_1k(1,:) = temp_1k(1,:);
@@ -24,32 +24,33 @@ f_w_1k(1,:) = temp_1k(1,:);
 f_w_1k_95 = temp_1k(2,1);
 zeta_1k_95 = temp_1k(2,2);
 
-% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
-% f_n_6k(1,:) = temp_6k(1,:);
-% f_n_6k_95 = temp_6k(2,1);
-% % zeta_6k_95 = temp_1k(2,2);
-% temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
-% f_w_6k(1,:) = temp_6k(1,:);
-% f_w_6k_95 = temp_6k(2,1);
-% zeta_6k_95 = temp_6k(2,2);
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_air.dat"));
+f_n_6k(1,:) = temp_6k(1,:);
+f_n_6k_95 = temp_6k(2,1);
+% zeta_6k_95 = temp_1k(2,2);
+temp_6k = table2array(readtable(datafolder+"freeDecay/6k_08_18_2025/freedecay_6k_water.dat"));
+f_w_6k(1,:) = temp_6k(1,:);
+f_w_6k_95 = temp_6k(2,1);
+zeta_6k_95 = temp_6k(2,2);
 
 m_a_1k = ((f_n_1k(:,1)./f_w_1k(:,1)).^2-1)*m_1k; %test
-% m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m_6k;
+m_a_6k = ((f_n_6k(:,1)./f_w_6k(:,1)).^2-1)*m_6k;
 
 St = 0.19;
 St_68 = 0.005;
 omegana_1k = 2*pi*f_n_1k(:,1);
 k_1k = m_1k*omegana_1k.^2;
-% omegana_6k = 2*pi*f_n_6k(:,1);
-% k_6k = m_6k*omegana_6k.^2;
+omegana_6k = 2*pi*f_n_6k(:,1);
+k_6k = m_6k*omegana_6k.^2;
 
 c_1k = 4*pi*f_n_1k(:,2).*m_1k.*f_n_1k(:,1);
-% c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
+c_6k = 4*pi*f_n_6k(:,2).*m_6k.*f_n_6k(:,1);
 %% Setting up files to read
-test_distratios = ["000" "015" "040"];% "020" "030"];
+test_distratios = ["000" "040"];% "020" "030"];
 test_diaratios = ["00" "10"];
-test_spring = ["1k"];
+test_spring = ["6k"];
 test_nums = ["02_"];
+test_freq = ["10.03"];
 
 all_files = dir(topfolder);
 
@@ -71,7 +72,7 @@ for ii = 1:length(uniq_configs)
     kk = 1;
     for jj = 3:length(all_files)
         filename = all_files(jj).name
-        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv')% && (contains(filename,'6.88') || contains(filename,'7.94'))
+        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.csv') && (contains(filename,'11.04') )%|| contains(filename,'8.97'))
             run = convertCharsToStrings(filename);
             k_temp = str2double(extractBetween(run,13,13)); %Extracting the spring constant
             f_pump = str2double(extractBetween(run,25,29)); %Extracting Pump Speed
@@ -106,7 +107,7 @@ for ii = 1:length(uniq_configs)
             % zero = table2array(readtable(topfolder+zerofile));
             time = data(:,1);
             
-            encoder = data(:,2)-encoderoffset;
+            encoder = data(:,2);%-encoderoffset;
 
 %% Filtering
 cycles = 50;
@@ -313,6 +314,47 @@ figsize = get(gcf,'Position');
 figurename = strcat(extractBefore(run,12),'_',string(k_temp),'k_Ustar_', num2str(U_star*10), '_vortex_lissajous');
 exportgraphics(lissajous_fig_vortex,strcat('figures\timeSeries\', figurename, '.png'),'Resolution',300,'BackgroundColor',bgColor);
 saveas(lissajous_fig_vortex,strcat('figures\timeSeries\', figurename, '.eps'),'epsc');
+
+%% Animated plots
+
+% y = C_y(1000:end-1000);
+lissajous_ani_fig = figure;
+lissajous_ani_fig.Position = figsize;
+axis square
+% set(lissajous_ani_fig, 'Position', [100 100 1200 1200])
+box on
+xlim([-xbounds xbounds]);
+ylim([-ybounds ybounds]);
+title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
+xlabel('$y/D$')
+ylabel('$C_{vortex}$')
+set(gcf, 'color', plot_color);
+set(gca, 'color', plot_color);
+
+lissajous_ani = animatedline('Color','k','LineWidth',3,'MaximumNumPoints',80000);
+lissajous_ani_point = animatedline('Color','k','LineStyle','none','MaximumNumPoints',1,'Marker','o','MarkerSize',12,'MarkerFaceColor',[0 146 69]/255);
+numpoints=500000;
+
+filename = strcat('figures\timeSeries\', figurename,'.gif');
+framerate = 50;
+
+for k = 1:80:50*700
+    xvec = x(k:k+99);
+    yvec = y(k:k+99);
+    addpoints(lissajous_ani, xvec, yvec);
+    addpoints(lissajous_ani_point, xvec(end), yvec(end));
+    drawnow
+    % Capture the plot as an image
+    frame = getframe(lissajous_ani_fig);
+    img = frame2im(frame);
+    [imind, cm] = rgb2ind(img, 256);
+    % Write to the GIF File
+    if k == 1
+        imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 1/framerate); % Adjust DelayTime as needed
+    else
+        imwrite(imind, cm, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 1/framerate);
+    end
+end
 
 %% Frequency and PSD Plotting
 PSD_figure = figure;
@@ -521,7 +563,7 @@ end
 % t = t-t(1);
 % encoder_filt_cont = encoder_filt(idx)/d_sph;
 % %% Plotting time history
-% plot_color = [255 255 255]/255;
+plot_color = [255 255 255]/255;
 % close all
 % timeSeries = figure;
 % set(gcf, 'color', plot_color);
@@ -569,42 +611,3 @@ end
 % figurename = [extractBefore(file,11) '_' num2str(U_star*10) '_lissajous'];
 % exportgraphics(lissajous_fig,['figures\' figurename '.png'],'Resolution',300,'BackgroundColor',[255 255 255]/255);
 % saveas(lissajous_fig,['figures\' figurename '.eps'],'epsc');
-
-%% Animated plots
-
-% lissajous_ani_fig = figure;
-% lissajous_ani_fig.Position = figsize;
-% axis square
-% box on
-% xlim([-xbounds xbounds]);
-% ylim([-ybounds ybounds]);
-% title(['$U^*=$' num2str(U_star) ' $L^*=$' num2str(distance)])
-% xlabel('$y/D$')
-% ylabel('$C_y$')
-% set(gcf, 'color', plot_color);
-% set(gca, 'color', plot_color);
-% 
-% lissajous_ani = animatedline('Color','k','LineWidth',3,'MaximumNumPoints',20000);
-% lissajous_ani_point = animatedline('Color','r','LineStyle','none','MaximumNumPoints',1,'Marker','o','MarkerSize',12,'MarkerFaceColor','b');
-% numpoints=100000;
-% 
-% filename = 'figures\lissajous.gif';
-% framerate = 60;
-% 
-% for k = 1:50:50*700
-%     xvec = x(k:k+99);
-%     yvec = y(k:k+99);
-%     addpoints(lissajous_ani, xvec, yvec);
-%     addpoints(lissajous_ani_point, xvec(end), yvec(end));
-%     drawnow
-%     % Capture the plot as an image
-%     frame = getframe(lissajous_ani_fig);
-%     img = frame2im(frame);
-%     [imind, cm] = rgb2ind(img, 256);
-%     % Write to the GIF File
-%     if k == 1
-%         imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 1/framerate); % Adjust DelayTime as needed
-%     else
-%         imwrite(imind, cm, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 1/framerate);
-%     end
-% end
