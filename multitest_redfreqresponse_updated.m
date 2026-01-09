@@ -14,28 +14,23 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
-plot_reference = 1; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
+plot_reference = 0; %0 to not plot references
+plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
-squareaxis = 1;
+squareaxis = 0;
 
-test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
-test_diaratios = ["_00"];% "_10"]; %"06" "08"];
-test_spring = ["1k"];%["6k" "1k"];
+test_distratios = ["000" "015" "040" "070"];% "020" "025" "030" "040" "050" "060" "070" "100"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_spring = ["1k" "6k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "E:\viv_newstructure\1k\";
+topfolder = "D:\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
-d_sph = 0.0889;  %Diameter of Sphere
-% m_1k = 2.458347-(2/3)*0.0029;
-% m_6k = 2.458347;    %Oscillating Mass. 2.4295 for 90mm setup, 1.916 for 80mm setup
-m_d = (4/3)*pi*(d_sph/2)^3*rho+rho*0.005^2*pi*d_sph/4; %Displaced mass
-f_s = 1000;     %Sampling Frequency
 C_A = 0.5;     %Added mass coefficient
 St = 0.19;
 St_68 = 0.005;
@@ -190,12 +185,16 @@ all_files = dir(topfolder);
 
 for ii = 3:length(all_files)
     temp_config = all_files(ii).name;
-    configs(ii-2) = convertCharsToStrings(temp_config(18:28));
+    configs(ii-2) = convertCharsToStrings(temp_config(18:25)); %18:28 to also include spring configs
     % distances =
 end
 
 uniq_configs = unique(configs);
-uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios) & contains(uniq_configs,test_spring)); %Selects only the configurations selected for testing
+uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uniq_configs,test_distratios));% & contains(uniq_configs,test_spring)); %Selects only the configurations selected for testing
+% uniq_configs_spacing = unique(extractBefore(uniq_configs,9));
+% for ii=uniq_configs_spacing
+% 
+% end
 uniq_configs = flip(uniq_configs);
 uniq_configs = circshift(uniq_configs,1);
 
@@ -221,7 +220,7 @@ for ii = 1:length(uniq_configs)
     kk = 1;
     for jj = 3:length(all_files)
         filename = all_files(jj).name;
-        if contains(filename,uniq_configs(ii)) && endsWith(filename,'.dat')
+        if contains(filename,uniq_configs(ii)) && contains(filename,test_spring) && endsWith(filename,'.dat')
             red_velo_est_temp = str2double(cell2mat(extractBetween(filename,39,42)));
             if red_velo_est_temp == 0
                 continue
@@ -240,7 +239,7 @@ for ii = 1:length(uniq_configs)
 end
 
 %% Data Processing
-dt = 1/f_s;
+
 testing = [];
 [num_uniq_configs, ~, ~] = size(matching_tests); %Gives the number of unique configurations that were tested
 for ii=1:num_uniq_configs %each configuration
@@ -248,11 +247,11 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red A_y_star C_y_rms C_pot_rms C_vortex_rms C_y_phase C_vortex_phase f_vo_norm u_red_norm
+            clear pdicy f_star_peak u_red u_red_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
-                filename = all_files(data_idx).name
+                filename = all_files(data_idx).name;
                 testing = [testing string(filename)];
                 metadata = table2array(readtable(topfolder+filename,'Range','A12:F13'));
                 data = table2array(readtable(topfolder+filename,'NumHeaderLines',14)); %Imports one file with corresponding data
@@ -264,6 +263,7 @@ for ii=1:num_uniq_configs %each configuration
                 [U U_68_temp] = predict(mdl,f_pump,Alpha=0.05);%/(1.117645);
                 U_68 = U-U_68_temp(1);
                 d_sph = metadata(:,1);
+                m_d = (4/3)*pi*(d_sph(1)/2)^3*rho+rho*0.005^2*pi*d_sph(1)/4; %Displaced mass
                 m = metadata(:,2);
                 f_nw = metadata(:,3);
                 f_na = metadata(:,5);
@@ -299,6 +299,7 @@ for ii=1:num_uniq_configs %each configuration
                 %% Data processing
                 time = data(:,1);
                 f_s = 1/(time(2)-time(1));
+                dt = 1/f_s;
                 encoder = data(:,2);
 
                 clear data metadata
@@ -359,7 +360,7 @@ for ii=1:num_uniq_configs %each configuration
                 pos_peaks = findpeaks(encoder_filt,'MinPeakProminence',0.01);
                 neg_peaks = findpeaks(-encoder_filt,'MinPeakProminence',0.01);
                 all_peaks = [pos_peaks; neg_peaks];
-                peaks_percentile = prctile(all_peaks,[10 90]);
+                peaks_percentile = prctile(all_peaks,[20 80]);
                 
                 data_length = length(acc);
                 time = time(1:data_length);
@@ -390,8 +391,8 @@ for ii=1:num_uniq_configs %each configuration
                 C_vortex_rms_68(iii) = rms(C_vortex_68);%sum(C_vortex.*C_vortex_68)./(2*rms(C_vortex-mean(C_vortex))*sqrt(data_length));
 
                 A_y_star(iii) = sqrt(2)*A_rms/d_sph(1);
-                % peaks_10(iii) = peaks_percentile(1)/d_sph(1);
-                % peaks_90(iii) = peaks_percentile(2)/d_sph(1);
+                peaks_10(iii) = peaks_percentile(1)/d_sph(1);
+                peaks_90(iii) = peaks_percentile(2)/d_sph(1);
                 pdicy(iii) = sqrt(2)*A_rms./y_max; %Periodicity
 
                 %% Phase Lag Calculations
@@ -413,7 +414,7 @@ for ii=1:num_uniq_configs %each configuration
             clear results
             %% Determining the average and uncertainty bounds from the tests
             zeropad = zeros(1,length(pdicy));
-            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad]};
+            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad]};
             for kkk = 1:length(results)
                 [results_ave{kkk}{ii,jj}(kk), results_upper{kkk}{ii,jj}(kk), results_lower{kkk}{ii,jj}(kk)]= ave_bounds_newstructure(results{kkk});
             end
@@ -421,15 +422,15 @@ for ii=1:num_uniq_configs %each configuration
         end
     end
     %% Plotting Results
-    % figure(A_y_star_pctile_fig)
-    % plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
-    % if ii==1
-    %     set(gca,'XMinorTick','on','YMinorTick','on')
-    %     xlabel('$U^*$')
-    %     ylabel('$A^*$')
-    %     set(get(gca,'ylabel'),'rotation',0)
-    % end
-
+    figure(A_y_star_pctile_fig)
+    plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+    if ii==1
+        set(gca,'XMinorTick','on','YMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$A^*$')
+        set(get(gca,'ylabel'),'rotation',0)
+    end
+    
     %Plotting reduced amplitude
     figure(A_y_star_fig)
     % plot_legends=0;
@@ -624,19 +625,19 @@ set(get(gca,'ylabel'),'rotation',0)
 % arrow_anno.Color = 'black';
 % arrow_anno.LineWidth = 2;
 
-saveas(A_y_star_fig,['figures\' 'A_y_star.svg'],'svg')
-saveas(total_force_fig,['figures\' 'total_force.svg'],'svg')
-saveas(vortex_force_fig,['figures\' 'vortex_force.svg'],'svg')
-saveas(total_phase_fig,['figures\' 'total_phase.svg'],'svg')
-saveas(vortex_phase_fig,['figures\' 'vortex_phase.svg'],'svg')
-saveas(A_y_norm_fig,['figures\' 'A_y_norm.svg'],'svg')
-saveas(griffin_fig,['figures\' 'griffin.svg'],'svg')
-saveas(pdicy_fig,['figures\' 'pdicy.svg'],'svg')
-saveas(f_star_fig,['figures\' 'fstar.svg'],'svg')
-if single_test == 1
-    saveas(A_y_star_pctile_fig,'A_y_star_pctile.svg','svg')
-    saveas(freq_contour_fig,'freq_contour.svg','svg')
-end
+saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
+saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
+saveas(vortex_force_fig,['figures\' 'vortex_force.eps'],'epsc')
+saveas(total_phase_fig,['figures\' 'total_phase.eps'],'epsc')
+saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
+saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
+saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
+saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
+saveas(f_star_fig,['figures\' 'fstar.eps'],'epsc')
+
+saveas(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.eps'],'epsc')
+saveas(freq_contour_fig,'freq_contour.eps','epsc')
+
 
 exportgraphics(A_y_star_fig,['figures\' 'A_y_star.png'],'Resolution',300,'BackgroundColor', bgColor);
 exportgraphics(total_force_fig,['figures\' 'total_force.png'],'Resolution',300,'BackgroundColor', bgColor)
@@ -727,7 +728,7 @@ if single_test == 1
     annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
     annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
     legend
-    saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.svg'],'svg')
+    saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
     exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
 % 

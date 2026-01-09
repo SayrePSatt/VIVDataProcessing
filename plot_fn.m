@@ -3,7 +3,7 @@ function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plo
 %   Detailed explanation goes here
 distance = str2double(extractBetween(name,1,3))/10;
 if distance == 0
-    legend_label = "Isolated";
+    legend_label = "Single";
 elseif distance == 10.5
     legend_label = "+0.5% f_n"
 elseif distance == 9.5
