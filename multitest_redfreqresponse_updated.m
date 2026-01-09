@@ -22,13 +22,13 @@ squareaxis = 1;
 
 test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 test_diaratios = ["_00"];% "_10"]; %"06" "08"];
-test_spring = ["6k"];%["6k" "1k"];
+test_spring = ["1k"];%["6k" "1k"];
 
 bgColor = [255 255 255]/255;
 
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "F:\EFDL\viv_newstructure\6k\";
+topfolder = "E:\viv_newstructure\1k\";
 
 rho = 998;
 d_sph = 0.0889;  %Diameter of Sphere
