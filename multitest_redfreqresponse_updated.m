@@ -201,7 +201,7 @@ uniq_configs = circshift(uniq_configs,1);
 matching_tests = {};
 
 plotting_color(1,:) = [0 0 0];
-plotting_color(2:length(uniq_configs),:) = lines(length(uniq_configs)-1);
+plotting_color(2:length(uniq_configs),:) = zeros(length(uniq_configs)-1);% lines(length(uniq_configs)-1); This is plotting with different colors
 % plotting_color(length(uniq_configs),:) = [1 0 0];
 plotting_color(2:end,:) = flipud(plotting_color(2:end,:));
 
@@ -625,18 +625,30 @@ set(get(gca,'ylabel'),'rotation',0)
 % arrow_anno.Color = 'black';
 % arrow_anno.LineWidth = 2;
 
-saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
-saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
-saveas(vortex_force_fig,['figures\' 'vortex_force.eps'],'epsc')
-saveas(total_phase_fig,['figures\' 'total_phase.eps'],'epsc')
-saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
-saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
-saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
-saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
-saveas(f_star_fig,['figures\' 'fstar.eps'],'epsc')
+% saveas(A_y_star_fig,['figures\' 'A_y_star.eps'],'epsc')
+% saveas(total_force_fig,['figures\' 'total_force.eps'],'epsc')
+% saveas(vortex_force_fig,['figures\' 'vortex_force.eps'],'epsc')
+% saveas(total_phase_fig,['figures\' 'total_phase.eps'],'epsc')
+% saveas(vortex_phase_fig,['figures\' 'vortex_phase.eps'],'epsc')
+% saveas(A_y_norm_fig,['figures\' 'A_y_norm.eps'],'epsc')
+% saveas(griffin_fig,['figures\' 'griffin.eps'],'epsc')
+% saveas(pdicy_fig,['figures\' 'pdicy.eps'],'epsc')
+% saveas(f_star_fig,['figures\' 'fstar.eps'],'epsc')
+% 
+% saveas(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.eps'],'epsc')
+% saveas(freq_contour_fig,'freq_contour.eps','epsc')
 
-saveas(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.eps'],'epsc')
-saveas(freq_contour_fig,'freq_contour.eps','epsc')
+exportgraphics(A_y_star_fig,['figures\' 'A_y_star.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+exportgraphics(total_force_fig,['figures\' 'total_force.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(vortex_force_fig,['figures\' 'vortex_force.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(total_phase_fig,['figures\' 'total_phase.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(vortex_phase_fig,['figures\' 'vortex_phase.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(griffin_fig,['figures\' 'griffin.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(pdicy_fig,['figures\' 'pdicy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(f_star_fig,['figures\' 'f_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 
 
 exportgraphics(A_y_star_fig,['figures\' 'A_y_star.png'],'Resolution',300,'BackgroundColor', bgColor);
