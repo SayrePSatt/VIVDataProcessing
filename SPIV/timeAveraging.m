@@ -1,10 +1,34 @@
 clear;clc;close all;
 
 tic 
-R = [linspace(0,1,100) ones(1,43) linspace(1,1,100)];
-G = [linspace(0,1,100) ones(1,43) linspace(1,0,100)];
-B = [linspace(1,1,100) ones(1,43) linspace(1,0,100)];
-cmap = [R(:),G(:),B(:)];  %// create colormap
+% R = [linspace(0,1,100) ones(1,43) linspace(1,1,100)];
+% G = [linspace(0,1,100) ones(1,43) linspace(1,0,100)];
+% B = [linspace(1,1,100) ones(1,43) linspace(1,0,100)];
+% cmap = [R(:),G(:),B(:)];  %// create colormap
+
+reds = [1 0 0;
+        1 0.4 0.4;
+        1 0.8 0.8;    % light red
+        ];       % darkest red
+
+whites = [1 1 1];     % white
+
+blues = [0.6 0.8 1;   % lightest blue
+         0.2 0.6 1;
+         0 0 1];      % darkest blue
+
+colors = [
+    0.6 0   0;    % dark red
+    0.8 0.2 0.2;  % medium red
+    1   0.4 0.4;  % light red
+    1   1   1;    % white
+    0.6 0.8 1;    % light blue
+    0.2 0.6 1;    % medium blue
+    0   0.2 0.4   % dark blue
+];
+
+colors = flipud(colors);
+cmap = colors;
 
 
 chord = 0.0889;
@@ -59,8 +83,11 @@ skip = 4;
 % ax.FontWeight = 'bold';
 hold on
 % contourf(X,Y,Gamma1)
-contourf(X/chord,Y/chord,vorticityStar,500,'LineColor','none','edgecolor','none','LevelList',-11:0.005:11)
-clim([-2 2])
+levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
+contourf(X/chord,Y/chord,vorticityStar,levels,'LineColor','k','edgecolor','k','LevelList',-3:6/7:3)
+% contour(X/chord,Y/chord,vorticityStar,levels,'LineColor','k','LevelList',-3:0.5:3)
+clim([-3 3])
+colormap(cmap)
 % quiver(X(1:skip:end)/chord,Y(1:skip:end)/chord,ux(1:skip:end,1:skip:end),uy(1:skip:end,1:skip:end),1,'k','LineWidth',1)
 % h = stream2(X/chord,Y/chord,ux,uy,startX,startY);
 % lineobj = streamline(h);
