@@ -14,7 +14,7 @@ test_spec = regexp(file,'\d\d\dD_\d\dD');
 metadata = table2array(readtable(file_dir,'Range','A12:F13'));
 data = table2array(readtable(file_dir,'NumHeaderLines',14)); %Imports one file with corresponding data
 if data(end,1) > 225
-    data = data(50000:end,:);
+    data = data(100000:end,:);
 end
 
 %% Extracting metadata and run specifications
@@ -74,7 +74,7 @@ ttl = data(1:data_length,5);
 change_idx = find(sync(1:end-1) == 0 & sync(2:end) == 1) + 1;
 for ii = 1:length(change_idx)
     jj = 1;
-    while(ttl(change_idx(ii))>ttl(change_idx(ii)+jj)-2) %-1 because of weird timing signal
+    while(ttl(change_idx(ii))>ttl(change_idx(ii)+jj)-1) %-1 because of weird timing signal
         jj = jj+1;
     end
     change_idx(ii,2) = change_idx(ii,1)+jj;
@@ -97,6 +97,7 @@ sync_velo_norm = velo(change_idx)/max(velo);
 disp_norm = encoder_filt/max(encoder_filt);
 velo_norm = velo/max(velo);
 dispvelo_mag_norm = sqrt(disp_norm.^2+velo_norm.^2);
+used_idx = abs(dispvelo_mag_norm) > 0.7;
 angle_norm = atan2(disp_norm,velo_norm);
 angle_norm = wrapTo2Pi(angle_norm);
 
@@ -113,13 +114,22 @@ for ii = 2:2:(nBins*2)-1
 end
 binned_data(binned_data==nBins*2) = 1;
 
-unique(binned_data)
+unique(binned_data);
 
 colors = lines(nBins);
-color_matrix = colors(binned_data,:);
+color_matrix = colors(binned_data(used_idx),:);
+close all
 hold on
-scatter(velo_norm,disp_norm,10,color_matrix,"filled")
+data_s = scatter(velo_norm(used_idx),disp_norm(used_idx),10,color_matrix,"filled")
+data_s.HandleVisibility = 'off';
 
-plot(velo_norm,disp_norm)
-scatter(sync_velo_norm,sync_disp_norm,"filled")
+% plot(velo_norm,disp_norm)
+s1 = scatter(sync_velo_norm(:,1),sync_disp_norm(:,1),"filled","o",'k')
+s1.DisplayName = '1st Image Pair';
+s2 = scatter(sync_velo_norm(:,2),sync_disp_norm(:,2),"filled","^",'k')
+s2.DisplayName = '2nd Image Pair';
+legend
+
+xlabel('$\dot{y}/\dot{y_{max}}$')
+ylabel('$y/y_{max}$')
 axis equal

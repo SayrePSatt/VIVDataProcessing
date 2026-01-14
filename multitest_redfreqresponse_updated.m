@@ -21,8 +21,8 @@ single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 
 test_distratios = ["000" "015" "040" "070"];% "020" "025" "030" "040" "050" "060" "070" "100"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
-test_spring = ["1k" "6k"];
+test_diaratios = ["_00"];% "_10"]; %"06" "08"];
+test_spring = ["1k"];% "6k"];
 
 bgColor = [255 255 255]/255;
 
@@ -269,10 +269,6 @@ for ii=1:num_uniq_configs %each configuration
                 f_na = metadata(:,5);
                 zeta = metadata(:,6);
                 u_red(iii) = U/(f_nw(1)*d_sph(1));
-                % if u_red(iii) >= 6.4
-                %     f_nw = f_nw*0.995;
-                %     f_na = f_na*0.995;
-                % end
 
                 m_d = (4/3)*pi*(d_sph(1)/2)^3*rho+rho*0.005^2*pi*d_sph(1)/4;
                 m_star = m(1)/m_d;
@@ -319,17 +315,16 @@ for ii=1:num_uniq_configs %each configuration
                 encoder_filt = filtfilt(b,a,encoder);
                 
                 %% Frequency investigation
-                clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq PSD_norm PSD_freq_norm
+                clear f_peaks mx phase f_windowed A_y_max peak_idx %PSD_freq PSD_norm PSD_freq_norm
                 % figure
                 [mx,phase,f_windowed] = psdd3_sayre(f_s,encoder_filt,12000,6000,2);
                 f = f_windowed;
                 f_norm = f_windowed./f_nw(1);
                 meanpwr = mean(mx,2);
-            
                 if single_test == 1
                     nfft = 500000;
-                    [PSD_freq, PSD_norm] = norm_PSD_calc(f_s,encoder_filt,nfft,2);
-                    PSD_freq_norm = PSD_freq/f_nw(1);
+                    [PSD_freq, PSD_norm(:,iii)] = norm_PSD_calc(f_s,encoder_filt,nfft,3*f_nw(1));
+                    PSD_freq_norm(:,iii) = PSD_freq/f_nw(1);
                 end
             
                 [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
@@ -413,8 +408,16 @@ for ii=1:num_uniq_configs %each configuration
             end
             clear results
             %% Determining the average and uncertainty bounds from the tests
-            zeropad = zeros(1,length(pdicy));
+            zeropad = zeros(size(pdicy));
+            % zeropad_psd = zeros(size(PSD_freq_norm));
             results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad]};
+
+            if single_test==1
+                % psd_results = {PSD_freq_norm, PSD_norm};
+                PSD_freq_norm_ave(:,kk) = mean(PSD_freq_norm,2);
+                PSD_norm_ave(:,kk) = mean(PSD_norm,2);
+            end
+
             for kkk = 1:length(results)
                 [results_ave{kkk}{ii,jj}(kk), results_upper{kkk}{ii,jj}(kk), results_lower{kkk}{ii,jj}(kk)]= ave_bounds_newstructure(results{kkk});
             end
@@ -422,14 +425,27 @@ for ii=1:num_uniq_configs %each configuration
         end
     end
     %% Plotting Results
-    figure(A_y_star_pctile_fig)
-    plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
-    if ii==1
-        set(gca,'XMinorTick','on','YMinorTick','on')
-        xlabel('$U^*$')
-        ylabel('$A^*$')
-        set(get(gca,'ylabel'),'rotation',0)
-    end
+    
+    if single_test == 1
+        figure(freq_contour_fig)
+        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
+        if ii==1
+            Ustar_temp = 0:23.5;
+            f_vo_norm = St*Ustar_temp;
+            plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+            yline(1,'k-','HandleVisibility','off')
+            set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+        end
+    
+        figure(A_y_star_pctile_fig)
+        plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+        if ii==1
+            set(gca,'XMinorTick','on','YMinorTick','on')
+            xlabel('$U^*$')
+            ylabel('$A^*$')
+            set(get(gca,'ylabel'),'rotation',0)
+        end
+    end  
     
     %Plotting reduced amplitude
     figure(A_y_star_fig)

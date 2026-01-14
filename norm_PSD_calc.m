@@ -4,12 +4,18 @@ function [f,pxx_norm] = norm_PSD_calc(fs,signal,nfft,fc)
 
 [pxx, f] = pwelch(signal,150000,100000,nfft,fs);
 
-idx = f<=fc;
+idx = f<fc;
 
+% size(idx)
 %normalize PSD
 df = f(2)-f(1); %Frequency resolution
 f = f(idx);
-pxx_norm = pxx / sum(pxx*df);
+% pxx_norm = pxx / sum(pxx*df);
+% pxx_norm = pxx_norm(idx);
+pxx_db = 10*log10(pxx);
+
+% Normalize to maximum
+pxx_norm = pxx_db - max(pxx_db);
 pxx_norm = pxx_norm(idx);
 % pxx_norm = pxx(idx);
 
