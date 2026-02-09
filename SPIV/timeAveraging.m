@@ -6,26 +6,23 @@ tic
 % B = [linspace(1,1,100) ones(1,43) linspace(1,0,100)];
 % cmap = [R(:),G(:),B(:)];  %// create colormap
 
-reds = [1 0 0;
-        1 0.4 0.4;
-        1 0.8 0.8;    % light red
-        ];       % darkest red
+reds = [251 226 211;
+        246 178 148;
+        224 109 84]/255;       % darkest red
 
 whites = [1 1 1];     % white
 
-blues = [0.6 0.8 1;   % lightest blue
-         0.2 0.6 1;
-         0 0 1];      % darkest blue
+blues = [219 234 242;   % lightest blue
+         156 199 223;
+         33 102 172]/255;      % darkest blue
 
-colors = [
-    0.6 0   0;    % dark red
-    0.8 0.2 0.2;  % medium red
-    1   0.4 0.4;  % light red
-    1   1   1;    % white
-    0.6 0.8 1;    % light blue
-    0.2 0.6 1;    % medium blue
-    0   0.2 0.4   % dark blue
-];
+colors = [224 109 84;
+          246 178 148;
+          251 226 211;   % darkest red
+          255 255 255;    % white
+          219 234 242;   % lightest blue
+          156 199 223;
+          33 102 172]/255;      % darkest blue
 
 colors = flipud(colors);
 cmap = colors;
@@ -69,11 +66,44 @@ Umag = (reshape(UmagAvg,length(X),length(Y)))';
 vorticity = curl(XX,YY,ux,uy);
 vorticityStar = vorticity*chord/VTEMax;
 
+u = vorticityStar;
+u(abs(u)<0.7) = 0;
+alpha = 0.06;           % Filter strength; try between 0.01 and 0.2 for tuning
+nIterations = 8;      % How many times to apply filter? (e.g., 5-50)
+
+for k = 1:nIterations
+    % Compute discrete Laplacian
+    laplacian = -4*u + ...
+                circshift(u, [1, 0]) + ... % up
+                circshift(u, [-1, 0]) + ... % down
+                circshift(u, [0, 1]) + ... % right
+                circshift(u, [0, -1]);     % left
+    
+    % Update with Laplacian (diffusion smoothing)
+    u = u + alpha * laplacian;
+end
 % sigma = 3; % Standard deviation for the Gaussian filter
 % h_gaussian = fspecial('gaussian', [25 25], sigma);
-% vorticityStar = imfilter(vorticityStar, h_gaussian, 'replicate');
+% u = imfilter(vorticityStar, h_gaussian, 'replicate');
 
 % [startX,startY] = meshgrid(-0.1:0.01:0.05,-0.06:0.01:0.06);
+BW = abs(u) > 0.5;
+CC = bwconncomp(BW); 
+region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
+
+% Sort regions by area descending
+[~, sort_idx] = sort(region_area, 'descend');
+
+% Create mask for the two largest regions
+mask = zeros(size(BW));  % Initialize mask
+numRegionsToKeep = min(2, length(sort_idx));  % In case fewer than 2 regions exist
+
+for k = 1:numRegionsToKeep
+    mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
+end
+
+% Keep only the two largest vortices in your field
+u = u .* mask;
 
 skip = 4;
 % f = figure('units','inch','position',[1,1,8,6]);
@@ -84,7 +114,7 @@ skip = 4;
 hold on
 % contourf(X,Y,Gamma1)
 levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
-contourf(X/chord,Y/chord,vorticityStar,levels,'LineColor','k','edgecolor','k','LevelList',-3:6/7:3)
+contourf(X/chord,Y/chord,u,levels,'LineColor','k','edgecolor','k','LevelList',-3:6/7:3)
 % contour(X/chord,Y/chord,vorticityStar,levels,'LineColor','k','LevelList',-3:0.5:3)
 clim([-3 3])
 colormap(cmap)
@@ -171,5 +201,5 @@ xlabel('$y/D$')
 xticklabels({'-1', '0', '1'})
 
 %% Graphics export
-exportgraphics(f,['SPIV_figures\' 'vectorFields000D_1k_14.5.pdf'],'Resolution',600);
-exportgraphics(f,['SPIV_figures\' 'vectorFields000D_1k_14.5.png'],'Resolution',300);
+exportgraphics(f,['vectorFields000D_1k_14.5.pdf'],'Resolution',600);
+exportgraphics(f,['vectorFields000D_1k_14.5.png'],'Resolution',300);
