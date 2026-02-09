@@ -17,12 +17,12 @@ warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
-single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
+single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 
-test_distratios = ["000" "015" "040" "070"];% "020" "025" "030" "040" "050" "060" "070" "100"];
-test_diaratios = ["_00"];% "_10"]; %"06" "08"];
-test_spring = ["1k"];% "6k"];
+test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_spring = ["1k" "6k"];
 
 bgColor = [255 255 255]/255;
 
@@ -201,7 +201,7 @@ uniq_configs = circshift(uniq_configs,1);
 matching_tests = {};
 
 plotting_color(1,:) = [0 0 0];
-plotting_color(2:length(uniq_configs),:) = zeros(length(uniq_configs)-1);% lines(length(uniq_configs)-1); This is plotting with different colors
+plotting_color(2:length(uniq_configs),:) = lines(length(uniq_configs)-1); %zeros(length(uniq_configs)-1);% This is plotting with different colors
 % plotting_color(length(uniq_configs),:) = [1 0 0];
 plotting_color(2:end,:) = flipud(plotting_color(2:end,:));
 
@@ -210,6 +210,7 @@ marker_style = marker_style(1:length(uniq_configs));
 marker_style = flipud(marker_style(1:length(uniq_configs)));
 marker_style = circshift(marker_style,1,1);
 
+uniq_configs = sort(uniq_configs); %Reorganizes data to be in order of separation distance
 
 for ii = 1:length(uniq_configs)
     red_velo_est = [];
@@ -654,7 +655,7 @@ set(get(gca,'ylabel'),'rotation',0)
 % saveas(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.eps'],'epsc')
 % saveas(freq_contour_fig,'freq_contour.eps','epsc')
 
-exportgraphics(A_y_star_fig,['figures\' 'A_y_star.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+exportgraphics(A_y_star_fig,['figures\' 'A_y_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(total_force_fig,['figures\' 'total_force.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_force_fig,['figures\' 'vortex_force.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(total_phase_fig,['figures\' 'total_phase.pdf'],'Resolution',300,'BackgroundColor', bgColor)
@@ -663,9 +664,10 @@ exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.pdf'],'Resolution',300,'Backgr
 exportgraphics(griffin_fig,['figures\' 'griffin.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(pdicy_fig,['figures\' 'pdicy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
-exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
-exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
-
+if single_test == 1
+    exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+    exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+end
 
 exportgraphics(A_y_star_fig,['figures\' 'A_y_star.png'],'Resolution',300,'BackgroundColor', bgColor);
 exportgraphics(total_force_fig,['figures\' 'total_force.png'],'Resolution',300,'BackgroundColor', bgColor)
@@ -752,9 +754,9 @@ if single_test == 1
     end
     annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
     annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
-    annotation(phase_subplot_fig, 'line', [modeII_line_0 modeII_line_0], [norm_bottom norm_top], 'Color', plotting_color(1,:), 'LineWidth', 1.5,'LineStyle',':');
-    annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
-    annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
+    % annotation(phase_subplot_fig, 'line', [modeII_line_0 modeII_line_0], [norm_bottom norm_top], 'Color', plotting_color(1,:), 'LineWidth', 1.5,'LineStyle',':');
+    % annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
+    % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
     legend
     saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
     exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.png'],'Resolution',300,'BackgroundColor', bgColor)
