@@ -22,7 +22,7 @@ for i=3:length(allfiles)
         disp = data(:,2);
         [peak, peakidx] = findpeaks(disp,'MinPeakHeight',0,'MinPeakDistance',300);
         for jj = 1:length(peakidx)-m
-            if time(peakidx(jj)) > 50 && time(peakidx(jj)) < 200 && disp(peakidx(jj)) > 0.0005
+            if time(peakidx(jj)) > 50 && time(peakidx(jj)) < 150 && disp(peakidx(jj)) > 0.0005
                 f_d(jj) = 1/((time(peakidx(jj+m))-time(peakidx(jj)))/m);
                 log_decrement(jj) = log(peak(jj)/peak(jj+m))/m;
             else
