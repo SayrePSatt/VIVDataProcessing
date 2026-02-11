@@ -14,7 +14,7 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
@@ -28,7 +28,7 @@ bgColor = [255 255 255]/255;
 
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\viv_newstructure\aftertare_newstructure\";
+topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -200,8 +200,13 @@ uniq_configs = circshift(uniq_configs,1);
 
 matching_tests = {};
 
+extended_colormap = lines(7);
+additional_colors = [204 204 102; %Yellow
+                     255 102 102; %Green
+                     255 102 255]/255; %Magenta
+extended_colormap = [extended_colormap; additional_colors];
 plotting_color(1,:) = [0 0 0];
-plotting_color(2:length(uniq_configs),:) = lines(length(uniq_configs)-1); %zeros(length(uniq_configs)-1);% This is plotting with different colors
+plotting_color(2:length(uniq_configs),:) = extended_colormap(1:length(uniq_configs)-1,:); %lines(length(uniq_configs)-1); %zeros(length(uniq_configs)-1);% This is plotting with different colors
 % plotting_color(length(uniq_configs),:) = [1 0 0];
 plotting_color(2:end,:) = flipud(plotting_color(2:end,:));
 
@@ -459,8 +464,8 @@ for ii=1:num_uniq_configs %each configuration
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
         xlabel('$U^*$')
-        ylabel('$\sqrt{2}A_{rms}/D$')
-        set(get(gca,'ylabel'),'rotation',90)
+        ylabel('$A^*$')
+        set(get(gca,'ylabel'),'rotation',0)
     end
     plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
 
@@ -475,8 +480,8 @@ for ii=1:num_uniq_configs %each configuration
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
         xlabel('$(U^*/f^*)St$')
-        ylabel('$\sqrt{2}A_{rms}/D$')
-        set(get(gca,'ylabel'),'rotation',90)
+        ylabel('$A^*$')
+        set(get(gca,'ylabel'),'rotation',0)
     end
     
     plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,2)
@@ -501,10 +506,10 @@ for ii=1:num_uniq_configs %each configuration
     
     plot_fn(results_ave,results_lower,results_upper,1,10,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1) %Freq Ratio plot
     % set(gca)
-    xlabel('$U/f_{n,w}D$')
-    ylabel('$f/f_{n,w}$')
+    xlabel('$U^*$')
+    ylabel('$f^*$')
     ylim([0.9 1.2])
-    set(get(gca,'ylabel'),'rotation',90)
+    set(get(gca,'ylabel'),'rotation',0)
 
     %Plots of lift coefficient
     hold on
@@ -515,7 +520,7 @@ for ii=1:num_uniq_configs %each configuration
             plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
-        xlabel('$U/f_{n,w}D$')
+        xlabel('$U^*$')
         ylabel('$C^{\prime}_{total}$')
         set(get(gca,'ylabel'),'rotation',90)
         % legend
@@ -526,7 +531,7 @@ for ii=1:num_uniq_configs %each configuration
             plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
-        xlabel('$U/f_{n,w}D$')
+        xlabel('$U^*$')
         ylabel('$C^{\prime}_{vortex}$')
         set(get(gca,'ylabel'),'rotation',90)
         % legend
@@ -538,7 +543,7 @@ for ii=1:num_uniq_configs %each configuration
             plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
         end
         set(gca,'XMinorTick','on')
-        xlabel('$U/f_{n,w}D$')
+        xlabel('$U^*$')
         ylabel('$\phi_{total}$')
         set(get(gca,'ylabel'),'rotation',90)
         yline(90,'k--','HandleVisibility','off')
@@ -551,7 +556,7 @@ for ii=1:num_uniq_configs %each configuration
             plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
         end
         set(gca,'XMinorTick','on')
-        xlabel('$U/f_{n,w}D$')
+        xlabel('$U^*$')
         ylabel('$\phi_{vortex}$')
         set(get(gca,'ylabel'),'rotation',90)
         yline(90,'k--','HandleVisibility','off')
@@ -593,7 +598,7 @@ for ii=1:num_uniq_configs %each configuration
     % plot_legends = 1;
     plot_fn(results_ave,results_lower,results_upper,1,3,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
     
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$P$')
     set(get(gca,'ylabel'),'rotation',0)
     set(gca,'XMinorTick','on','YMinorTick','on')
@@ -607,7 +612,7 @@ plot(griffin_massdamp_fit,griffin_Astar_fit,'k-','DisplayName','Govhardan 2005')
 plot(mass_damp,max(squeeze(results_ave{9}{1}(1,:,:))),'ko','MarkerFaceColor','k');
 set(gca,'XMinorTick','on','YMinorTick','on')
 xlabel('$(m^*+C_A)\zeta$')
-ylabel('$\sqrt{2}A_{rms}/D$')
+ylabel('$A^*$')
 set(get(gca,'ylabel'),'rotation',0)
 
 %% Annotation Playing
@@ -729,7 +734,7 @@ if single_test == 1
     copyobj(allchild(ax3), gca);
     title(ax3.Title.String); % Copy title from original axes
     set(gca,'XMinorTick','on')
-    xlabel('$U/f_{n,w}D$')
+    xlabel('$U^*$')
     ylabel('$\phi_{vortex}$')
     set(get(gca,'ylabel'),'rotation',90)
     ylim([0 200])
