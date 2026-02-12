@@ -144,7 +144,7 @@ angle_norm = atan2(disp_norm,velo_norm);
 angle_norm = wrapTo2Pi(angle_norm);
 
 nBins = 24;
-bin_forprocessing = [1 7 13 19];
+bin_forprocessing = [20 2 8 14];
 
 edges = linspace(0,2*pi,(nBins*2)+1);
 edges = sort(edges); % make sure they are sorted
