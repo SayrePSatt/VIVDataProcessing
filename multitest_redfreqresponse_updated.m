@@ -20,15 +20,20 @@ plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 
-test_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
-test_diaratios = ["_00"]; %"06" "08"];
+all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
+
+test_distratios = ["000" "015" "020" "040" "070" "100"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 
-bgColor = [255 255 255]/255;
+[~, colormask, ~] = intersect(all_distratios,test_distratios);
 
+bgColor = [255 255 255]/255;
+figure_size = [100 100 600 350];
+tick_size = [0.03 0.012];
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -80,6 +85,9 @@ griffin_Astar_fit = rmmissing(griffin_plot(:,4));
 %% Setting up plots for later
 
 A_y_star_fig = figure;
+A_y_star_fig.Position = figure_size;
+set(gca,'YLim',[0 1.5]);
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -88,7 +96,9 @@ end
 hold on;
 
 A_y_norm_fig = figure;
-A_y_norm_fig.Position = [100 100 600 400];
+A_y_norm_fig.Position = figure_size;
+set(gca,'XLim',[0.6 1.6]);
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -97,6 +107,8 @@ end
 hold on;
 
 phase_subplot_fig = figure;
+phase_subplot_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -105,6 +117,9 @@ end
 hold on;
 
 total_force_fig = figure;
+total_force_fig.Position = figure_size;
+set(gca,'YLim',[0 0.5]);
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -113,6 +128,9 @@ end
 hold on;
 
 vortex_force_fig = figure;
+vortex_force_fig.Position = figure_size;
+set(gca,'YLim',[0 0.5]);
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -121,6 +139,8 @@ end
 hold on;
 
 total_phase_fig = figure;
+total_phase_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -129,6 +149,8 @@ end
 hold on;
 
 vortex_phase_fig = figure;
+vortex_phase_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -137,6 +159,8 @@ end
 hold on;
 
 pdicy_fig = figure;
+pdicy_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -145,6 +169,8 @@ end
 hold on;
 
 f_star_fig = figure;
+f_star_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -153,6 +179,8 @@ end
 hold on;
 
 test_fig = figure;
+test_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -161,6 +189,8 @@ end
 hold on;
 
 griffin_fig = figure;
+griffin_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
 if squareaxis == 1
@@ -201,19 +231,21 @@ uniq_configs = circshift(uniq_configs,1);
 matching_tests = {};
 
 extended_colormap = lines(7);
-additional_colors = [204 204 102; %Yellow
-                     255 102 102; %Green
-                     255 102 255]/255; %Magenta
+additional_colors = [204 0 204; %Magenta
+                     255 204 102; %Yellow
+                     255 0 255]/255; %Magenta
 extended_colormap = [extended_colormap; additional_colors];
 plotting_color(1,:) = [0 0 0];
-plotting_color(2:length(uniq_configs),:) = extended_colormap(1:length(uniq_configs)-1,:); %lines(length(uniq_configs)-1); %zeros(length(uniq_configs)-1);% This is plotting with different colors
+plotting_color(2:length(all_distratios),:) = extended_colormap(1:length(all_distratios)-1,:); %lines(length(uniq_configs)-1); %zeros(length(uniq_configs)-1);% This is plotting with different colors
+plotting_color = plotting_color(colormask,:);
 % plotting_color(length(uniq_configs),:) = [1 0 0];
-plotting_color(2:end,:) = flipud(plotting_color(2:end,:));
+% plotting_color(2:end,:) = flipud(plotting_color(2:end,:));
 
 marker_style = ["o"; "square"; "diamond"; "^"; "v"; ">"; "<"; "pentagram"; "hexagram";"*"];
-marker_style = marker_style(1:length(uniq_configs));
-marker_style = flipud(marker_style(1:length(uniq_configs)));
-marker_style = circshift(marker_style,1,1);
+marker_style = marker_style(1:length(all_distratios));
+marker_style = marker_style(colormask);
+% marker_style = flipud(marker_style(1:length(uniq_configs)));
+% marker_style = circshift(marker_style,1,1);
 
 uniq_configs = sort(uniq_configs); %Reorganizes data to be in order of separation distance
 
@@ -482,9 +514,12 @@ for ii=1:num_uniq_configs %each configuration
         xlabel('$(U^*/f^*)St$')
         ylabel('$A^*$')
         set(get(gca,'ylabel'),'rotation',0)
+        
     end
     
     plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,2)
+    xticks([0.6:0.2:1.6])
+    xlim([0.6 1.6])
 
     % dim = [0.35 0.75 0.5 0.1];
     % annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')

@@ -3,13 +3,13 @@ function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plo
 %   Detailed explanation goes here
 distance = str2double(extractBetween(name,1,3))/10;
 if distance == 0
-    legend_label = "Single";
+    legend_label = "Isolated";
 elseif distance == 10.5
     legend_label = "+0.5% f_n"
 elseif distance == 9.5
     legend_label = "-0.5% f_n"
 else
-    legend_label = distance+"D";
+    legend_label = num2str(distance);
 end
 
 x_data = squeeze(results{x_num}{config_idx}(:));
@@ -34,7 +34,7 @@ if errorbars == 1
         LineStyle='-', ...
         LineWidth=1.2, ...
         Color=plotting_color(config_idx,:), ...
-        MarkerSize=7.5)
+        MarkerSize=6)
 else
     plot(x_data,y_data, ...
         plotting_marker{config_idx}, ...
@@ -44,7 +44,7 @@ else
         LineStyle='none', ...
         LineWidth=1.2, ...
         Color=plotting_color(config_idx,:), ...
-        MarkerSize=7.5)
+        MarkerSize=6)
 end
 
 xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
@@ -52,6 +52,7 @@ xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
 if plot_legend == 1
     plot_leg = legend('Location','eastoutside','NumColumns',1);
     set(plot_leg,'Color','none','Box','off')
+    plot_leg.Title.String = '$L^*$';
 end
 
 box on

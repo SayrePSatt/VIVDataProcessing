@@ -1,4 +1,4 @@
-lear all
+clear all
 close all
 clc
 
@@ -12,8 +12,8 @@ C_A = 0.5;
 bgColor = [255 255 255]/255;
 load("pumpFit_freq2velo.mat");
 
-datafolder = "F:\EFDL\vivscratch_3\";
-topfolder = datafolder+"testDataZeroed\";
+datafolder = "E:\EFDL\viv_newstructure";
+topfolder = datafolder+"aftertare_newstructure\";
 
 all_files = dir(topfolder);
 
@@ -53,9 +53,7 @@ for ii = 1:length(uniq_configs)
         filename = all_files(jj).name;
         if contains(filename,uniq_configs(ii)) && endsWith(filename,'.dat')
             red_velo_est_temp = str2double(cell2mat(extractBetween(filename,39,42)));
-            if red_velo_est_temp == 0
-                continue
-            else
+            if any(red_velo_est_temp == test_redvelo)
                 red_velo_est = [red_velo_est red_velo_est_temp];
                 filematch = [filematch jj];
             end
@@ -70,10 +68,11 @@ for ii = 1:length(uniq_configs)
 end
 
 %% Setting up files to read
-test_distratios = ["000"];% "015" "040" "100"];% "020" "030"];
-test_diaratios = ["00"]% "10"];
-test_spring = ["6k"];
-test_nums = ["02_"];
+test_distratios = ["000" "015" "020" "025" "040"];% "020" "030"];
+test_diaratios = ["00" "10"];
+test_spring = ["1k"];
+% test_date = ["02_"];
+test_redvelo = [8.5 14.5 20.5];
 
 all_files = dir(topfolder);
 
