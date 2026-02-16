@@ -14,8 +14,8 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_reference = 1; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
@@ -23,7 +23,7 @@ squareaxis = 0;
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = ["000" "015" "020" "040" "070" "100"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_diaratios = ["_00"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 
 [~, colormask, ~] = intersect(all_distratios,test_distratios);
