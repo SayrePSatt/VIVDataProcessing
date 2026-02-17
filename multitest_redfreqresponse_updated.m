@@ -14,17 +14,17 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 1; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_errors = 1; %0 to not plot errorbars
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = ["000" "015" "020" "040" "070" "100"];
+test_distratios = ["000"];% "015" "020" "040" "070" "100"];
 test_diaratios = ["_00"]; %"06" "08"];
-test_spring = ["1k" "6k"];
+test_spring = ["6k" "1k"];
 
 [~, colormask, ~] = intersect(all_distratios,test_distratios);
 
@@ -33,7 +33,7 @@ figure_size = [100 100 600 350];
 tick_size = [0.03 0.012];
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -285,7 +285,7 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
@@ -359,11 +359,11 @@ for ii=1:num_uniq_configs %each configuration
                 f = f_windowed;
                 f_norm = f_windowed./f_nw(1);
                 meanpwr = mean(mx,2);
-                if single_test == 1
-                    nfft = 500000;
-                    [PSD_freq, PSD_norm(:,iii)] = norm_PSD_calc(f_s,encoder_filt,nfft,3*f_nw(1));
-                    PSD_freq_norm(:,iii) = PSD_freq/f_nw(1);
-                end
+                % if single_test == 1
+                %     nfft = 500000;
+                %     [PSD_freq, PSD_norm(:,iii)] = norm_PSD_calc(f_s,encoder_filt,nfft,3*f_nw(1));
+                %     PSD_freq_norm(:,iii) = PSD_freq/f_nw(1);
+                % end
             
                 [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
                 
@@ -450,11 +450,11 @@ for ii=1:num_uniq_configs %each configuration
             % zeropad_psd = zeros(size(PSD_freq_norm));
             results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad]};
 
-            if single_test==1
-                % psd_results = {PSD_freq_norm, PSD_norm};
-                PSD_freq_norm_ave(:,kk) = mean(PSD_freq_norm,2);
-                PSD_norm_ave(:,kk) = mean(PSD_norm,2);
-            end
+            % if single_test==1
+            %     % psd_results = {PSD_freq_norm, PSD_norm};
+            %     PSD_freq_norm_ave(:,kk) = mean(PSD_freq_norm,2);
+            %     PSD_norm_ave(:,kk) = mean(PSD_norm,2);
+            % end
 
             for kkk = 1:length(results)
                 [results_ave{kkk}{ii,jj}(kk), results_upper{kkk}{ii,jj}(kk), results_lower{kkk}{ii,jj}(kk)]= ave_bounds_newstructure(results{kkk});
@@ -464,26 +464,26 @@ for ii=1:num_uniq_configs %each configuration
     end
     %% Plotting Results
     
-    if single_test == 1
-        figure(freq_contour_fig)
-        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
-        if ii==1
-            Ustar_temp = 0:23.5;
-            f_vo_norm = St*Ustar_temp;
-            plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
-            yline(1,'k-','HandleVisibility','off')
-            set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
-        end
-    
-        figure(A_y_star_pctile_fig)
-        plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
-        if ii==1
-            set(gca,'XMinorTick','on','YMinorTick','on')
-            xlabel('$U^*$')
-            ylabel('$A^*$')
-            set(get(gca,'ylabel'),'rotation',0)
-        end
-    end  
+    % if single_test == 1
+    %     figure(freq_contour_fig)
+    %     plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
+    %     if ii==1
+    %         Ustar_temp = 0:23.5;
+    %         f_vo_norm = St*Ustar_temp;
+    %         plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+    %         yline(1,'k-','HandleVisibility','off')
+    %         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+    %     end
+    % 
+    %     figure(A_y_star_pctile_fig)
+    %     plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+    %     if ii==1
+    %         set(gca,'XMinorTick','on','YMinorTick','on')
+    %         xlabel('$U^*$')
+    %         ylabel('$A^*$')
+    %         set(get(gca,'ylabel'),'rotation',0)
+    %     end
+    % end  
     
     %Plotting reduced amplitude
     figure(A_y_star_fig)
@@ -518,8 +518,8 @@ for ii=1:num_uniq_configs %each configuration
     end
     
     plot_fn(results_ave,results_lower,results_upper,2,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,2)
-    xticks([0.6:0.2:1.6])
-    xlim([0.6 1.6])
+    xticks([0.5:0.5:4.5])
+    xlim([0.5 4.5])
 
     % dim = [0.35 0.75 0.5 0.1];
     % annotation('textbox',dim,'String','Mode II','FitBoxToText','on','EdgeColor','none','Interpreter','latex')
@@ -734,7 +734,7 @@ if single_test == 1
     ax1 = get(A_y_star_fig, 'CurrentAxes');
     copyobj(allchild(ax1), gca);
     title(ax1.Title.String); % Copy title from original axes
-    ylabel('$\sqrt{2}A_{rms}/D$')
+    ylabel('$A^*$')
     xlabel('')
     xticklabels({})
     xlim(ax1.XLim)
@@ -797,7 +797,7 @@ if single_test == 1
     % annotation(phase_subplot_fig, 'line', [modeII_line_0 modeII_line_0], [norm_bottom norm_top], 'Color', plotting_color(1,:), 'LineWidth', 1.5,'LineStyle',':');
     % annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
     % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
-    legend
+    % legend
     saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
     exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
