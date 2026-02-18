@@ -14,16 +14,16 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 1; %0 to not plot references
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_reference = 0; %0 to not plot references
 plot_errors = 1; %0 to not plot errorbars
-single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
+single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = ["000"];% "015" "020" "040" "070" "100"];
-test_diaratios = ["_00"]; %"06" "08"];
+test_distratios = ["000" "015" "020" "025" "030" "040"];% "070" "100"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["6k" "1k"];
 
 [~, colormask, ~] = intersect(all_distratios,test_distratios);
@@ -31,6 +31,7 @@ test_spring = ["6k" "1k"];
 bgColor = [255 255 255]/255;
 figure_size = [100 100 600 350];
 tick_size = [0.03 0.012];
+size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
 topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
@@ -491,8 +492,8 @@ for ii=1:num_uniq_configs %each configuration
     hold on
     if ii==1
         if plot_reference == 1
-            plot(u_red_A_star_sareen,A_star_sareen,'k-s','DisplayName','Sareen 2018b');
-            plot(u_red_A_star_govwill,A_star_govwill,'k-d','DisplayName','Govhardan 2005');
+            plot(u_red_A_star_sareen,A_star_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+            plot(u_red_A_star_govwill,A_star_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
         xlabel('$U^*$')
@@ -507,8 +508,8 @@ for ii=1:num_uniq_configs %each configuration
     hold on
     if ii==1
         if plot_reference == 1
-            plot(unorm_unorm_sareen,unorm_Astar_sareen,'k-s','DisplayName','Sareen 2018b');
-            plot(unorm_unorm_govwill,unorm_Astar_govwill,'k-d','DisplayName','Govhardan 2005');
+            plot(unorm_unorm_sareen,unorm_Astar_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+            plot(unorm_unorm_govwill,unorm_Astar_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
         xlabel('$(U^*/f^*)St$')
@@ -552,7 +553,7 @@ for ii=1:num_uniq_configs %each configuration
         figure(total_force_fig)
         hold on
         if plot_reference==1
-            plot(u_red_totalforce_govwill,totalforce_govwill,'k-d','DisplayName','Govhardan 2005');
+            plot(u_red_totalforce_govwill,totalforce_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
         xlabel('$U^*$')
@@ -563,7 +564,7 @@ for ii=1:num_uniq_configs %each configuration
         figure(vortex_force_fig)
         hold on
         if plot_reference==1
-            plot(u_red_vortexforce_govwill,vortexforce_govwill,'k-d','DisplayName','Govhardan 2005');
+            plot(u_red_vortexforce_govwill,vortexforce_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
         end
         set(gca,'XMinorTick','on','YMinorTick','on')
         xlabel('$U^*$')
@@ -574,8 +575,8 @@ for ii=1:num_uniq_configs %each configuration
         figure(total_phase_fig)
         hold on
         if plot_reference==1
-            plot(u_red_totalphase_sareen,totalphase_sareen,'k-s','DisplayName','Sareen 2018b');
-            plot(u_red_totalphase_govwill,totalphase_govwill,'k-d','DisplayName','Govhardan 2005');
+            plot(u_red_totalphase_sareen,totalphase_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+            plot(u_red_totalphase_govwill,totalphase_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
         end
         set(gca,'XMinorTick','on')
         xlabel('$U^*$')
@@ -587,8 +588,8 @@ for ii=1:num_uniq_configs %each configuration
         figure(vortex_phase_fig)
         hold on
         if plot_reference == 1
-            plot(u_red_vortexphase_sareen,vortexphase_sareen,'k-s','DisplayName','Sareen 2018b');
-            plot(u_red_vortexphase_govwill,vortexphase_govwill,'k-d','DisplayName','Govhardan 2005');
+            plot(u_red_vortexphase_sareen,vortexphase_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+            plot(u_red_vortexphase_govwill,vortexphase_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
         end
         set(gca,'XMinorTick','on')
         xlabel('$U^*$')
@@ -615,7 +616,7 @@ for ii=1:num_uniq_configs %each configuration
     yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
     ax = gca;
     % if ii==1
-    %     % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{11}(ii,jj,:)),squeeze(results_lower{11}(ii,jj,:)),squeeze(results_upper{11}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
+    %     % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{11}(ii,jj,:)),squeeze(results_lower{11}(ii,jj,:)),squeeze(results_upper{11}(ii,jj,:)),'ks','MarkerFaceColor','g','DisplayName','Cross')
     %     modeII_line(ii,jj) = axis_norm(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{7}(ii,jj,:)),90,xlimits_forces(1),xlimits_forces(2),ax);
     % end
     
@@ -626,7 +627,7 @@ for ii=1:num_uniq_configs %each configuration
     ylim([0 180])
     yticks(0:15:180);  % Set ticks every 15 units
     yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-    % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{12}(ii,jj,:)),squeeze(results_lower{12}(ii,jj,:)),squeeze(results_upper{12}(ii,jj,:)),'k-s','MarkerFaceColor','g','DisplayName','Cross')
+    % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{12}(ii,jj,:)),squeeze(results_lower{12}(ii,jj,:)),squeeze(results_upper{12}(ii,jj,:)),'ks','MarkerFaceColor','g','DisplayName','Cross')
 
     %Periodicity Plot
     figure(pdicy_fig)
@@ -756,8 +757,9 @@ if single_test == 1
     xlim(ax1.XLim)
     xticklabels({})
     xlabel('')
-    yticks(0:90:180);  % Set ticks every 15 units
-    yticklabels({'','90', '180'});  % Set labels only at 90 and 180
+    ylim([0 180])
+    yticks(0:15:180);  % Set ticks every 15 units
+    yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
     yline(90,'k--')
     text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
     box on
@@ -774,8 +776,9 @@ if single_test == 1
     set(get(gca,'ylabel'),'rotation',90)
     ylim([0 200])
     xlim(ax1.XLim)
-    yticks(0:90:180);  % Set ticks every 15 units
-    yticklabels({'', '90', '180'});  % Set labels only at 90 and 180
+    ylim([0 180])
+    yticks(0:15:180);  % Set ticks every 15 units
+    yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
     yline(90,'k--')
     text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
     drawnow
@@ -790,7 +793,7 @@ if single_test == 1
     norm_top = position_temp(2)+position_temp(4);
     for ii = 1:length(results_ave{1,1})
         modeII_line = axis_norm((squeeze(results_ave{1,1}{ii})),(squeeze(results_ave{1,7}{ii})),90,ax,tl);
-        annotation(phase_subplot_fig, 'line', [modeII_line modeII_line], [norm_bottom norm_top], 'Color', plotting_color(ii,:), 'LineWidth', 1.5,'LineStyle',':');
+        annotation(phase_subplot_fig, 'line', [modeII_line modeII_line], [norm_bottom norm_top], 'Color', [0 142 255]/255, 'LineWidth', 1.5,'LineStyle','--'); % plotting_color(ii,:)
     end
     annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
     annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
@@ -798,7 +801,7 @@ if single_test == 1
     % annotation(phase_subplot_fig, 'line', [modeII_line_current modeII_line_current], [norm_bottom norm_top], 'Color', plotting_color(2,:), 'LineWidth', 1.5,'LineStyle','--');
     % annotation(phase_subplot_fig, 'line', [modeII_line(1,1) modeII_line(1,1)], [0 1], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-');
     % legend
-    saveas(phase_subplot_fig,['figures\' 'phase_amp_fig.eps'],'epsc')
+    exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.pdf'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(phase_subplot_fig,['figures\' 'phase_amp_fig.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
 % 
