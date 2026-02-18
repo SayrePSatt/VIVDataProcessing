@@ -28,7 +28,7 @@ if errorbars == 1
     
     errorbar(x_data,y_data,lwr_bound,up_bound,lwr_x_err,up_x_err,...
         plotting_marker{config_idx}, ...
-        'MarkerFaceColor',[0 142 255]/255,...%plotting_color(config_idx,:), ...
+        'MarkerFaceColor',plotting_color(config_idx,:), ...[0 142 255]/255,
         'MarkerEdgeColor','k', ...
         'DisplayName',legend_label, ...
         LineStyle='none', ...
@@ -47,12 +47,12 @@ else
         MarkerSize=6)
 end
 
-xlim([0 11]); %max(squeeze(results{x_num}{config_idx}(:)))+1])
+xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
 
 if plot_legend == 1
     plot_leg = legend('Location','eastoutside','NumColumns',1,'Interpreter', 'latex');
     set(plot_leg,'Color','none','Box','off')
-    plot_leg.Title.String = ''; %$L$
+    plot_leg.Title.String = '$L^*$';
 end
 
 box on

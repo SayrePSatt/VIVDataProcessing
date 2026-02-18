@@ -14,15 +14,15 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_errors = 0; %0 to not plot errorbars
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = ["000" "015" "020" "025" "030" "040"];% "070" "100"];
+test_distratios = ["000" "015" "020" "040" "070" "100"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["6k" "1k"];
 
@@ -34,7 +34,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -131,6 +131,17 @@ hold on;
 vortex_force_fig = figure;
 vortex_force_fig.Position = figure_size;
 set(gca,'YLim',[0 0.5]);
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+vortex_energy_fig = figure;
+vortex_energy_fig.Position = figure_size;
+% set(gca,'YLim',[0 0.5]);
 set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
@@ -286,7 +297,7 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
@@ -411,6 +422,9 @@ for ii=1:num_uniq_configs %each configuration
                 C_y = F/force_norm;
                 C_pot = F_pot/force_norm;
                 C_vortex = F_vortex/force_norm;
+
+                edot_vortex = C_vortex.*velo/d_sph(1);
+                e_vortex(iii) = trapz(time*f_peak,edot_vortex)/(max(time*f_peak)-min(time*f_peak));
             
                 C_y_68 = sqrt((-F.*U_68./(rho*U^3*pi*d_sph(1)^2)).^2 ...
                                    +(F_68./(0.5*rho*U^2*pi*d_sph(1)^2)).^2);
@@ -449,7 +463,7 @@ for ii=1:num_uniq_configs %each configuration
             %% Determining the average and uncertainty bounds from the tests
             zeropad = zeros(size(pdicy));
             % zeropad_psd = zeros(size(PSD_freq_norm));
-            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad]};
+            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad]};
 
             % if single_test==1
             %     % psd_results = {PSD_freq_norm, PSD_norm};
@@ -570,6 +584,13 @@ for ii=1:num_uniq_configs %each configuration
         xlabel('$U^*$')
         ylabel('$C^{\prime}_{vortex}$')
         set(get(gca,'ylabel'),'rotation',90)
+
+        figure(vortex_energy_fig)
+        hold on
+        set(gca,'XMinorTick','on','YMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$\overline{e}_{vortex}$')
+        set(get(gca,'ylabel'),'rotation',90)
         % legend
     
         figure(total_phase_fig)
@@ -606,7 +627,11 @@ for ii=1:num_uniq_configs %each configuration
     figure(vortex_force_fig)
     hold on
     plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
-    
+
+    figure(vortex_energy_fig)
+    hold on
+    plot_fn(results_ave,results_lower,results_upper,1,13,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
+
     figure(total_phase_fig)
     hold on
     plot_fn(results_ave,results_lower,results_upper,1,7,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
@@ -705,6 +730,7 @@ exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.pdf'],'Resolution',300,'Backgr
 exportgraphics(griffin_fig,['figures\' 'griffin.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(pdicy_fig,['figures\' 'pdicy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 if single_test == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
@@ -719,6 +745,7 @@ exportgraphics(A_y_norm_fig,['figures\' 'A_y_norm.png'],'Resolution',300,'Backgr
 exportgraphics(griffin_fig,['figures\' 'griffin.png'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(pdicy_fig,['figures\' 'pdicy.png'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.png'],'Resolution',300,'BackgroundColor', bgColor)
 if single_test == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.png'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.png'],'Resolution',300,'BackgroundColor', bgColor)
@@ -732,7 +759,7 @@ if single_test == 1
     hold on;
     tl = tiledlayout(3,1);
     nexttile
-    ax1 = get(A_y_star_fig, 'CurrentAxes');
+    ax1 = get(vortex_energy_fig, 'CurrentAxes');
     copyobj(allchild(ax1), gca);
     title(ax1.Title.String); % Copy title from original axes
     ylabel('$A^*$')
@@ -793,7 +820,7 @@ if single_test == 1
     norm_top = position_temp(2)+position_temp(4);
     for ii = 1:length(results_ave{1,1})
         modeII_line = axis_norm((squeeze(results_ave{1,1}{ii})),(squeeze(results_ave{1,7}{ii})),90,ax,tl);
-        annotation(phase_subplot_fig, 'line', [modeII_line modeII_line], [norm_bottom norm_top], 'Color', [0 142 255]/255, 'LineWidth', 1.5,'LineStyle','--'); % plotting_color(ii,:)
+        annotation(phase_subplot_fig, 'line', [modeII_line modeII_line], [norm_bottom norm_top], 'Color', plotting_color(ii,:), 'LineWidth', 1.5,'LineStyle','--'); % 
     end
     annotation(phase_subplot_fig, 'line', [modeII_line_gov modeII_line_gov], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','--');
     annotation(phase_subplot_fig, 'line', [modeII_line_sareen modeII_line_sareen], [norm_bottom norm_top], 'Color', 'k', 'LineWidth', 1.5,'LineStyle','-.');
