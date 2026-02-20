@@ -8,44 +8,20 @@ function plot_psd_fn(results,x_num,y_num,z_num,config_idx,plot_legend,plotting_c
 % x_num = 1;
 springs_idx = 2;
 % config_idx = 1;
+num_datasets = length(y_num);
+all_freqs = [];
+for k = 1:num_datasets
+    all_freqs = [all_freqs; y_num{k}(:)];
+end
+common_freq = linspace(min(all_freqs), max(all_freqs), 1000);
 
-
+combined_data = NaN(length(common_freq), num_datasets);
+for k = 1:num_datasets
+    combined_data(:,k) = interp1(y_num{k}, z_num{k}, common_freq, 'linear', NaN);
+end
 x_data = cell2mat(squeeze(results{x_num}{config_idx}(:)));
-springs = cell2mat(squeeze(results{springs_idx}{config_idx}(:)));
-uniq_springs = unique(springs);
 
-x_data_1k = x_data(springs==uniq_springs(1))';
-x_data_6k = x_data(springs == uniq_springs(2))';
-% 
-% x_data_1k = linspace(min(x_data_1k),max(x_data_1k),80);
-% x_data_6k = linspace(min(x_data_6k),max(x_data_6k),15);
-
-y_num_1k = y_num(springs == uniq_springs(1));
-y_num_6k = y_num(springs == uniq_springs(2));
-y_data_1k = y_num_1k{1}';
-y_data_6k = y_num_6k{1}';
-
-z_num_1k = z_num(springs == uniq_springs(1));
-z_num_6k = z_num(springs == uniq_springs(2));
-z_data_1k = cell2mat(z_num_1k);
-z_data_6k = cell2mat(z_num_6k);
-
-common_y = linspace(min([y_data_1k y_data_6k]), max([y_data_1k y_data_6k]), 1000);
-
-Z1_interp = zeros(length(common_y), length(x_data_1k));
-for col = 1:length(x_data_1k)
-    Z1_interp(:,col) = interp1(y_data_1k, z_data_1k(:,col), common_y, 'linear', NaN);
-end
-
-Z2_interp = zeros(length(common_y), length(x_data_6k));
-for col = 1:length(x_data_6k)
-    Z2_interp(:,col) = interp1(y_data_6k, z_data_6k(:,col), common_y, 'linear', NaN);
-end
-
-x_combined = [x_data_6k x_data_1k];
-Z_combined = [Z2_interp Z1_interp];
-
-imagesc(x_combined, common_y, Z_combined)
+imagesc(x_data, common_freq, combined_data)
 set(gca, 'YDir', 'normal')
 colorbar
 

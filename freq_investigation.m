@@ -331,25 +331,26 @@ for ii=1:num_uniq_configs %each configuration
                 % f_vo_norm(iii) = (St*U/d_sph(1))/f_nw(1);
 
                 %% Frequency Plots
-                figure
-                hold on
-                plot(PSD_freq_norm(:,iii),PSD_norm(:,iii),'k')
-                plot(PSD_freq_norm_C_y(:,iii),PSD_norm_C_y(:,iii),'r')
-                plot(PSD_freq_norm_C_v(:,iii),PSD_norm_C_v(:,iii),'b')
+                % figure
+                % hold on
+                % plot(PSD_freq_norm(:,iii),PSD_norm(:,iii),'k')
+                % plot(PSD_freq_norm_C_y(:,iii),PSD_norm_C_y(:,iii),'r')
+                % plot(PSD_freq_norm_C_v(:,iii),PSD_norm_C_v(:,iii),'b')
                 % % semilogy(PSD_freq_norm(:,iii),PSD_norm(:,iii),'k')
                 % hold on
                 % semilogy(PSD_freq_norm_C_y(:,iii),PSD_norm_C_y(:,iii),'r')
                 % semilogy(PSD_freq_norm_C_v(:,iii),PSD_norm_C_v(:,iii),'b')
-                xlabel('$f^*$')
-                ylabel('dB/Hz')
-                xlim([0 7])
-                title("$U^*=$"+u_red)
+                % xlabel('$f^*$')
+                % ylabel('dB/Hz')
+                % xlim([0 7])
+                % title("$U^*=$"+u_red)
 
 
             end
             
             results_ave{1}{ii,jj}(kk) = {[u_red]};
             results_ave{2}{ii,jj}(kk) = {[k_spring]};
+            results_ave{3}{ii,jj}(kk) = {[f_peak]};
             % for kkk = 1:length(results)
             %     results_ave{kkk}{ii,jj}(kk) = ave_bounds_newstructure(results{kkk});
             % end
