@@ -19,12 +19,15 @@ plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
+freq_plots = 1;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = ["000" "015" "020" "040" "070" "100"];
+test_distratios = ["015"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
-test_spring = ["6k" "1k"];
+test_spring = ["1k"];
+
+freq_cutoff = 6;
 
 [~, colormask, ~] = intersect(all_distratios,test_distratios);
 
@@ -220,6 +223,16 @@ if single_test == 1
     set(gcf, 'color', bgColor);
     set(gca, 'color', bgColor);
     hold on;
+
+    freq_contour_fig_C_y = figure;
+    set(gcf, 'color', bgColor);
+    set(gca, 'color', bgColor);
+    hold on;
+
+    freq_contour_fig_C_v = figure;
+    set(gcf, 'color', bgColor);
+    set(gca, 'color', bgColor);
+    hold on;
 end
 %% Setting up folder directories
 all_files = dir(topfolder);
@@ -295,13 +308,14 @@ testing = [];
 for ii=1:num_uniq_configs %each configuration
     [num_spring_configs, ~] = size(matching_tests{ii});
     for jj=1:num_spring_configs %Spring Config for each configuration
+        jj
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
             clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
-                filename = all_files(data_idx).name;
+                filename = all_files(data_idx).name
                 testing = [testing string(filename)];
                 metadata = table2array(readtable(topfolder+filename,'Range','A12:F13'));
                 data = table2array(readtable(topfolder+filename,'NumHeaderLines',14)); %Imports one file with corresponding data
@@ -371,11 +385,11 @@ for ii=1:num_uniq_configs %each configuration
                 f = f_windowed;
                 f_norm = f_windowed./f_nw(1);
                 meanpwr = mean(mx,2);
-                % if single_test == 1
-                %     nfft = 500000;
-                %     [PSD_freq, PSD_norm(:,iii)] = norm_PSD_calc(f_s,encoder_filt,nfft,3*f_nw(1));
-                %     PSD_freq_norm(:,iii) = PSD_freq/f_nw(1);
-                % end
+                if freq_plots == 1
+                    nfft = 500000;
+                    [PSD_freq, PSD_norm{jj}(:,iii)] = norm_PSD_calc(f_s,encoder_filt,nfft,freq_cutoff*f_nw(1));
+                    PSD_freq_norm{jj}(:,iii) = PSD_freq/f_nw(1);
+                end
             
                 [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
                 
@@ -458,6 +472,33 @@ for ii=1:num_uniq_configs %each configuration
                     legend('Disp', 'Vortex Force')
                     title(u_red{ii,kk}(iii,jjj))
                 end
+
+                %% Frequency Investigation of forces
+                clear f_peaks mx phase f_windowed A_y_max peak_idx %PSD_freq PSD_norm PSD_freq_norm
+                % figure
+                % [mx,phase,f_windowed] = psdd3_sayre(f_s,C_y,12000,6000,2);
+                % f = f_windowed;
+                % f_norm = f_windowed./f_nw(1);
+                % meanpwr = mean(mx,2);
+                if freq_plots == 1
+                    nfft = 500000;
+                    [PSD_freq_C_y, PSD_norm_C_y{jj}(:,iii)] = norm_PSD_calc(f_s,C_y,nfft,freq_cutoff*f_nw(1));
+                    PSD_freq_norm_C_y{jj}(:,iii) = PSD_freq_C_y/f_nw(1);
+
+                    [PSD_freq_C_v, PSD_norm_C_v{jj}(:,iii)] = norm_PSD_calc(f_s,C_vortex,nfft,freq_cutoff*f_nw(1));
+                    PSD_freq_norm_C_v{jj}(:,iii) = PSD_freq_C_v/f_nw(1);
+                end
+                % 
+                % [pwr_max peak_idx] = max(meanpwr); %Finds the max power and location after taking average)
+                % 
+                % p_f = polyfit(f(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2);
+                % p_f_norm = polyfit(f_norm(peak_idx-1:peak_idx+1),meanpwr(peak_idx-1:peak_idx+1),2); %Fits a polynomial to the top of the mean power
+                % f_peak_temp = -p_f(2)/(2*p_f(1));
+                % f_peak = f_peak_temp; %Setting 1st derivative slope to be 0, finding the location of 0
+                % f_star_peak(iii) = -p_f_norm(2)/(2*p_f_norm(1));
+                % 
+                % f_vo_norm(iii) = (St*U/d_sph(1))/f_nw(1);
+
             end
             clear results
             %% Determining the average and uncertainty bounds from the tests
@@ -465,11 +506,17 @@ for ii=1:num_uniq_configs %each configuration
             % zeropad_psd = zeros(size(PSD_freq_norm));
             results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad]};
 
-            % if single_test==1
-            %     % psd_results = {PSD_freq_norm, PSD_norm};
-            %     PSD_freq_norm_ave(:,kk) = mean(PSD_freq_norm,2);
-            %     PSD_norm_ave(:,kk) = mean(PSD_norm,2);
-            % end
+            if single_test==1
+                % psd_results = {PSD_freq_norm, PSD_norm};
+                PSD_freq_norm_ave{jj}(:,kk) = mean(PSD_freq_norm{jj},2);
+                PSD_norm_ave{jj}(:,kk) = mean(PSD_norm{jj},2);
+
+                PSD_freq_norm_ave_C_y{jj}(:,kk) = mean(PSD_freq_norm_C_y{jj},2);
+                PSD_norm_ave_C_y{jj}(:,kk) = mean(PSD_norm_C_y{jj},2);
+
+                PSD_freq_norm_ave_C_v{jj}(:,kk) = mean(PSD_freq_norm_C_v{jj},2);
+                PSD_norm_ave_C_v{jj}(:,kk) = mean(PSD_norm_C_v{jj},2);
+            end
 
             for kkk = 1:length(results)
                 [results_ave{kkk}{ii,jj}(kk), results_upper{kkk}{ii,jj}(kk), results_lower{kkk}{ii,jj}(kk)]= ave_bounds_newstructure(results{kkk});
@@ -479,26 +526,51 @@ for ii=1:num_uniq_configs %each configuration
     end
     %% Plotting Results
     
-    % if single_test == 1
-    %     figure(freq_contour_fig)
-    %     plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
-    %     if ii==1
-    %         Ustar_temp = 0:23.5;
-    %         f_vo_norm = St*Ustar_temp;
-    %         plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
-    %         yline(1,'k-','HandleVisibility','off')
-    %         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
-    %     end
-    % 
-    %     figure(A_y_star_pctile_fig)
-    %     plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
-    %     if ii==1
-    %         set(gca,'XMinorTick','on','YMinorTick','on')
-    %         xlabel('$U^*$')
-    %         ylabel('$A^*$')
-    %         set(get(gca,'ylabel'),'rotation',0)
-    %     end
-    % end  
+    if freq_plots == 1
+        figure(freq_contour_fig)
+        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave{jj},PSD_norm_ave{jj},ii,plot_legends,plotting_color)
+        if ii==1
+            Ustar_temp = 0:23.5;
+            f_vo_norm = St*Ustar_temp;
+            plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+            yline(1,'k-','HandleVisibility','off')
+            set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+            title('$y^*$')
+            ylim([0 5])
+        end
+
+        figure(freq_contour_fig_C_y)
+        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave_C_y{jj},PSD_norm_ave_C_y{jj},ii,plot_legends,plotting_color)
+        if ii==1
+            Ustar_temp = 0:23.5;
+            f_vo_norm = St*Ustar_temp;
+            plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+            yline(1,'k-','HandleVisibility','off')
+            set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+            title('$C_{y}$')
+            ylim([0 5])
+        end
+
+        figure(freq_contour_fig_C_v)
+        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave_C_v{jj},PSD_norm_ave_C_v{jj},ii,plot_legends,plotting_color)
+        if ii==1
+            Ustar_temp = 0:23.5;
+            f_vo_norm = St*Ustar_temp;
+            plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+            yline(1,'k-','HandleVisibility','off')
+            set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+            title('$C_v$')
+            ylim([0 5])
+        end
+        % figure(A_y_star_pctile_fig)
+        % plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
+        % if ii==1
+        %     set(gca,'XMinorTick','on','YMinorTick','on')
+        %     xlabel('$U^*$')
+        %     ylabel('$A^*$')
+        %     set(get(gca,'ylabel'),'rotation',0)
+        % end
+    end  
     
     %Plotting reduced amplitude
     figure(A_y_star_fig)
@@ -731,7 +803,7 @@ exportgraphics(griffin_fig,['figures\' 'griffin.pdf'],'Resolution',300,'Backgrou
 exportgraphics(pdicy_fig,['figures\' 'pdicy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
-if single_test == 1
+if freq_plots == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 end
@@ -746,7 +818,7 @@ exportgraphics(griffin_fig,['figures\' 'griffin.png'],'Resolution',300,'Backgrou
 exportgraphics(pdicy_fig,['figures\' 'pdicy.png'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.png'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.png'],'Resolution',300,'BackgroundColor', bgColor)
-if single_test == 1
+if freq_plots == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.png'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.png'],'Resolution',300,'BackgroundColor', bgColor)
 end
