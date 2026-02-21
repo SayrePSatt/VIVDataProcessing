@@ -32,7 +32,7 @@ colormap(flipud(gray))
 clim([-3 0])
 set(gca,'Colorscale','linear')
 xlim([0 max(x_data)]);
-ylim([0 7]);
+ylim([0 6]);
 % %%
 % 
 % x_data = cell2mat(squeeze(results{x_num}{config_idx}(:)));
