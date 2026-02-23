@@ -13,7 +13,7 @@ freq_plots = 1;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = ["015"];
+test_distratios = all_distratios;%["000" "015" "040"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 % if length(test_spring)>1
@@ -23,6 +23,8 @@ freq_cutoff = 7;
 
 linesz = 1;
 
+figure_width_spectrogram = 600;
+figure_height_spectrogram = 200;
 red_velo_forplotting = ["18.5_"];
 
 [~, colormask, ~] = intersect(all_distratios,test_distratios);
@@ -33,7 +35,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -50,7 +52,7 @@ markers = ['s' 'd' '*'];
 freq_PSD_fig = figure;
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
-hold on;
+hold off;
 
 time_series_fig = figure;
 set(gcf, 'color', bgColor);
@@ -286,7 +288,7 @@ for ii=1:num_uniq_configs %each configuration
                 % end
 
                 %% Frequency investigation
-                clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq PSD_norm PSD_freq_norm %PSD_freq PSD_norm PSD_freq_norm
+                clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq PSD_norm PSD_freq_norm PSD_y %PSD_freq PSD_norm PSD_freq_norm
                 % figure
                 
 
@@ -306,26 +308,26 @@ for ii=1:num_uniq_configs %each configuration
                 f_vo_norm(iii) = (St*U/d_sph(1))/f_nw(1);
 
                 if freq_plots == 1
-                    nfft = 500000;
-                    [PSD_freq, PSD_norm(:,iii)] = norm_PSD_calc(f_s,encoder_filt/d_sph(1),nfft,freq_cutoff*f_nw(1));
+                    nfft = 5000000;
+                    [PSD_freq, PSD_y(:,iii), PSD_norm(:,iii)] = norm_PSD_calc(f_s,encoder_filt/d_sph(1),nfft,freq_cutoff*f_nw(1));
                     PSD_freq_norm(:,iii) = PSD_freq/f_peak;
                 end
 
                 % u_norm(iii) = (u_red(iii)./f_star_peak(iii))*St;
                 % u_norm_68(iii) = sqrt((U_68*St/(f_peak_temp*d_sph(1)))^2+(U*St_68/(f_peak_temp*d_sph(1)))^2);
                 %% Frequency Investigation of forces
-                clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq_C_y PSD_norm_C_y PSD_freq_norm_C_y PSD_freq_C_v PSD_norm_C_v PSD_freq_norm_C_v %PSD_freq PSD_norm PSD_freq_norm
+                clear f_peaks mx phase f_windowed A_y_max peak_idx PSD_freq_C_y PSD_norm_C_y PSD_freq_norm_C_y PSD_freq_C_v PSD_norm_C_v PSD_freq_norm_C_v PSD_C_y PSD_C_v %PSD_freq PSD_norm PSD_freq_norm
                 % figure
                 % [mx,phase,f_windowed] = psdd3_sayre(f_s,C_y,12000,6000,2);
                 % f = f_windowed;
                 % f_norm = f_windowed./f_nw(1);
                 % meanpwr = mean(mx,2);
                 if freq_plots == 1
-                    nfft = 500000;
-                    [PSD_freq_C_y, PSD_norm_C_y(:,iii)] = norm_PSD_calc(f_s,C_y,nfft,freq_cutoff*f_nw(1));
+                    nfft = 50000;
+                    [PSD_freq_C_y, PSD_C_y(:,iii), PSD_norm_C_y(:,iii)] = norm_PSD_calc(f_s,C_y,nfft,freq_cutoff*f_nw(1));
                     PSD_freq_norm_C_y(:,iii) = PSD_freq_C_y/f_peak;
 
-                    [PSD_freq_C_v, PSD_norm_C_v(:,iii)] = norm_PSD_calc(f_s,C_vortex,nfft,freq_cutoff*f_nw(1));
+                    [PSD_freq_C_v, PSD_C_v(:,iii), PSD_norm_C_v(:,iii)] = norm_PSD_calc(f_s,C_vortex,nfft,freq_cutoff*f_nw(1));
                     PSD_freq_norm_C_v(:,iii) = PSD_freq_C_v/f_peak;
                 end
                 % 
@@ -340,11 +342,11 @@ for ii=1:num_uniq_configs %each configuration
                 % f_vo_norm(iii) = (St*U/d_sph(1))/f_nw(1);
 
                 %% Frequency Plots
-                distance = round(str2double(char(test_distratios))/10*2)/2;
+                distance = round(str2double(char(test_distratios(ii)))/10*2)/2;
                 if distance == 0
-                    L_star = 'Isolated ';
+                    L_star = 'Isolated, ';
                 else
-                    L_star = ['$L^*=$' +num2str(distance) ' '];
+                    L_star = ['$L^*=$' +num2str(distance) ', '];
                 end
                 
                 u_red_round = round(u_red*2)/2;
@@ -352,17 +354,18 @@ for ii=1:num_uniq_configs %each configuration
                 box on
                 cla
                 freq_PSD_fig.Position = [100 100 500 300];
+                semilogy(PSD_freq_norm(:,iii),PSD_y(:,iii),'LineWidth',linesz,'Color','k','LineStyle','-')
                 hold on
-                plot(PSD_freq_norm(:,iii),PSD_norm(:,iii),'LineWidth',linesz,'Color','k','LineStyle','-')
-                plot(PSD_freq_norm_C_y(:,iii),PSD_norm_C_y(:,iii),'LineWidth',linesz,'Color','r','LineStyle','-')
-                plot(PSD_freq_norm_C_v(:,iii),PSD_norm_C_v(:,iii),'LineWidth',linesz,'Color','b','LineStyle','-.')
+                semilogy(PSD_freq_norm_C_y(:,iii),PSD_C_y(:,iii),'LineWidth',linesz,'Color','r','LineStyle','-')
+                semilogy(PSD_freq_norm_C_v(:,iii),PSD_C_v(:,iii),'LineWidth',linesz,'Color','b','LineStyle','-.')
                 xlim([0 6]);
-                ylim([-8 0]);
+                ylim([10^-7 10^2]);
                 xline([1 3 5],'LineStyle','--','Color',[80 80 80]/256)
+                hold off
                 xlabel('$f^*$')
                 ylabel('PSD')
-                title([L_star ' $U^*=$' num2str(u_red_round)])
-
+                yticks(logspace(-6,2,5))
+                title([L_star '$U^*=$' num2str(u_red_round)])
                 % % semilogy(PSD_freq_norm(:,iii),PSD_norm(:,iii),'k')
                 % hold on
                 % semilogy(PSD_freq_norm_C_y(:,iii),PSD_norm_C_y(:,iii),'r')
@@ -371,7 +374,7 @@ for ii=1:num_uniq_configs %each configuration
                 % ylabel('dB/Hz')
                 % xlim([0 7])
                 % title("$U^*=$"+u_red)
-                exportgraphics(freq_PSD_fig,['figures\spectralAnalysis\' filename '_PSD.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(freq_PSD_fig,['figures\spectralAnalysis\' filename(18:42) '_PSD.pdf'],'Resolution',300,'BackgroundColor', bgColor);
 
                 %% Time Series Plots
                 figure(time_series_fig)
@@ -382,16 +385,16 @@ for ii=1:num_uniq_configs %each configuration
                 offset = 10; %How many seconds to wait
                 cycle_data = int16(f_s*offset:f_s*(offset+round(cycles/f_nw(1))));
                 tau = linspace(0,cycles,length(cycle_data));                
-                title([L_star ' $U^*=$' num2str(u_red_round)])
+                title([L_star '$U^*=$' num2str(u_red_round)])
                 plot(tau,encoder_filt(cycle_data)/d_sph(1),'LineWidth',linesz,'Color','k','LineStyle','-')
                 hold on
                 plot(tau,C_y(cycle_data),'LineWidth',linesz,'Color','r','LineStyle','-')
                 plot(tau,C_vortex(cycle_data),'LineWidth',linesz,'Color','b','LineStyle','-.')
                 xlabel('$\tau$')
-                ylabel('$y/D,C_y,C_v$')
+                ylabel('$y^*,C_y,C_v$')
                 ylim([-1.5 1.5]);
                 
-               exportgraphics(time_series_fig,['figures\spectralAnalysis\' filename '_timeseries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+               exportgraphics(time_series_fig,['figures\spectralAnalysis\' filename(18:42) '_timeseries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
             end
             
             results_ave{1}{ii,jj}(kk) = {[u_red]};
@@ -417,50 +420,56 @@ for ii=1:num_uniq_configs %each configuration
 
     if freq_plots == 1
         figure(freq_contour_fig)
-        freq_contour_fig.Position = [100 100 600 250];
-        yticks(0:6)
+        freq_contour_fig.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
         plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
+        hold on
         if ii==1
-        Ustar_temp = 0:23.5;
-        f_vo_norm = St*Ustar_temp;
-        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+        Ustar_temp = 0:22.5;
+        f_vo_plot = St*Ustar_temp;
+        end
+        plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
         yline(1,'k-','HandleVisibility','off')
         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
-        title('$y^*$')
-        exportgraphics(freq_contour_fig,['figures\spectralAnalysis\' convertStringsToChars(test_distratios) '_y_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
-        end
-        
+        xlim([0 22.5])
+        title([L_star '$y^*$'])  
+        ylabel('$f^*_{y^*}$')
+        yticks(1:2:5)
+        set(get(gca,'ylabel'),'rotation',0)
+        exportgraphics(freq_contour_fig,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_y_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
+        hold off
+
         figure(freq_contour_fig_C_y)
-        freq_contour_fig_C_y.Position = [100 100 600 250];
-        yticks(0:6)
+        freq_contour_fig_C_y.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
         plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave_C_y,PSD_norm_ave_C_y,ii,plot_legends,plotting_color)
-        if ii==1
-        Ustar_temp = 0:23.5;
-        f_vo_norm = St*Ustar_temp;
-        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+        hold on
+        plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
+        xlim([0 22.5])
+        hold off
         yline(1,'k-','HandleVisibility','off')
         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
-        title('$C_{y}$')
-        end
-        exportgraphics(freq_contour_fig_C_y,['figures\spectralAnalysis\' convertStringsToChars(test_distratios) '_totalLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
+        title([L_star '$C_{y}$'])
+        ylabel('$f^*_{C_y}$')
+        set(get(gca,'ylabel'),'rotation',0)
+        yticks(1:2:5)
+        exportgraphics(freq_contour_fig_C_y,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_totalLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
         
         figure(freq_contour_fig_C_v)
-        freq_contour_fig_C_v.Position = [100 100 600 250];
-        yticks(0:6)
+        freq_contour_fig_C_v.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
         plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave_C_v,PSD_norm_ave_C_v,ii,plot_legends,plotting_color)
-        if ii==1
-        Ustar_temp = 0:23.5;
-        f_vo_norm = St*Ustar_temp;
-        plot(Ustar_temp,f_vo_norm,'k--','DisplayName','Static')
+        hold on
+        plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
+        xlim([0 22.5])
+        hold off
         yline(1,'k-','HandleVisibility','off')
         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
-        title('$C_v$')
-
-        end
-        exportgraphics(freq_contour_fig_C_v,['figures\spectralAnalysis\' convertStringsToChars(test_distratios) '_vortexLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
+        set(get(gca,'ylabel'),'rotation',0)
+        title([L_star '$C_v$'])
+        ylabel('$f^*_{C_v}$')
+        yticks(1:2:5)
+        exportgraphics(freq_contour_fig_C_v,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_vortexLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
         % figure(A_y_star_pctile_fig)
         % plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
         % if ii==1

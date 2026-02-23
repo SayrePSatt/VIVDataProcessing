@@ -26,7 +26,6 @@ set(gca, 'YDir', 'normal')
 colorbar
 
 xlabel('$U^*$')
-ylabel('$f^*$')
 colormap(flipud(gray))
 
 clim([-3 0])

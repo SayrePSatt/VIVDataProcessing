@@ -259,6 +259,7 @@ for ii=1:num_uniq_configs %each configuration
                 C_vortex = F_vortex/force_norm;
                 
                 C_y_lissajous = C_y(idx_lissajous);
+                C_v_lissajous = C_vortex(idx_lissajous);
 
                 C_y_68 = sqrt((-F.*U_68./(rho*U^3*pi*d_sph(1)^2)).^2 ...
                                    +(F_68./(0.5*rho*U^2*pi*d_sph(1)^2)).^2);
@@ -302,7 +303,7 @@ for ii=1:num_uniq_configs %each configuration
                 timeSeries.Position = [100 100 500 250];
                 plot(t/T,encoder_filt_cont,'k-')
                 xlim([0 timerseries_cycles])
-                limits = ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+                limits = 1.5;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
                 % limits = 0.1;
                 ylim([-limits limits])
                 yticks([-limits 0 limits])
@@ -322,7 +323,7 @@ for ii=1:num_uniq_configs %each configuration
 
     
                 %% Plotting Lissajous Curves
-                lissajous_fig = figure;
+                lissajous_fig_total = figure;
                 
                 x = encoder_filt_lissajous;
                 y = C_y_lissajous;
@@ -331,18 +332,36 @@ for ii=1:num_uniq_configs %each configuration
                 xlabel('$y/D$')
                 ylabel('$C_y$')
                 title([L_star ' $U^*=$' num2str(red_velo_est)])
-                xbounds = max(x+0.1);
-                ybounds = max(y+0.1);
+                xbounds = 1.5;%max(x+0.1);
+                ybounds = 0.5;%max(y+0.1);
                 xlim([-xbounds xbounds]);
                 ylim([-ybounds ybounds]);
                 axis square
                 set(gcf, 'color', bgColor);
                 set(gca, 'color', bgColor);
                 figsize = get(gcf,'Position');
-    
+                
+                lissajous_fig_vortex = figure;
+                
+                x = encoder_filt_lissajous;
+                y = C_v_lissajous;
+                
+                plot(x,y,'LineWidth',1.5,'Color','k')
+                xlabel('$y/D$')
+                ylabel('$C_y$')
+                title([L_star ' $U^*=$' num2str(red_velo_est)])
+                % xbounds = max(x+0.1);
+                % ybounds = max(y+0.1);
+                xlim([-xbounds xbounds]);
+                ylim([-ybounds ybounds]);
+                axis square
+                set(gcf, 'color', bgColor);
+                set(gca, 'color', bgColor);
+                figsize = get(gcf,'Position');
                 %% Figure Export
-                exportgraphics(timeSeries,['figures\timeSeries\' filename '_timeSeries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
-                exportgraphics(timeSeries,['figures\lissajous\' filename '_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(timeSeries,['figures\timeSeries\' filename(18:42) '_timeSeries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(lissajous_fig_total,['figures\lissajous\' filename(18:42) '_total_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(lissajous_fig_vortex,['figures\lissajous\' filename(18:42) '_vortex_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
             end
             clear results
         end
