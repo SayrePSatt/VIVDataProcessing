@@ -14,16 +14,16 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 1; %0 to not plot legends, 1 to plot legends
+plot_legends = 0; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
-single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
+single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
-freq_plots = 1;
+freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = ["015"];
+test_distratios = ["000" "015" "020" "040" "070" "100"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k"];
 
@@ -102,6 +102,17 @@ hold on;
 A_y_norm_fig = figure;
 A_y_norm_fig.Position = figure_size;
 set(gca,'XLim',[0.6 1.6]);
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+A_y_10_fig = figure;
+A_y_10_fig.Position = figure_size;
+set(gca,'YLim',[0 1.5]);
 set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
@@ -308,14 +319,13 @@ testing = [];
 for ii=1:num_uniq_configs %each configuration
     [num_spring_configs, ~] = size(matching_tests{ii});
     for jj=1:num_spring_configs %Spring Config for each configuration
-        jj
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
             clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
-                filename = all_files(data_idx).name
+                filename = all_files(data_idx).name;
                 testing = [testing string(filename)];
                 metadata = table2array(readtable(topfolder+filename,'Range','A12:F13'));
                 data = table2array(readtable(topfolder+filename,'NumHeaderLines',14)); %Imports one file with corresponding data
@@ -419,7 +429,7 @@ for ii=1:num_uniq_configs %each configuration
                 pos_peaks = findpeaks(encoder_filt,'MinPeakProminence',0.01);
                 neg_peaks = findpeaks(-encoder_filt,'MinPeakProminence',0.01);
                 all_peaks = [pos_peaks; neg_peaks];
-                peaks_percentile = prctile(all_peaks,[20 80]);
+                peaks_percentile = prctile(all_peaks,[10 90]);
                 
                 data_length = length(acc);
                 time = time(1:data_length);
@@ -587,7 +597,22 @@ for ii=1:num_uniq_configs %each configuration
         set(get(gca,'ylabel'),'rotation',0)
     end
     plot_fn(results_ave,results_lower,results_upper,1,9,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
-
+    
+    %Plots of 10% largest peaks
+    figure(A_y_10_fig)
+    % plot_legends=0;
+    hold on
+    % if ii==1
+    %     if plot_reference == 1
+    %         plot(u_red_A_star_sareen,A_star_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+    %         plot(u_red_A_star_govwill,A_star_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
+    %     end
+    %     set(gca,'XMinorTick','on','YMinorTick','on')
+    %     xlabel('$U^*$')
+    %     ylabel('$A^*$')
+    %     set(get(gca,'ylabel'),'rotation',0)
+    % end
+    plot_fn(results_ave,results_lower,results_upper,1,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
 
     %Plots of normalized reduced velocity
     figure(A_y_norm_fig)
@@ -794,6 +819,7 @@ set(get(gca,'ylabel'),'rotation',0)
 % saveas(freq_contour_fig,'freq_contour.eps','epsc')
 
 exportgraphics(A_y_star_fig,['figures\' 'A_y_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(A_y_10_fig,['figures\' 'A_y_10.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(total_force_fig,['figures\' 'total_force.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_force_fig,['figures\' 'vortex_force.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(total_phase_fig,['figures\' 'total_phase.pdf'],'Resolution',300,'BackgroundColor', bgColor)
