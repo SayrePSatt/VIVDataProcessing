@@ -4,7 +4,7 @@ clc
 
 load("pumpFit_freq2velo.mat");
 
-topfolder = 'E:\EFDL\NEW_VIVmaster\tandemSphereData\SPIV\SPIV_forprocessing\';
+topfolder = 'E:\EFDL\NEW_VIVmaster\tandemSphereData\velo_fields\02_24_2026\outoffoler\';
 [processing_files, processing_file_dir] = uigetfile(topfolder,'*.vc7','MultiSelect','on');
 
 tic 
@@ -23,28 +23,42 @@ blues = [219 234 242;   % lightest blue
          156 199 223;
          33 102 172]/255;      % darkest blue
 
-colors = [224 109 84;
-          246 178 148;
-          251 226 211;   % darkest red
-          255 255 255;    % white
-          219 234 242;   % lightest blue
-          156 199 223;
-          33 102 172]/255;      % darkest blue
+% colors = [224 109 84;
+%           246 178 148;
+%           251 226 211;   % darkest red
+%           255 255 255;    % white
+%           219 234 242;   % lightest blue
+%           156 199 223;
+%           33 102 172]/255;      % darkest blue
+colors = [
+    165 32 38;     % new darkest red
+    224 109 84;    % mid red
+    246 178 148;   % lighter red
+    251 226 211;   % lightest red
+    255 255 255;   % white
+    219 234 242;   % lightest blue
+    156 199 223;   % lighter blue
+    33 102 172;    % darkest blue
+    12 44 132      % new deeper blue
+] / 255;
 
 colors = flipud(colors);
 cmap = colors;
 %%
-
-max_vorticity = 2;
+max_vorticity = 3;
+smoothing_window = 7;
+N=2;
 
 for ii=1:length(processing_files)
-
+close all
 diameter = str2double(processing_files{ii}(13:14))/1000;
-f_pump = str2double(processing_files{ii}(18:22));
+f_pump = str2double(processing_files{ii}(24:28));
 [U U_68_temp] = predict(mdl,f_pump,Alpha=0.05);
 distance = str2double(processing_files{ii}(1:3))/10;
-u_star = (processing_files{ii}(30:33));
+u_star = (processing_files{ii}(36:39));
 f = figure('units','inch','position',[1,1,8,6]);
+bin = str2double(processing_files{ii}(45:46));
+nBins = str2double(processing_files{ii}(53:54));
 % tiledlayout(length(each_field),1,'TileSpacing', 'compact', 'Padding', 'none')
 
 %%
@@ -65,34 +79,58 @@ D.W = fieldFrame.Components{5}.Planes{1};
 
 X = D.X(:,1)/1000;
 Y = D.Y(1,:)/1000;
-[XX YY] = meshgrid(X,Y);
+[XX, YY] = meshgrid(X,Y);
 
 vorticity = curl(X,Y,D.U',D.V');
 vorticityStar = vorticity*diameter/U;
 
 
 u = vorticityStar;
-u(abs(u)<0.2) = 0;
-alpha = 0.06;           % Filter strength; try between 0.01 and 0.2 for tuning
-nIterations = 5;      % How many times to apply filter? (e.g., 5-50)
+sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
+u = conv2(vorticityStar,sliding_ave,'same');
+max(abs(u),[],"all")
+% 
 
-for k = 1:nIterations
-    % Compute discrete Laplacian
-    laplacian = -4*u + ...
-                circshift(u, [1, 0]) + ... % up
-                circshift(u, [-1, 0]) + ... % down
-                circshift(u, [0, 1]) + ... % right
-                circshift(u, [0, -1]);     % left
-    
-    % Update with Laplacian (diffusion smoothing)
-    u = u + alpha * laplacian;
-end
-% sigma = 3; % Standard deviation for the Gaussian filter
-% h_gaussian = fspecial('gaussian', [25 25], sigma);
-% u = imfilter(vorticityStar, h_gaussian, 'replicate');
+% alpha = 0.1;           % Filter strength; try between 0.01 and 0.2 for tuning
+% nIterations = 3;      % How many times to apply filter? (e.g., 5-50)
+% 
+% for k = 1:nIterations
+%     % Compute discrete Laplacian
+%     laplacian = -4*u + ...
+%                 circshift(u, [1, 0]) + ... % up
+%                 circshift(u, [-1, 0]) + ... % down
+%                 circshift(u, [0, 1]) + ... % right
+%                 circshift(u, [0, -1]);     % left
+% 
+%     % Update with Laplacian (diffusion smoothing)
+%     u = u + alpha * laplacian;
+% end
+% % sigma = 3; % Standard deviation for the Gaussian filter
+% % h_gaussian = fspecial('gaussian', [25 25], sigma);
+% % u = imfilter(vorticityStar, h_gaussian, 'replicate');
+% 
+% % [startX,startY] = meshgrid(-0.1:0.01:0.05,-0.06:0.01:0.06);
 
-% [startX,startY] = meshgrid(-0.1:0.01:0.05,-0.06:0.01:0.06);
-BW = abs(u) > 0.3;
+skip = 4;
+% f = figure('units','inch','position',[1,1,8,6]);
+% ax = gca;
+% ax.LineWidth = 4;
+% ax.FontSize = 18;
+% ax.FontWeight = 'bold';
+hold on
+
+Nx = N*size(X,1);
+Ny = N*size(Y,2);
+[XXq, YYq] = meshgrid(linspace(min(X),max(X),Nx), linspace(min(Y),max(Y),Ny)); % N larger than original size
+uq = interp2(XX, YY, u, XXq, YYq, 'cubic');
+uq(abs(uq)<0.2) = 0;
+levels = [-max_vorticity:2*max_vorticity/7:max_vorticity];
+levels(4:5) = [];
+levels = linspace(-max_vorticity,max_vorticity,length(colors));
+% levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
+uq(uq>=max_vorticity) = max_vorticity;
+uq(uq<=-max_vorticity) = -max_vorticity;
+BW = abs(uq) > 0.3;
 CC = bwconncomp(BW); 
 region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
 
@@ -107,23 +145,11 @@ for k = 1:numRegionsToKeep
     mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
 end
 
-% Keep only the two largest vortices in your field
-u = u .* mask;
+% Keep only the two largest vortices field
+uq = uq .* mask;
 
-skip = 4;
-% f = figure('units','inch','position',[1,1,8,6]);
-% ax = gca;
-% ax.LineWidth = 4;
-% ax.FontSize = 18;
-% ax.FontWeight = 'bold';
-hold on
-levels = [-max_vorticity:2*max_vorticity/7:max_vorticity];
-levels(4:5) = [];
-levels = linspace(-max_vorticity,max_vorticity,7);
-% levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
-u(u>=max_vorticity) = max_vorticity;
-u(u<=-max_vorticity) = -max_vorticity;
-contourf(X/diameter,Y/diameter,u,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
+% contourf(X/diameter,Y/diameter,u,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
+contourf(XXq/diameter,YYq/diameter,uq,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
 clim([-max_vorticity max_vorticity])
 colormap(cmap)
 % quiver(X(1:skip:end)/chord,Y(1:skip:end)/chord,ux(1:skip:end,1:skip:end),uy(1:skip:end,1:skip:end),1,'k','LineWidth',1)
@@ -176,11 +202,52 @@ toc
 %% Circle
 % Your desired circle parameters
 hold on
-center_x = 0;
+u_red = str2double(u_star);
+if distance == 0
+    if u_red == 8.5
+        scale = 0.7;
+    elseif u_red == 14.5;
+        scale = 0.6;
+    end
+elseif distance == 1.5
+    if u_red == 8.5
+        scale = 0.6;
+    elseif u_red == 14.5;
+        scale = 1.1;
+    end
+elseif distance == 2.0
+    if u_red == 8.5
+        scale = 0.5;
+    elseif u_red == 14.5;
+        scale = 1.05;
+    end
+elseif distance == 2.5
+    u_red = 0.6;
+elseif distance == 4.0
+    if u_red == 8.5
+        scale = 0.7;
+    elseif u_red == 14.5
+        scale = 0.95;
+    end
+end
+
+pos_x_sphere = scale*round(sin(2*pi*(bin-1)/nBins),2);
+velo_x_sphere = round(cos(2*pi*(bin-1)/nBins),2);
+center_x = 1*pos_x_sphere;
 center_y = 0;
 diameter = 1;
 
 % Calculate the position vector [x_left, y_bottom, width, height]
+if velo_x_sphere<0
+    x_arrow_pos = center_x + diameter/4;
+    arrow_dir = -1*diameter;
+elseif velo_x_sphere>0
+    x_arrow_pos = center_x - diameter/4;
+    arrow_dir = 1*diameter;
+elseif velo_x_sphere==0
+    x_arrow_pos = center_x;
+    arrow_dir = 0;
+end
 pos = [center_x - diameter/2, center_y - diameter/2, diameter, diameter];
 
 % Draw the dotted circle
@@ -188,35 +255,40 @@ rectangle('Position', pos, 'Curvature', [1, 1], ...
           'LineStyle', '--',               ... % Dotted line
           'EdgeColor', 'k',              ... % Color: black
           'LineWidth', 3.5);                   % Optional: make it visually bold
-arrow_length = diameter * 0.4;  % Length of arrow (adjust as needed)
-quiver(center_x, center_y, arrow_length, 0, 0, 'k', 'LineWidth', 4, 'MaxHeadSize', 2);
+arrow_length = arrow_dir*0.4;  % Length of arrow (adjust as needed)
+quiver(x_arrow_pos, center_y, arrow_length, 0, 0, 'k', 'LineWidth', 4, 'MaxHeadSize', 2);
 
 hold off;
 
 
 %% Figure labeling
 figure(f)
+hold off
+set(gca,'TickLabelInterpreter','latex')
 colormap(cmap)
 % daspect([8 8 1])
 h = colorbar;
 drawnow
-h.Label.String = '\omega^*';
+h.TickLabelInterpreter = 'latex';
+h.Label.Interpreter = 'latex';
+h.Label.String = '$\omega^*$';
 h.Label.Rotation = 0;
 h.Location = 'eastoutside';
 h.FontWeight = 'normal';
-h.Position = [0.88 0.3000 0.0208 0.5000];
+
+% h.Position = [0.88 0.3000 0.0208 0.5000];
 xlabel('$y/D$')
 xticklabels({'-1', '0', '1'})
 
 if distance == 0
-    dist_disp = 'Single';
+    dist_disp = ', Isolated';
 else
-    dist_disp = num2str(distance);
+    dist_disp = [', $L^*=$' num2str(distance)];
 end
 
-title(['$U^*$=' num2str(u_star) ' $L^*=$' dist_disp])
+title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
 
-exportgraphics(f,fullfile(processing_file_dir, [processing_files{ii} '_vorticity.pdf']),'Resolution',600);
-exportgraphics(f,fullfile(processing_file_dir, [processing_files{ii} '_vorticity.png']),'Resolution',300);
+exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) '_vorticity.pdf']),'Resolution',600);
+exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) '_vorticity.png']),'Resolution',300);
 
 end
