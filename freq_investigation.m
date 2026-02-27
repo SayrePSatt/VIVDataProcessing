@@ -10,8 +10,9 @@ plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 1;
+interpolate_scale = 2;
 
-all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
+all_distratios = ["015"]% "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = all_distratios;%["000" "015" "040"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
@@ -35,7 +36,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -422,7 +423,7 @@ for ii=1:num_uniq_configs %each configuration
         figure(freq_contour_fig)
         freq_contour_fig.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
-        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
+        plot_psd_fn_newstructure(interpolate_scale,results_ave,1,PSD_freq_norm_ave,PSD_norm_ave,ii,plot_legends,plotting_color)
         hold on
         if ii==1
         Ustar_temp = 0:22.5;
@@ -442,7 +443,7 @@ for ii=1:num_uniq_configs %each configuration
         figure(freq_contour_fig_C_y)
         freq_contour_fig_C_y.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
-        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave_C_y,PSD_norm_ave_C_y,ii,plot_legends,plotting_color)
+        plot_psd_fn_newstructure(interpolate_scale,results_ave,1,PSD_freq_norm_ave_C_y,PSD_norm_ave_C_y,ii,plot_legends,plotting_color)
         hold on
         plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
         xlim([0 22.5])
@@ -458,7 +459,7 @@ for ii=1:num_uniq_configs %each configuration
         figure(freq_contour_fig_C_v)
         freq_contour_fig_C_v.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
-        plot_psd_fn_newstructure(results_ave,1,PSD_freq_norm_ave_C_v,PSD_norm_ave_C_v,ii,plot_legends,plotting_color)
+        plot_psd_fn_newstructure(interpolate_scale,results_ave,1,PSD_freq_norm_ave_C_v,PSD_norm_ave_C_v,ii,plot_legends,plotting_color)
         hold on
         plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
         xlim([0 22.5])

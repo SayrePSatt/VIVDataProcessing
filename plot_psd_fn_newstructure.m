@@ -1,4 +1,4 @@
-function plot_psd_fn(results,x_num,y_num,z_num,config_idx,plot_legend,plotting_color,plotting_marker)
+function [x_data, common_freq, combined_data] = plot_psd_fn(interp_scale,results,x_num,y_num,z_num,config_idx,plot_legend,plotting_color,plotting_marker)
 %This function takes in the results of f
 % requency PSD contours for different
 %tests and plots it on a spectrogram like plot
@@ -21,7 +21,15 @@ for k = 1:num_datasets
 end
 x_data = cell2mat(squeeze(results{x_num}{config_idx}(:)));
 
-imagesc(x_data, common_freq, combined_data)
+x_data_interp = linspace(x_data(1),x_data(end),interp_scale*length(x_data)-1);
+size(x_data)
+size(x_data_interp)
+size(combined_data)
+combined_data_interp = interp1(x_data,combined_data',x_data_interp);
+combined_data_interp = combined_data_interp';
+
+combined_data_interp = imgaussfilt(combined_data_interp,2);
+imagesc(x_data_interp, common_freq, combined_data_interp)
 set(gca, 'YDir', 'normal')
 colorbar
 
