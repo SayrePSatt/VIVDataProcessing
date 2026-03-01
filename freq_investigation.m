@@ -12,7 +12,7 @@ squareaxis = 0;
 freq_plots = 1;
 interpolate_scale = 2;
 
-all_distratios = ["015"]% "020" "025" "030" "040" "050" "060" "070" "100"];
+all_distratios = ["000" "015" "040"]% "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = all_distratios;%["000" "015" "040"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
@@ -36,7 +36,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -91,7 +91,7 @@ uniq_configs = uniq_configs(contains(uniq_configs,test_diaratios) & contains(uni
 % 
 % end
 uniq_configs = flip(uniq_configs);
-uniq_configs = circshift(uniq_configs,1);
+uniq_configs = circshift(uniq_configs,1)
 
 matching_tests = {};
 
@@ -146,6 +146,7 @@ end
 testing = [];
 [num_uniq_configs, ~, ~] = size(matching_tests); %Gives the number of unique configurations that were tested
 for ii=1:num_uniq_configs %each configuration
+    clear results_ave PSD_freq_norm_ave PSD_norm_ave PSD_freq_norm_ave_C_y PSD_norm_ave_C_y PSD_freq_norm_ave_C_v PSD_norm_ave_C_v
     [num_spring_configs, ~] = size(matching_tests{ii});
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
@@ -345,9 +346,9 @@ for ii=1:num_uniq_configs %each configuration
                 %% Frequency Plots
                 distance = round(str2double(char(test_distratios(ii)))/10*2)/2;
                 if distance == 0
-                    L_star = 'Isolated, ';
+                    L_star = 'Isolated, '
                 else
-                    L_star = ['$L^*=$' +num2str(distance) ', '];
+                    L_star = ['$L^*=$' +num2str(distance) ', ']
                 end
                 
                 u_red_round = round(u_red*2)/2;
@@ -438,6 +439,7 @@ for ii=1:num_uniq_configs %each configuration
         yticks(1:2:5)
         set(get(gca,'ylabel'),'rotation',0)
         exportgraphics(freq_contour_fig,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_y_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
+        exportgraphics(freq_contour_fig,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_y_spectrogram.png'],'Resolution',500,'BackgroundColor', bgColor);
         hold off
 
         figure(freq_contour_fig_C_y)
@@ -455,6 +457,7 @@ for ii=1:num_uniq_configs %each configuration
         set(get(gca,'ylabel'),'rotation',0)
         yticks(1:2:5)
         exportgraphics(freq_contour_fig_C_y,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_totalLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
+        exportgraphics(freq_contour_fig_C_y,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_totalLift_spectrogram.png'],'Resolution',500,'BackgroundColor', bgColor);
         
         figure(freq_contour_fig_C_v)
         freq_contour_fig_C_v.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
@@ -471,6 +474,7 @@ for ii=1:num_uniq_configs %each configuration
         ylabel('$f^*_{C_v}$')
         yticks(1:2:5)
         exportgraphics(freq_contour_fig_C_v,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_vortexLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
+        exportgraphics(freq_contour_fig_C_v,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_vortexLift_spectrogram.png'],'Resolution',500,'BackgroundColor', bgColor);
         % figure(A_y_star_pctile_fig)
         % plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
         % if ii==1
