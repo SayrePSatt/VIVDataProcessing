@@ -14,7 +14,7 @@ clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
-plot_legends = 0; %0 to not plot legends, 1 to plot legends
+plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
 plot_errors = 0; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
@@ -24,8 +24,8 @@ freq_plots = 0;
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = ["000" "015" "020" "040" "070" "100"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
-test_spring = ["1k"];
+test_diaratios = ["_00"]; %"06" "08"];
+test_spring = ["1k" "6k"];
 
 freq_cutoff = 6;
 
@@ -37,7 +37,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -134,6 +134,17 @@ hold on;
 total_force_fig = figure;
 total_force_fig.Position = figure_size;
 set(gca,'YLim',[0 0.5]);
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+total_energy_fig = figure;
+total_energy_fig.Position = figure_size;
+% set(gca,'YLim',[0 0.5]);
 set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
@@ -321,7 +332,7 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
@@ -446,8 +457,10 @@ for ii=1:num_uniq_configs %each configuration
                 C_y = F/force_norm;
                 C_pot = F_pot/force_norm;
                 C_vortex = F_vortex/force_norm;
-
+                
+                edot_total = C_y.*velo/d_sph(1);
                 edot_vortex = C_vortex.*velo/d_sph(1);
+                e_total(iii) = trapz(time*f_peak,edot_total)/(max(time*f_peak)-min(time*f_peak));
                 e_vortex(iii) = trapz(time*f_peak,edot_vortex)/(max(time*f_peak)-min(time*f_peak));
             
                 C_y_68 = sqrt((-F.*U_68./(rho*U^3*pi*d_sph(1)^2)).^2 ...
@@ -514,7 +527,7 @@ for ii=1:num_uniq_configs %each configuration
             %% Determining the average and uncertainty bounds from the tests
             zeropad = zeros(size(pdicy));
             % zeropad_psd = zeros(size(PSD_freq_norm));
-            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad]};
+            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad]};
 
             if single_test==1
                 % psd_results = {PSD_freq_norm, PSD_norm};
@@ -721,6 +734,10 @@ for ii=1:num_uniq_configs %each configuration
     hold on
     plot_fn(results_ave,results_lower,results_upper,1,4,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
     
+    figure(total_energy_fig)
+    hold on
+    plot_fn(results_ave,results_lower,results_upper,1,14,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
+
     figure(vortex_force_fig)
     hold on
     plot_fn(results_ave,results_lower,results_upper,1,6,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
@@ -829,6 +846,7 @@ exportgraphics(griffin_fig,['figures\' 'griffin.pdf'],'Resolution',300,'Backgrou
 exportgraphics(pdicy_fig,['figures\' 'pdicy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(total_energy_fig,['figures\' 'total_energy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 if freq_plots == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
@@ -844,9 +862,28 @@ exportgraphics(griffin_fig,['figures\' 'griffin.png'],'Resolution',300,'Backgrou
 exportgraphics(pdicy_fig,['figures\' 'pdicy.png'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(f_star_fig,['figures\' 'f_star.png'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.png'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(total_energy_fig,['figures\' 'total_energy.png'],'Resolution',300,'BackgroundColor', bgColor)
 if freq_plots == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.png'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.png'],'Resolution',300,'BackgroundColor', bgColor)
+end
+
+%.fig saving so figures can be modified later
+savefig(A_y_star_fig,['figures\matlab_figs\' 'A_y_star.fig'])
+savefig(A_y_10_fig,['figures\matlab_figs\' 'A_y_10.fig'])
+savefig(total_force_fig,['figures\matlab_figs\' 'total_force.fig'])
+savefig(vortex_force_fig,['figures\matlab_figs\' 'vortex_force.fig'])
+savefig(total_phase_fig,['figures\matlab_figs\' 'total_phase.fig'])
+savefig(vortex_phase_fig,['figures\matlab_figs\' 'vortex_phase.fig'])
+savefig(A_y_norm_fig,['figures\matlab_figs\' 'A_y_norm.fig'])
+savefig(griffin_fig,['figures\matlab_figs\' 'griffin.fig'])
+savefig(pdicy_fig,['figures\matlab_figs\' 'pdicy.fig'])
+savefig(f_star_fig,['figures\matlab_figs\' 'f_star.fig'])
+savefig(vortex_energy_fig,['figures\matlab_figs\' 'vortex_energy.fig'])
+savefig(total_energy_fig,['figures\matlab_figs\' 'total_energy.fig'])
+if freq_plots == 1
+    savefig(A_y_star_pctile_fig,['figures\matlab_figs\' 'A_y_star_pctile.fig'])
+    savefig(freq_contour_fig,['figures\matlab_figs\' 'freq_contour.fig'])
 end
 %% Testing force subfigure
 % Copy the contents of each existing figure to the new combined figure
