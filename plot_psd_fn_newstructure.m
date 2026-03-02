@@ -34,7 +34,7 @@ set(gca, 'YDir', 'normal')
 colorbar
 
 xlabel('$U^*$')
-colormap(flipud(gray))
+colormap("sky") %flipud(gray)
 
 clim([-3 0])
 set(gca,'Colorscale','linear')

@@ -5,7 +5,15 @@ clc
 load("pumpFit_freq2velo.mat");
 
 topfolder = 'D:\EFDL\NEW_VIVmaster\tandemSphereData\velo_fields\02_24_2026\outoffoler\';
-[processing_files, processing_file_dir] = uigetfile(topfolder,'*.vc7','MultiSelect','on');
+[temp, processing_file_dir] = uigetfile(topfolder,'*.vc7','MultiSelect','on');
+
+if class(temp) == 'char'
+    processing_files = cellstr(temp);
+    num_figs = 1;
+else
+    processing_files = temp;
+    num_figs = numel(processing_files);
+end
 
 tic 
 % R = [linspace(0,1,100) ones(1,43) linspace(1,1,100)];
@@ -31,27 +39,44 @@ blues = [219 234 242;   % lightest blue
 %           156 199 223;
 %           33 102 172]/255;      % darkest blue
 colors = [
-    165 32 38;     % new darkest red
-    224 109 84;    % mid red
-    246 178 148;   % lighter red
-    251 226 211;   % lightest red
-    255 255 255;   % white
-    219 234 242;   % lightest blue
-    156 199 223;   % lighter blue
-    33 102 172;    % darkest blue
-    12 44 132      % new deeper blue
+    165 32 38;      % new darkest red
+    165 32 38;      % new darkest red
+    194 70 61;      % deep red (added)
+    194 70 61;      % deep red (added)
+    224 109 84;     % mid red
+    224 109 84;     % mid red
+    246 178 148;    % lighter red
+    246 178 148;    % lighter red
+    251 226 211;    % lightest red
+    251 226 211;    % lightest red
+    255 255 255;    % white
+    219 234 242;    % lightest blue
+    219 234 242;    % lightest blue
+    156 199 223;    % lighter blue
+    156 199 223;    % lighter blue
+    89 150 197;     % mid blue (added)
+    89 150 197;     % mid blue (added)
+    33 102 172;     % darkest blue
+    33 102 172;     % darkest blue
+    12 44 132       % new deeper blue
+    12 44 132       % new deeper blue
 ] / 255;
+
+% colors = turbo(11);
+% colors(5,:) = [1 1 1];
 
 colors = flipud(colors);
 cmap = colors;
 %%
-max_vorticity = 1;
+max_vorticity = 2.5;
 smoothing_window = 3; %7 for vorticity
+sigma = 1.1;
 N=2;
-value_to_plot = 4; %1 for vorticity, 2 for u, 3 for v, 4 for w
+value_to_plot = 1; %1 for vorticity, 2 for u, 3 for v, 4 for w
 sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
 
 for ii=1:length(processing_files)
+pause
 close all
 diameter = str2double(processing_files{ii}(13:14))/1000;
 f_pump = str2double(processing_files{ii}(24:28));
@@ -93,7 +118,9 @@ if value_to_plot == 1
     
     
     plot_parameter = vorticityStar;
-    plot_parameter = conv2(vorticityStar,sliding_ave,'same');
+    gaussian_kernel = fspecial('gaussian', smoothing_window, sigma);
+    plot_parameter = conv2(vorticityStar,gaussian_kernel,'same');
+
     max(abs(plot_parameter),[],"all")
     % 
     
@@ -131,21 +158,21 @@ if value_to_plot == 1
     % levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
     plot_para_smooth(plot_para_smooth>=max_vorticity) = max_vorticity;
     plot_para_smooth(plot_para_smooth<=-max_vorticity) = -max_vorticity;
-    BW = abs(plot_para_smooth) > 0.3;
+    BW = abs(plot_para_smooth) > 0.2;
     CC = bwconncomp(BW); 
     region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
-    
+
     % Sort regions by area descending
     [~, sort_idx] = sort(region_area, 'descend');
-    
+
     % Create mask for the two largest regions
     mask = zeros(size(BW));  % Initialize mask
-    numRegionsToKeep = min(2, length(sort_idx));  % In case fewer than 2 regions exist
-    
+    numRegionsToKeep = min(10, length(sort_idx));  % In case fewer than 2 regions exist
+
     for k = 1:numRegionsToKeep
         mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
     end
-    
+
     % Keep only the two largest vortices field
     plot_para_smooth = plot_para_smooth .* mask;
     
@@ -176,7 +203,7 @@ levels(4:5) = [];
 levels = linspace(-max_vorticity,max_vorticity,length(colors));
 
 % contourf(X/diameter,Y/diameter,u,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
-contourf(XXq/diameter,YYq/diameter,plot_para_smooth,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
+contourf(XXq/diameter,YYq/diameter,plot_para_smooth,levels,'LineColor','none')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
 clim([-max_vorticity max_vorticity])
 colormap(cmap)
 % quiver(X(1:skip:end)/chord,Y(1:skip:end)/chord,ux(1:skip:end,1:skip:end),uy(1:skip:end,1:skip:end),1,'k','LineWidth',1)
@@ -314,7 +341,7 @@ else
 end
 
 title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
-
+box on
 exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) plot_name '.pdf']),'Resolution',600);
 exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) plot_name '.png']),'Resolution',300);
 

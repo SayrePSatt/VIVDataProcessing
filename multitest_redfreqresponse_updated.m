@@ -24,7 +24,7 @@ freq_plots = 0;
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = ["000" "015" "020" "040" "070" "100"];
-test_diaratios = ["_00"]; %"06" "08"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 
 freq_cutoff = 6;
@@ -37,7 +37,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient

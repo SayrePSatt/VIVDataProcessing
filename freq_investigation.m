@@ -10,7 +10,7 @@ plot_errors = 0; %0 to not plot errorbars
 single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 1;
-interpolate_scale = 2;
+interpolate_scale = 8;
 
 all_distratios = ["000" "015" "040"]% "020" "025" "030" "040" "050" "060" "070" "100"];
 
@@ -430,8 +430,8 @@ for ii=1:num_uniq_configs %each configuration
         Ustar_temp = 0:22.5;
         f_vo_plot = St*Ustar_temp;
         end
-        plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
-        yline(1,'k-','HandleVisibility','off')
+        plot(Ustar_temp,f_vo_plot,'k-','DisplayName','Static')
+        yline(1,'k--','HandleVisibility','off')
         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
         xlim([0 22.5])
         title([L_star '$y^*$'])  
@@ -440,6 +440,7 @@ for ii=1:num_uniq_configs %each configuration
         set(get(gca,'ylabel'),'rotation',0)
         exportgraphics(freq_contour_fig,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_y_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
         exportgraphics(freq_contour_fig,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_y_spectrogram.png'],'Resolution',500,'BackgroundColor', bgColor);
+        savefig(freq_contour_fig,['figures\matlab_figs\' convertStringsToChars(test_distratios(ii)) 'D_y_spectrogram.fig']);
         hold off
 
         figure(freq_contour_fig_C_y)
@@ -447,10 +448,10 @@ for ii=1:num_uniq_configs %each configuration
         box on
         plot_psd_fn_newstructure(interpolate_scale,results_ave,1,PSD_freq_norm_ave_C_y,PSD_norm_ave_C_y,ii,plot_legends,plotting_color)
         hold on
-        plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
+        plot(Ustar_temp,f_vo_plot,'k-','DisplayName','Static')
         xlim([0 22.5])
         hold off
-        yline(1,'k-','HandleVisibility','off')
+        yline(1,'k--','HandleVisibility','off')
         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
         title([L_star '$C_{y}$'])
         ylabel('$f^*_{C_y}$')
@@ -458,16 +459,17 @@ for ii=1:num_uniq_configs %each configuration
         yticks(1:2:5)
         exportgraphics(freq_contour_fig_C_y,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_totalLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
         exportgraphics(freq_contour_fig_C_y,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_totalLift_spectrogram.png'],'Resolution',500,'BackgroundColor', bgColor);
-        
+        savefig(freq_contour_fig_C_y,['figures\matlab_figs\' convertStringsToChars(test_distratios(ii)) 'D_totalLift_spectrogram.fig']);
+
         figure(freq_contour_fig_C_v)
         freq_contour_fig_C_v.Position = [100 100 figure_width_spectrogram figure_height_spectrogram];
         box on
         plot_psd_fn_newstructure(interpolate_scale,results_ave,1,PSD_freq_norm_ave_C_v,PSD_norm_ave_C_v,ii,plot_legends,plotting_color)
         hold on
-        plot(Ustar_temp,f_vo_plot,'k--','DisplayName','Static')
+        plot(Ustar_temp,f_vo_plot,'k-','DisplayName','Static')
         xlim([0 22.5])
         hold off
-        yline(1,'k-','HandleVisibility','off')
+        yline(1,'k--','HandleVisibility','off')
         set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
         set(get(gca,'ylabel'),'rotation',0)
         title([L_star '$C_v$'])
@@ -475,6 +477,8 @@ for ii=1:num_uniq_configs %each configuration
         yticks(1:2:5)
         exportgraphics(freq_contour_fig_C_v,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_vortexLift_spectrogram.pdf'],'Resolution',500,'BackgroundColor', bgColor);
         exportgraphics(freq_contour_fig_C_v,['figures\spectralAnalysis\' convertStringsToChars(test_distratios(ii)) 'D_vortexLift_spectrogram.png'],'Resolution',500,'BackgroundColor', bgColor);
+        savefig(freq_contour_fig_C_v,['figures\matlab_figs\' convertStringsToChars(test_distratios(ii)) 'D_vortexLift_spectrogram.fig']);
+
         % figure(A_y_star_pctile_fig)
         % plot_fn_prc(results_ave,1,9,11,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style)
         % if ii==1
