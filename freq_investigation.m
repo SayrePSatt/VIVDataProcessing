@@ -22,7 +22,7 @@ test_spring = ["1k" "6k"];
 
 freq_cutoff = 7;
 
-linesz = 1;
+linesz = 3;
 
 figure_width_spectrogram = 600;
 figure_height_spectrogram = 200;
@@ -377,6 +377,7 @@ for ii=1:num_uniq_configs %each configuration
                 % xlim([0 7])
                 % title("$U^*=$"+u_red)
                 exportgraphics(freq_PSD_fig,['figures\spectralAnalysis\' filename(18:42) '_PSD.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(freq_PSD_fig,['figures\spectralAnalysis\' filename(18:42) '_PSD.png'],'Resolution',300,'BackgroundColor', bgColor);
 
                 %% Time Series Plots
                 figure(time_series_fig)
@@ -388,15 +389,18 @@ for ii=1:num_uniq_configs %each configuration
                 cycle_data = int16(f_s*offset:f_s*(offset+round(cycles/f_nw(1))));
                 tau = linspace(0,cycles,length(cycle_data));                
                 title([L_star '$U^*=$' num2str(u_red_round)])
-                plot(tau,encoder_filt(cycle_data)/d_sph(1),'LineWidth',linesz,'Color','k','LineStyle','-')
+                plot(tau,encoder_filt(cycle_data)/d_sph(1),'LineWidth',linesz,'Color','k','LineStyle','-','DisplayName','$y^*$')
                 hold on
-                plot(tau,C_y(cycle_data),'LineWidth',linesz,'Color','r','LineStyle','-')
-                plot(tau,C_vortex(cycle_data),'LineWidth',linesz,'Color','b','LineStyle','-.')
+                plot(tau,C_y(cycle_data),'LineWidth',linesz,'Color','r','LineStyle','-','DisplayName','$C_y$')
+                plot(tau,C_vortex(cycle_data),'LineWidth',linesz,'Color','b','LineStyle','-.','DisplayName','$C_v$')
+                legend('Interpreter','latex')
                 xlabel('$\tau$')
                 ylabel('$y^*,C_y,C_v$')
                 ylim([-1.5 1.5]);
                 
                exportgraphics(time_series_fig,['figures\spectralAnalysis\' filename(18:42) '_timeseries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+               exportgraphics(time_series_fig,['figures\spectralAnalysis\' filename(18:42) '_timeseries.png'],'Resolution',300,'BackgroundColor', bgColor);
+
             end
             
             results_ave{1}{ii,jj}(kk) = {[u_red]};

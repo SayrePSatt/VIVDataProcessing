@@ -4,7 +4,7 @@ clc
 
 load("pumpFit_freq2velo.mat");
 
-topfolder = 'D:\EFDL\NEW_VIVmaster\tandemSphereData\velo_fields\02_24_2026\outoffoler\';
+topfolder = 'E:\EFDL\NEW_VIVmaster\tandemSphereData\velo_fields\02_24_2026\outoffoler\';
 [temp, processing_file_dir] = uigetfile(topfolder,'*.vc7','MultiSelect','on');
 
 if class(temp) == 'char'
@@ -67,7 +67,27 @@ colors = [
 
 colors = flipud(colors);
 cmap = colors;
+
 %%
+make_subplot = 1;
+if make_subplot == 1
+    subplot_fig = figure('Position',[188 194 1519 721]);
+    for jj = 1:numel(processing_files)
+        dists(jj) = str2double(processing_files{jj}(1:3));
+        subbin(jj) = str2double(processing_files{jj}(45:46));
+    end
+    num_col = numel(unique(dists));
+    num_row = numel(unique(subbin));
+    t_fig = tiledlayout(num_row,num_col);
+    t_fig.TileSpacing = 'none';
+    t_fig.Padding = 'none';
+    t_fig.TileIndexing = 'columnmajor';
+end
+
+
+plot_quiver = 0;
+skip = 10;
+scale = 1;
 max_vorticity = 2.5;
 smoothing_window = 3; %7 for vorticity
 sigma = 1.1;
@@ -75,9 +95,14 @@ N=2;
 value_to_plot = 1; %1 for vorticity, 2 for u, 3 for v, 4 for w
 sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
 
+xlim_vals = [-1.5 1.5];
+ylim_vals = [-0.7 0.7];
+
+f = figure;
 for ii=1:length(processing_files)
-pause
-close all
+% pause
+% f = figure('units','inch','position',[1,1,8,6]);
+close(f(isvalid(f)))
 diameter = str2double(processing_files{ii}(13:14))/1000;
 f_pump = str2double(processing_files{ii}(24:28));
 [U U_68_temp] = predict(mdl,f_pump,Alpha=0.05);
@@ -158,23 +183,23 @@ if value_to_plot == 1
     % levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
     plot_para_smooth(plot_para_smooth>=max_vorticity) = max_vorticity;
     plot_para_smooth(plot_para_smooth<=-max_vorticity) = -max_vorticity;
-    BW = abs(plot_para_smooth) > 0.2;
-    CC = bwconncomp(BW); 
-    region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
+    % BW = abs(plot_para_smooth) > 0.2;
+    % CC = bwconncomp(BW); 
+    % region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
+    % 
+    % % Sort regions by area descending
+    % [~, sort_idx] = sort(region_area, 'descend');
+    % 
+    % % Create mask for the two largest regions
+    % mask = zeros(size(BW));  % Initialize mask
+    % numRegionsToKeep = min(10, length(sort_idx));  % In case fewer than 2 regions exist
 
-    % Sort regions by area descending
-    [~, sort_idx] = sort(region_area, 'descend');
-
-    % Create mask for the two largest regions
-    mask = zeros(size(BW));  % Initialize mask
-    numRegionsToKeep = min(10, length(sort_idx));  % In case fewer than 2 regions exist
-
-    for k = 1:numRegionsToKeep
-        mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
-    end
+    % for k = 1:numRegionsToKeep
+    %     mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
+    % end
 
     % Keep only the two largest vortices field
-    plot_para_smooth = plot_para_smooth .* mask;
+    % plot_para_smooth = plot_para_smooth .* mask;
     
     cbar_name = '$\omega^*$';
     plot_name = '_vorticity';
@@ -198,14 +223,22 @@ elseif value_to_plot == 4
     plot_para_smooth = interp2(XX, YY, plot_parameter, XXq, YYq, 'cubic');
 end
 
+U_interp = interp2(XX, YY, D.U', XXq, YYq, 'cubic');
+V_interp = interp2(XX, YY, D.V', XXq, YYq, 'cubic');
+
 levels = [-max_vorticity:2*max_vorticity/7:max_vorticity];
 levels(4:5) = [];
 levels = linspace(-max_vorticity,max_vorticity,length(colors));
 
 % contourf(X/diameter,Y/diameter,u,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
+figure(f)
 contourf(XXq/diameter,YYq/diameter,plot_para_smooth,levels,'LineColor','none')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
 clim([-max_vorticity max_vorticity])
 colormap(cmap)
+
+if plot_quiver == 1
+    quiver(XXq(1:skip:end,1:skip:end)/diameter,YYq(1:skip:end,1:skip:end)/diameter,U_interp(1:skip:end,1:skip:end)/U,V_interp(1:skip:end,1:skip:end)/U,'k')
+end
 % quiver(X(1:skip:end)/chord,Y(1:skip:end)/chord,ux(1:skip:end,1:skip:end),uy(1:skip:end,1:skip:end),1,'k','LineWidth',1)
 % h = stream2(X/chord,Y/chord,ux,uy,startX,startY);
 % lineobj = streamline(h);
@@ -222,8 +255,8 @@ ylabel('$z/D$','Rotation',0)
 % xlabel('t (s)','FontAngle','italic')
 % xlabel('y/D')
 axis equal
-xlim([-1.5 1.5])
-ylim([-0.7 0.7])
+xlim(xlim_vals)
+ylim(ylim_vals)
 ax1 = gca;
 ax1.XMinorTick = 'on';
 ax1.XAxis.MinorTickValues = -1.5:0.1:1.5;
@@ -260,19 +293,19 @@ u_red = str2double(u_star);
 if distance == 0
     if u_red == 8.5
         scale = 0.7;
-    elseif u_red == 14.5;
+    elseif u_red == 14.5
         scale = 0.6;
     end
 elseif distance == 1.5
     if u_red == 8.5
         scale = 0.6;
-    elseif u_red == 14.5;
+    elseif u_red == 14.5
         scale = 1.1;
     end
 elseif distance == 2.0
     if u_red == 8.5
         scale = 0.5;
-    elseif u_red == 14.5;
+    elseif u_red == 14.5
         scale = 1.05;
     end
 elseif distance == 2.5
@@ -307,10 +340,10 @@ pos = [center_x - diameter/2, center_y - diameter/2, diameter, diameter];
 % Draw the dotted circle
 rectangle('Position', pos, 'Curvature', [1, 1], ...
           'LineStyle', '--',               ... % Dotted line
-          'EdgeColor', 'k',              ... % Color: black
-          'LineWidth', 3.5);                   % Optional: make it visually bold
+          'EdgeColor', [128 128 128]/255,              ... % Color: black
+          'LineWidth', 2);                   % Optional: make it visually bold
 arrow_length = arrow_dir*0.4;  % Length of arrow (adjust as needed)
-quiver(x_arrow_pos, center_y, arrow_length, 0, 0, 'k', 'LineWidth', 4, 'MaxHeadSize', 2);
+quiver(x_arrow_pos, center_y, arrow_length, 0, 0,'Color', [128 128 128]/255, 'LineWidth', 2, 'MaxHeadSize', 2);
 
 hold off;
 
@@ -342,7 +375,75 @@ end
 
 title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
 box on
+
+
+
+figure(subplot_fig)
+nexttile
+% subplot(num_row,num_col,ii)
+axis equal
+box on
+copyobj(get(findobj(f,'Type','Axes'),'Children'),gca)
+set(gca,'TickLabelInterpreter','latex')
+xlim(xlim_vals)
+ylim(ylim_vals)
+colormap(cmap)
+% daspect([8 8 1])
+if ii == num_col*num_row
+    h = colorbar;
+    h.TickLabelInterpreter = 'latex';
+    h.Label.Interpreter = 'latex';
+    h.Label.String = cbar_name;
+    h.Label.Rotation = 0;
+    h.Layout.Tile = 'east';
+    h.FontWeight = 'normal';
+    drawnow
+end
+
+if mod(ii,num_row) == 1
+    title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
+end
+
+ax1 = gca;
+ax1.XMinorTick = 'on';
+ax1.XAxis.MinorTickValues = xlim_vals(1):0.1:xlim_vals(2);
+ax1.XAxis.TickValues = [-1 0 1];
+if not(mod(ii,num_row) == 0)
+    ax1.XAxis.TickLabels = {};
+else
+    xlabel('$y/D$','Rotation',0)
+end
+
+ax1.YMinorTick = 'on';
+ax1.YAxis.MinorTickValues = ylim_vals(1):0.1:ylim_vals(2);
+ax1.YAxis.TickValues = [-0.5 0 0.5];
+if not(ii<=num_row)
+    ax1.YAxis.TickLabels = {};
+else
+    ylabel('$z/D$','Rotation',0)
+end
+% xticks([-1:0.1:1])
+% set(ax1,'Xticklabel',[-1 0 1])
+set(ax1,'FontWeight','Bold','fontsize',20,'FontName','Times','LineWidth',2,'TickLength',[0.02 0.02],'Layer','top')
+
+cur_row = mod(ii,num_row);
+if cur_row == 0
+    cur_row = num_row;
+end
+
+cur_col = ceil(ii/num_row);
+subfig_label = [char(cur_col+96) '.' num2roman(cur_row) ')']
+
+text(ax1, 0.04, 0.96, subfig_label, ...
+    'Units', 'normalized', ...
+    'FontWeight', 'bold', ...
+    'FontSize', 20, ...
+    'VerticalAlignment', 'top', ...
+    'HorizontalAlignment', 'left');
+
 exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) plot_name '.pdf']),'Resolution',600);
 exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) plot_name '.png']),'Resolution',300);
 
 end
+
+exportgraphics(subplot_fig,fullfile([processing_file_dir '\figures\'], [plot_name 'subplot.png']),'Resolution',600);

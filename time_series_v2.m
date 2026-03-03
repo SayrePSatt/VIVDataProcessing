@@ -12,13 +12,13 @@ squareaxis = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
-test_distratios = all_distratios;%["000" "015" "020" "025" "040" "100"];
+test_distratios = ["000" "015" "040"];
 test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k"];
 test_redvelo = ["_08.5" "_14.5" "_20.5"];
 use_datapoint = 2;
 
-timerseries_cycles = 50;
+timerseries_cycles = 5;
 lissajous_cycles = 50;
 offset = 30;
 
@@ -302,6 +302,7 @@ for ii=1:num_uniq_configs %each configuration
                 set(gca, 'color', bgColor);
                 timeSeries.Position = [100 100 500 250];
                 plot(t/T,encoder_filt_cont,'k-')
+                
                 xlim([0 timerseries_cycles])
                 limits = 1.5;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
                 % limits = 0.1;

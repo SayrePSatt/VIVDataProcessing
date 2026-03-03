@@ -12,7 +12,7 @@ C_A = 0.5;
 bgColor = [255 255 255]/255;
 load("pumpFit_freq2velo.mat");
 
-datafolder = "E:\EFDL\viv_newstructure";
+datafolder = "E:\EFDL\viv_newstructure\";
 topfolder = datafolder+"aftertare_newstructure\";
 
 all_files = dir(topfolder);
@@ -68,7 +68,7 @@ for ii = 1:length(uniq_configs)
 end
 
 %% Setting up files to read
-test_distratios = ["000" "015" "020" "025" "040"];% "020" "030"];
+test_distratios = ["000" "015" "040"];% "020" "030"];
 test_diaratios = ["00" "10"];
 test_spring = ["1k"];
 % test_date = ["02_"];

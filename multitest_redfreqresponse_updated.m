@@ -15,16 +15,16 @@ warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
-single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
+plot_reference = 1; %0 to not plot references
+plot_errors = 1; %0 to not plot errorbars
+single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = ["000" "015" "020" "040" "070" "100"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_diaratios = ["_00"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 
 freq_cutoff = 6;
@@ -528,18 +528,18 @@ for ii=1:num_uniq_configs %each configuration
             zeropad = zeros(size(pdicy));
             % zeropad_psd = zeros(size(PSD_freq_norm));
             results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad]};
-
-            if single_test==1
-                % psd_results = {PSD_freq_norm, PSD_norm};
-                PSD_freq_norm_ave{jj}(:,kk) = mean(PSD_freq_norm{jj},2);
-                PSD_norm_ave{jj}(:,kk) = mean(PSD_norm{jj},2);
-
-                PSD_freq_norm_ave_C_y{jj}(:,kk) = mean(PSD_freq_norm_C_y{jj},2);
-                PSD_norm_ave_C_y{jj}(:,kk) = mean(PSD_norm_C_y{jj},2);
-
-                PSD_freq_norm_ave_C_v{jj}(:,kk) = mean(PSD_freq_norm_C_v{jj},2);
-                PSD_norm_ave_C_v{jj}(:,kk) = mean(PSD_norm_C_v{jj},2);
-            end
+            % 
+            % if single_test==1
+            %     % psd_results = {PSD_freq_norm, PSD_norm};
+            %     PSD_freq_norm_ave{jj}(:,kk) = mean(PSD_freq_norm{jj},2);
+            %     PSD_norm_ave{jj}(:,kk) = mean(PSD_norm{jj},2);
+            % 
+            %     PSD_freq_norm_ave_C_y{jj}(:,kk) = mean(PSD_freq_norm_C_y{jj},2);
+            %     PSD_norm_ave_C_y{jj}(:,kk) = mean(PSD_norm_C_y{jj},2);
+            % 
+            %     PSD_freq_norm_ave_C_v{jj}(:,kk) = mean(PSD_freq_norm_C_v{jj},2);
+            %     PSD_norm_ave_C_v{jj}(:,kk) = mean(PSD_norm_C_v{jj},2);
+            % end
 
             for kkk = 1:length(results)
                 [results_ave{kkk}{ii,jj}(kk), results_upper{kkk}{ii,jj}(kk), results_lower{kkk}{ii,jj}(kk)]= ave_bounds_newstructure(results{kkk});
@@ -894,7 +894,7 @@ if single_test == 1
     hold on;
     tl = tiledlayout(3,1);
     nexttile
-    ax1 = get(vortex_energy_fig, 'CurrentAxes');
+    ax1 = get(A_y_star_fig, 'CurrentAxes');
     copyobj(allchild(ax1), gca);
     title(ax1.Title.String); % Copy title from original axes
     ylabel('$A^*$')
@@ -922,9 +922,13 @@ if single_test == 1
     ylim([0 180])
     yticks(0:15:180);  % Set ticks every 15 units
     yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-    yline(90,'k--')
+    yline(90,'k--','HandleVisibility','off')
     text(-0.15, 1.0, 'b)', 'Units', 'normalized', 'FontWeight', 'bold');
     box on
+
+    plot_leg = legend('Location','eastoutside','NumColumns',1,'Interpreter', 'latex');
+    set(plot_leg,'Color','none','Box','off')
+    plot_leg.Title.String = '$L^*$';
     % legend
     
     % Subplot 3
@@ -941,7 +945,7 @@ if single_test == 1
     ylim([0 180])
     yticks(0:15:180);  % Set ticks every 15 units
     yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
-    yline(90,'k--')
+    yline(90,'k--','HandleVisibility','off')
     text(-0.15, 1.0, 'c)', 'Units', 'normalized', 'FontWeight', 'bold');
     drawnow
     % 
