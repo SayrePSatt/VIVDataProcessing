@@ -4,7 +4,7 @@ clc
 
 load("pumpFit_freq2velo.mat");
 
-topfolder = 'E:\EFDL\NEW_VIVmaster\tandemSphereData\velo_fields\02_24_2026\outoffoler\';
+topfolder = 'D:\EFDL\NEW_VIVmaster\tandemSphereData\velo_fields\02_24_2026\outoffoler\';
 [temp, processing_file_dir] = uigetfile(topfolder,'*.vc7','MultiSelect','on');
 
 if class(temp) == 'char'
@@ -88,12 +88,13 @@ end
 plot_quiver = 0;
 skip = 10;
 scale = 1;
-max_vorticity = 2.5;
-smoothing_window = 3; %7 for vorticity
+max_vorticity = 1.5;
+smoothing_window = 7; %7 for vorticity
 sigma = 1.1;
 N=2;
 value_to_plot = 1; %1 for vorticity, 2 for u, 3 for v, 4 for w
 sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
+min_size = 1.2/100; %Minimum window size for any vortex to be saved
 
 xlim_vals = [-1.5 1.5];
 ylim_vals = [-0.7 0.7];
@@ -138,13 +139,14 @@ Ny = N*size(Y,2);
 [XXq, YYq] = meshgrid(linspace(min(X),max(X),Nx), linspace(min(Y),max(Y),Ny)); % N larger than original size
 
 if value_to_plot == 1    
+
     vorticity = curl(X,Y,D.U',D.V');
     vorticityStar = vorticity*diameter/U;
     
     
     plot_parameter = vorticityStar;
     gaussian_kernel = fspecial('gaussian', smoothing_window, sigma);
-    plot_parameter = conv2(vorticityStar,gaussian_kernel,'same');
+    plot_parameter = conv2(vorticityStar,sliding_ave,'same');
 
     max(abs(plot_parameter),[],"all")
     % 
@@ -169,7 +171,7 @@ if value_to_plot == 1
     % 
     % % [startX,startY] = meshgrid(-0.1:0.01:0.05,-0.06:0.01:0.06);
     
-    skip = 4;
+    % skip = 4;
     % f = figure('units','inch','position',[1,1,8,6]);
     % ax = gca;
     % ax.LineWidth = 4;
@@ -183,23 +185,26 @@ if value_to_plot == 1
     % levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
     plot_para_smooth(plot_para_smooth>=max_vorticity) = max_vorticity;
     plot_para_smooth(plot_para_smooth<=-max_vorticity) = -max_vorticity;
-    % BW = abs(plot_para_smooth) > 0.2;
-    % CC = bwconncomp(BW); 
-    % region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
-    % 
-    % % Sort regions by area descending
-    % [~, sort_idx] = sort(region_area, 'descend');
-    % 
-    % % Create mask for the two largest regions
-    % mask = zeros(size(BW));  % Initialize mask
-    % numRegionsToKeep = min(10, length(sort_idx));  % In case fewer than 2 regions exist
+    BW = abs(plot_para_smooth) > 0.2;
+    CC = bwconncomp(BW); 
+    region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
+    image_area = prod(CC.ImageSize);
 
-    % for k = 1:numRegionsToKeep
-    %     mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
-    % end
+    % Sort regions by area descending
+    [~, sort_idx] = sort(region_area, 'descend');
 
-    % Keep only the two largest vortices field
-    % plot_para_smooth = plot_para_smooth .* mask;
+    % Create mask for the two largest regions
+    mask = zeros(size(BW));  % Initialize mask
+    numRegionsToKeep = min(4, length(sort_idx));  % In case fewer than 2 regions exist
+
+    for k = 1:numRegionsToKeep
+        if numel(CC.PixelIdxList{sort_idx(k)})>min_size*image_area
+            mask(CC.PixelIdxList{sort_idx(k)}) = 1;  % Set pixels for top regions to 1
+        end
+    end
+
+    %Keep only the two largest vortices field
+    plot_para_smooth = plot_para_smooth .* mask;
     
     cbar_name = '$\omega^*$';
     plot_name = '_vorticity';
@@ -377,73 +382,76 @@ title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
 box on
 
 
-
-figure(subplot_fig)
-nexttile
-% subplot(num_row,num_col,ii)
-axis equal
-box on
-copyobj(get(findobj(f,'Type','Axes'),'Children'),gca)
-set(gca,'TickLabelInterpreter','latex')
-xlim(xlim_vals)
-ylim(ylim_vals)
-colormap(cmap)
-% daspect([8 8 1])
-if ii == num_col*num_row
-    h = colorbar;
-    h.TickLabelInterpreter = 'latex';
-    h.Label.Interpreter = 'latex';
-    h.Label.String = cbar_name;
-    h.Label.Rotation = 0;
-    h.Layout.Tile = 'east';
-    h.FontWeight = 'normal';
-    drawnow
+if make_subplot == 1
+    figure(subplot_fig)
+    nexttile
+    % subplot(num_row,num_col,ii)
+    axis equal
+    box on
+    copyobj(get(findobj(f,'Type','Axes'),'Children'),gca)
+    set(gca,'TickLabelInterpreter','latex')
+    xlim(xlim_vals)
+    ylim(ylim_vals)
+    clim([-max_vorticity max_vorticity])
+    colormap(cmap)
+    % daspect([8 8 1])
+    % h_sp = colorbar;
+    if ii == num_col*num_row
+        h_sp = colorbar;
+        h_sp.TickLabelInterpreter = 'latex';
+        h_sp.Label.Interpreter = 'latex';
+        h_sp.Label.String = cbar_name;
+        h_sp.Label.Rotation = 0;
+        h_sp.Layout.Tile = 'east';
+        h_sp.FontWeight = 'normal';
+        drawnow
+    end
+    
+    if mod(ii,num_row) == 1
+        title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
+    end
+    
+    ax1 = gca;
+    ax1.XMinorTick = 'on';
+    ax1.XAxis.MinorTickValues = xlim_vals(1):0.1:xlim_vals(2);
+    ax1.XAxis.TickValues = [-1 0 1];
+    if not(mod(ii,num_row) == 0)
+        ax1.XAxis.TickLabels = {};
+    else
+        xlabel('$y/D$','Rotation',0)
+    end
+    
+    ax1.YMinorTick = 'on';
+    ax1.YAxis.MinorTickValues = ylim_vals(1):0.1:ylim_vals(2);
+    ax1.YAxis.TickValues = [-0.5 0 0.5];
+    if not(ii<=num_row)
+        ax1.YAxis.TickLabels = {};
+    else
+        ylabel('$z/D$','Rotation',0)
+    end
+    % xticks([-1:0.1:1])
+    % set(ax1,'Xticklabel',[-1 0 1])
+    set(ax1,'FontWeight','Bold','fontsize',20,'FontName','Times','LineWidth',2,'TickLength',[0.02 0.02],'Layer','top')
+    
+    cur_row = mod(ii,num_row);
+    if cur_row == 0
+        cur_row = num_row;
+    end
+    
+    cur_col = ceil(ii/num_row);
+    subfig_label = [char(cur_col+96) '.' num2roman(cur_row) ')'];
+    
+    text(ax1, 0.04, 0.96, subfig_label, ...
+        'Units', 'normalized', ...
+        'FontWeight', 'bold', ...
+        'FontSize', 20, ...
+        'VerticalAlignment', 'top', ...
+        'HorizontalAlignment', 'left');
 end
-
-if mod(ii,num_row) == 1
-    title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
-end
-
-ax1 = gca;
-ax1.XMinorTick = 'on';
-ax1.XAxis.MinorTickValues = xlim_vals(1):0.1:xlim_vals(2);
-ax1.XAxis.TickValues = [-1 0 1];
-if not(mod(ii,num_row) == 0)
-    ax1.XAxis.TickLabels = {};
-else
-    xlabel('$y/D$','Rotation',0)
-end
-
-ax1.YMinorTick = 'on';
-ax1.YAxis.MinorTickValues = ylim_vals(1):0.1:ylim_vals(2);
-ax1.YAxis.TickValues = [-0.5 0 0.5];
-if not(ii<=num_row)
-    ax1.YAxis.TickLabels = {};
-else
-    ylabel('$z/D$','Rotation',0)
-end
-% xticks([-1:0.1:1])
-% set(ax1,'Xticklabel',[-1 0 1])
-set(ax1,'FontWeight','Bold','fontsize',20,'FontName','Times','LineWidth',2,'TickLength',[0.02 0.02],'Layer','top')
-
-cur_row = mod(ii,num_row);
-if cur_row == 0
-    cur_row = num_row;
-end
-
-cur_col = ceil(ii/num_row);
-subfig_label = [char(cur_col+96) '.' num2roman(cur_row) ')']
-
-text(ax1, 0.04, 0.96, subfig_label, ...
-    'Units', 'normalized', ...
-    'FontWeight', 'bold', ...
-    'FontSize', 20, ...
-    'VerticalAlignment', 'top', ...
-    'HorizontalAlignment', 'left');
 
 exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) plot_name '.pdf']),'Resolution',600);
 exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{ii}(1:end-4) plot_name '.png']),'Resolution',300);
 
 end
-
-exportgraphics(subplot_fig,fullfile([processing_file_dir '\figures\'], [plot_name 'subplot.png']),'Resolution',600);
+subplot_name = [processing_files{ii}(10:39) '_smooth_' num2str(smoothing_window) plot_name];
+exportgraphics(subplot_fig,fullfile([processing_file_dir '\figures\'], [subplot_name '_subplot.png']),'Resolution',600);
