@@ -88,7 +88,7 @@ end
 plot_quiver = 0;
 skip = 10;
 scale = 1;
-max_vorticity = 1.5;
+max_vorticity = 2;
 smoothing_window = 7; %7 for vorticity
 sigma = 1.1;
 N=2;

@@ -20,7 +20,7 @@ n = 2;
 m = 1;
 naming_scheme = ["a)" "b)" "c)" "d)" "e)" "f)" "g)"];
 
-make_gif = 0;
+make_gif = 1;
 
 load("pumpFit_freq2velo.mat");
 

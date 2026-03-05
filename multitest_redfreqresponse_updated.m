@@ -15,16 +15,16 @@ warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 1; %0 to not plot references
-plot_errors = 1; %0 to not plot errorbars
-single_test = 1; %Use for plotting the spectrogram curves and mean peaks curve
+plot_reference = 0; %0 to not plot references
+plot_errors = 0; %0 to not plot errorbars
+single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = ["000" "015" "020" "040" "070" "100"];
-test_diaratios = ["_00"]; %"06" "08"];
+test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 
 freq_cutoff = 6;
@@ -37,7 +37,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -164,6 +164,28 @@ if squareaxis == 1
 end
 hold on;
 
+vortex_disp_fig = figure;
+vortex_disp_fig.Position = figure_size;
+set(gca,'YLim',[0 0.5]);
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+vortex_velo_fig = figure;
+vortex_velo_fig.Position = figure_size;
+set(gca,'YLim',[0 0.5]);
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
 vortex_energy_fig = figure;
 vortex_energy_fig.Position = figure_size;
 % set(gca,'YLim',[0 0.5]);
@@ -187,6 +209,26 @@ hold on;
 
 vortex_phase_fig = figure;
 vortex_phase_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+total_phase_velo_fig = figure;
+total_phase_velo_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+vortex_phase_velo_fig = figure;
+vortex_phase_velo_fig.Position = figure_size;
 set(gca,'TickLength',tick_size);
 set(gcf, 'color', bgColor);
 set(gca, 'color', bgColor);
@@ -332,7 +374,7 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
@@ -480,10 +522,16 @@ for ii=1:num_uniq_configs %each configuration
                 peaks_90(iii) = peaks_percentile(2)/d_sph(1);
                 pdicy(iii) = sqrt(2)*A_rms./y_max; %Periodicity
 
+                %Forces proportional to disp, velo, acc
+
                 %% Phase Lag Calculations
             
                 [C_y_phase_alt, C_vortex_phase_alt] = retrievephase2(f_s,f_peak,encoder_filt,C_y,C_vortex);
                 [totalphase, vortexphase] = retrievephase1(encoder_filt,C_y,C_vortex);
+                % pred_phase(iii) = asind((4*pi^3*A_y_star(iii)/f_star_peak(iii))*(sqrt(2)*C_y_rms(iii)/mass_damp)*(f_star_peak(iii)/u_red(iii))^2);
+                [totalphase_velo, vortexphase_velo] = retrievephase1(velo,C_y,C_vortex);
+                total_phase_velo(iii) = mean(totalphase_velo);
+                vortex_phase_velo(iii) = mean(vortexphase_velo);
                 C_y_phase(iii) = mean(totalphase);
                 C_vortex_phase(iii) = mean(vortexphase);
                 if diagnose == true && kk==1
@@ -527,7 +575,7 @@ for ii=1:num_uniq_configs %each configuration
             %% Determining the average and uncertainty bounds from the tests
             zeropad = zeros(size(pdicy));
             % zeropad_psd = zeros(size(PSD_freq_norm));
-            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad]};
+            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad]};
             % 
             % if single_test==1
             %     % psd_results = {PSD_freq_norm, PSD_norm};
@@ -702,6 +750,13 @@ for ii=1:num_uniq_configs %each configuration
         ylabel('$\overline{e}_{vortex}$')
         set(get(gca,'ylabel'),'rotation',90)
         % legend
+
+        figure(total_energy_fig)
+        hold on
+        set(gca,'XMinorTick','on','YMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$\overline{e}_{total}$')
+        set(get(gca,'ylabel'),'rotation',90)
     
         figure(total_phase_fig)
         hold on
@@ -725,6 +780,30 @@ for ii=1:num_uniq_configs %each configuration
         set(gca,'XMinorTick','on')
         xlabel('$U^*$')
         ylabel('$\phi_{vortex}$')
+        set(get(gca,'ylabel'),'rotation',90)
+        yline(90,'k--','HandleVisibility','off')
+
+        figure(total_phase_velo_fig)
+        hold on
+        if plot_reference == 1
+            plot(u_red_vortexphase_sareen,vortexphase_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+            plot(u_red_vortexphase_govwill,vortexphase_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
+        end
+        set(gca,'XMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$\phi_{total,velo}$')
+        set(get(gca,'ylabel'),'rotation',90)
+        yline(90,'k--','HandleVisibility','off')
+
+        figure(vortex_phase_velo_fig)
+        hold on
+        if plot_reference == 1
+            plot(u_red_vortexphase_sareen,vortexphase_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
+            plot(u_red_vortexphase_govwill,vortexphase_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
+        end
+        set(gca,'XMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$\phi_{vortex,velo}$')
         set(get(gca,'ylabel'),'rotation',90)
         yline(90,'k--','HandleVisibility','off')
         % legend
@@ -767,6 +846,22 @@ for ii=1:num_uniq_configs %each configuration
     yticks(0:15:180);  % Set ticks every 15 units
     yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'});  % Set labels only at 90 and 180
     % errorbar(squeeze(results_ave{1}(ii,jj,:)),squeeze(results_ave{12}(ii,jj,:)),squeeze(results_lower{12}(ii,jj,:)),squeeze(results_upper{12}(ii,jj,:)),'ks','MarkerFaceColor','g','DisplayName','Cross')
+
+    figure(total_phase_velo_fig)
+    hold on
+    plot_fn(results_ave,results_lower,results_upper,1,15,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
+    % plot_fn(results_ave,results_lower,results_upper,1,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+    ylim([0 180])
+    yticks(0:15:180);  % Set ticks every 15 units
+    yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'}); 
+
+    figure(vortex_phase_velo_fig)
+    hold on
+    plot_fn(results_ave,results_lower,results_upper,1,16,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
+    % plot_fn(results_ave,results_lower,results_upper,1,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+    ylim([0 180])
+    yticks(0:15:180);  % Set ticks every 15 units
+    yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'}); 
 
     %Periodicity Plot
     figure(pdicy_fig)
