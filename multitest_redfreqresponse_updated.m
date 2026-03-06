@@ -237,6 +237,17 @@ if squareaxis == 1
 end
 hold on;
 
+pred_phase_fig = figure;
+preds_phase_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
+
 pdicy_fig = figure;
 pdicy_fig.Position = figure_size;
 set(gca,'TickLength',tick_size);
@@ -374,7 +385,7 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo pred_phase
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii);
@@ -528,11 +539,13 @@ for ii=1:num_uniq_configs %each configuration
             
                 [C_y_phase_alt, C_vortex_phase_alt] = retrievephase2(f_s,f_peak,encoder_filt,C_y,C_vortex);
                 [totalphase, vortexphase] = retrievephase1(encoder_filt,C_y,C_vortex);
-                % pred_phase(iii) = asind((4*pi^3*A_y_star(iii)/f_star_peak(iii))*(sqrt(2)*C_y_rms(iii)/mass_damp)*(f_star_peak(iii)/u_red(iii))^2);
+                pred_phase(iii) = 180-asind((4*pi^3*A_y_star(iii)*mass_damp)/(sqrt(2)*C_y_rms(iii)*(u_red(iii)/f_star_peak(iii))^2*f_star_peak(iii)));
+                
                 [totalphase_velo, vortexphase_velo] = retrievephase1(velo,C_y,C_vortex);
                 total_phase_velo(iii) = mean(totalphase_velo);
                 vortex_phase_velo(iii) = mean(vortexphase_velo);
                 C_y_phase(iii) = mean(totalphase);
+                pred_phase(iii) = pred_phase(iii)-C_y_phase(iii);
                 C_vortex_phase(iii) = mean(vortexphase);
                 if diagnose == true && kk==1
                     figure
@@ -575,7 +588,7 @@ for ii=1:num_uniq_configs %each configuration
             %% Determining the average and uncertainty bounds from the tests
             zeropad = zeros(size(pdicy));
             % zeropad_psd = zeros(size(PSD_freq_norm));
-            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad]};
+            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad], [pred_phase; zeropad]};
             % 
             % if single_test==1
             %     % psd_results = {PSD_freq_norm, PSD_norm};
@@ -785,10 +798,6 @@ for ii=1:num_uniq_configs %each configuration
 
         figure(total_phase_velo_fig)
         hold on
-        if plot_reference == 1
-            plot(u_red_vortexphase_sareen,vortexphase_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
-            plot(u_red_vortexphase_govwill,vortexphase_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
-        end
         set(gca,'XMinorTick','on')
         xlabel('$U^*$')
         ylabel('$\phi_{total,velo}$')
@@ -797,13 +806,18 @@ for ii=1:num_uniq_configs %each configuration
 
         figure(vortex_phase_velo_fig)
         hold on
-        if plot_reference == 1
-            plot(u_red_vortexphase_sareen,vortexphase_sareen,'ks','DisplayName','Sareen 2018b',MarkerSize=size_marker);
-            plot(u_red_vortexphase_govwill,vortexphase_govwill,'kd','DisplayName','Govhardan 2005',MarkerSize=size_marker);
-        end
         set(gca,'XMinorTick','on')
         xlabel('$U^*$')
         ylabel('$\phi_{vortex,velo}$')
+        set(get(gca,'ylabel'),'rotation',90)
+        yline(90,'k--','HandleVisibility','off')
+        % legend
+
+        figure(pred_phase_fig)
+        hold on
+        set(gca,'XMinorTick','on')
+        xlabel('$U^*$')
+        ylabel('$\phi_{pred}$')
         set(get(gca,'ylabel'),'rotation',90)
         yline(90,'k--','HandleVisibility','off')
         % legend
@@ -858,6 +872,14 @@ for ii=1:num_uniq_configs %each configuration
     figure(vortex_phase_velo_fig)
     hold on
     plot_fn(results_ave,results_lower,results_upper,1,16,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
+    % plot_fn(results_ave,results_lower,results_upper,1,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
+    ylim([0 180])
+    yticks(0:15:180);  % Set ticks every 15 units
+    yticklabels({'', '', '', '', '', '', '90', '', '', '', '', '', '180'}); 
+
+    figure(pred_phase_fig)
+    hold on
+    plot_fn(results_ave,results_lower,results_upper,1,17,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1)
     % plot_fn(results_ave,results_lower,results_upper,1,12,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,14)
     ylim([0 180])
     yticks(0:15:180);  % Set ticks every 15 units
