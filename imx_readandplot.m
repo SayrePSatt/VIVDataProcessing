@@ -71,7 +71,7 @@ cmap = colors;
 %%
 make_subplot = 1;
 if make_subplot == 1
-    subplot_fig = figure('Position',[188 194 1519 721]);
+    subplot_fig = figure('Position',[2196 196 1121 541]);
     for jj = 1:numel(processing_files)
         dists(jj) = str2double(processing_files{jj}(1:3));
         subbin(jj) = str2double(processing_files{jj}(45:46));
@@ -88,11 +88,11 @@ end
 plot_quiver = 0;
 skip = 10;
 scale = 1;
-max_vorticity = 2;
-smoothing_window = 7; %7 for vorticity
+max_vorticity = 1;
+smoothing_window = 3; %7 for vorticity
 sigma = 1.1;
 N=2;
-value_to_plot = 1; %1 for vorticity, 2 for u, 3 for v, 4 for w
+value_to_plot = 4; %1 for vorticity, 2 for u, 3 for v, 4 for w
 sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
 min_size = 1.2/100; %Minimum window size for any vortex to be saved
 
@@ -455,3 +455,4 @@ exportgraphics(f,fullfile([processing_file_dir '\figures\'], [processing_files{i
 end
 subplot_name = [processing_files{ii}(10:39) '_smooth_' num2str(smoothing_window) plot_name];
 exportgraphics(subplot_fig,fullfile([processing_file_dir '\figures\'], [subplot_name '_subplot.png']),'Resolution',600);
+exportgraphics(subplot_fig,fullfile([processing_file_dir '\figures\'], [subplot_name '_subplot.pdf']),'Resolution',600);
