@@ -21,9 +21,9 @@ single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 0;
 
-all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
+all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Do not change here, this controls the plot colors
 
-test_distratios = ["000" "015" "020" "040" "070" "100"];
+test_distratios = ["000" "015" "020" "040" "070" "100"]; %Here, choose the 
 test_diaratios = ["_00" "_10"]; %"06" "08"];
 test_spring = ["1k" "6k"];
 

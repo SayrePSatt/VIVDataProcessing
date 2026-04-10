@@ -38,6 +38,40 @@ blues = [219 234 242;   % lightest blue
 %           219 234 242;   % lightest blue
 %           156 199 223;
 %           33 102 172]/255;      % darkest blue
+
+%%
+make_subplot = 1;
+if make_subplot == 1
+    subplot_fig = figure('Position',[2196 355 1096 382]);
+    for jj = 1:numel(processing_files)
+        dists(jj) = str2double(processing_files{jj}(1:3));
+        subbin(jj) = str2double(processing_files{jj}(45:46));
+    end
+    num_col = numel(unique(dists));
+    num_row = numel(unique(subbin));
+    t_fig = tiledlayout(num_row,num_col);
+    t_fig.TileSpacing = 'none';
+    t_fig.Padding = 'none';
+    t_fig.TileIndexing = 'columnmajor';
+end
+
+
+plot_quiver = 0;
+skip = 10;
+scale = 1;
+max_vorticity = 1;
+smoothing_window = 4; %7 for vorticity
+sigma = 1.1;
+N=2;
+value_to_plot = 4; %1 for vorticity, 2 for u, 3 for v, 4 for w
+sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
+min_size = 1.2/100; %Minimum window size for any vortex to be saved
+
+xlim_vals = [-1.5 1.5];
+ylim_vals = [-0.7 0.7];
+
+f = figure;
+for ii=1:length(processing_files)
 colors = [
     165 32 38;      % new darkest red
     165 32 38;      % new darkest red
@@ -67,40 +101,6 @@ colors = [
 
 colors = flipud(colors);
 cmap = colors;
-
-%%
-make_subplot = 1;
-if make_subplot == 1
-    subplot_fig = figure('Position',[2196 196 1121 541]);
-    for jj = 1:numel(processing_files)
-        dists(jj) = str2double(processing_files{jj}(1:3));
-        subbin(jj) = str2double(processing_files{jj}(45:46));
-    end
-    num_col = numel(unique(dists));
-    num_row = numel(unique(subbin));
-    t_fig = tiledlayout(num_row,num_col);
-    t_fig.TileSpacing = 'none';
-    t_fig.Padding = 'none';
-    t_fig.TileIndexing = 'columnmajor';
-end
-
-
-plot_quiver = 0;
-skip = 10;
-scale = 1;
-max_vorticity = 1;
-smoothing_window = 3; %7 for vorticity
-sigma = 1.1;
-N=2;
-value_to_plot = 4; %1 for vorticity, 2 for u, 3 for v, 4 for w
-sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
-min_size = 1.2/100; %Minimum window size for any vortex to be saved
-
-xlim_vals = [-1.5 1.5];
-ylim_vals = [-0.7 0.7];
-
-f = figure;
-for ii=1:length(processing_files)
 % pause
 % f = figure('units','inch','position',[1,1,8,6]);
 close(f(isvalid(f)))
@@ -208,37 +208,39 @@ if value_to_plot == 1
     
     cbar_name = '$\omega^*$';
     plot_name = '_vorticity';
+    levels = linspace(-max_vorticity,max_vorticity,length(colors));
 elseif value_to_plot == 2
     plot_parameter = D.U'/U;
+    cbar_name = '$v/U_{\infty}$';
+    plot_name = '_u';
+    plot_parameter = conv2(plot_parameter,sliding_ave,'same');
+    plot_para_smooth = interp2(XX, YY, plot_parameter, XXq, YYq, 'cubic');
+    levels = linspace(-1,1,length(colors));
+elseif value_to_plot == 3
+    plot_parameter = D.V'/U;
+    cbar_name = '$z/U_{\infty}$';
+    plot_name = '_v';
+    plot_parameter = conv2(plot_parameter,sliding_ave,'same');
+    plot_para_smooth = interp2(XX, YY, plot_parameter, XXq, YYq, 'cubic');
+    levels = linspace(-1,1,length(colors));
+elseif value_to_plot == 4
+    plot_parameter = D.W'*2/(100*U); %/100 because for some reason thru plane velocity reported in cm/s
     cbar_name = '$u/U_{\infty}$';
     plot_name = '_u';
     plot_parameter = conv2(plot_parameter,sliding_ave,'same');
     plot_para_smooth = interp2(XX, YY, plot_parameter, XXq, YYq, 'cubic');
-elseif value_to_plot == 3
-    plot_parameter = D.V'/U;
-    cbar_name = '$v/U_{\infty}$';
-    plot_name = '_v';
-    plot_parameter = conv2(plot_parameter,sliding_ave,'same');
-    plot_para_smooth = interp2(XX, YY, plot_parameter, XXq, YYq, 'cubic');
-elseif value_to_plot == 4
-    plot_parameter = D.W'*2/(100*U); %/100 because for some reason thru plane velocity reported in cm/s
-    cbar_name = '$w/U_{\infty}$';
-    plot_name = '_w';
-    plot_parameter = conv2(plot_parameter,sliding_ave,'same');
-    plot_para_smooth = interp2(XX, YY, plot_parameter, XXq, YYq, 'cubic');
+    levels = linspace(0,1,length(colors(11:end,:)));
+    colors = flipud(colors(11:end,:));
+    cmap = colors;
 end
 
 U_interp = interp2(XX, YY, D.U', XXq, YYq, 'cubic');
 V_interp = interp2(XX, YY, D.V', XXq, YYq, 'cubic');
 
-levels = [-max_vorticity:2*max_vorticity/7:max_vorticity];
-levels(4:5) = [];
-levels = linspace(-max_vorticity,max_vorticity,length(colors));
-
 % contourf(X/diameter,Y/diameter,u,levels,'LineColor','none','edgecolor','k')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
 figure(f)
 contourf(XXq/diameter,YYq/diameter,plot_para_smooth,levels,'LineColor','none')%,'LevelList',-max_vorticity:max_vorticity/7:max_vorticity)
-clim([-max_vorticity max_vorticity])
+clim([0 1])
 colormap(cmap)
 
 if plot_quiver == 1
@@ -392,7 +394,7 @@ if make_subplot == 1
     set(gca,'TickLabelInterpreter','latex')
     xlim(xlim_vals)
     ylim(ylim_vals)
-    clim([-max_vorticity max_vorticity])
+    clim([0 1])
     colormap(cmap)
     % daspect([8 8 1])
     % h_sp = colorbar;
