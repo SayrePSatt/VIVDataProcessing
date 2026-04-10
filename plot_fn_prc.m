@@ -1,7 +1,5 @@
 function plot_fn_prc(results,x_num,y_num,prc_10,prc_90,config_idx,name,plot_legend,plotting_color,plotting_marker)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
-
+%Plots the percentile peaks of the amplitude response
 distance = str2double(extractBetween(name,1,3))/10;
 if distance == 0
     legend_label = "Single";

@@ -1,17 +1,15 @@
 function plot_fn(results,lower_bound,upper_bound,x_num,y_num,config_idx,name,plot_legend,plotting_color,plotting_marker,errorbars,xerr)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%Function plots all data points onto the given plot
+
+%Change of name 
 distance = str2double(extractBetween(name,1,3))/10;
 if distance == 0
     legend_label = "Iso.";
-elseif distance == 10.5
-    legend_label = "+0.5% f_n"
-elseif distance == 9.5
-    legend_label = "-0.5% f_n"
 else
     legend_label = num2str(distance);
 end
 
+%Getting data and making limits
 x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:));
 lwr_bound = squeeze(lower_bound{y_num}{config_idx}(:));
@@ -47,6 +45,7 @@ else
         MarkerSize=6)
 end
 
+%Limiting x axis to the tested reduced velocities
 xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
 
 if plot_legend == 1

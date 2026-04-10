@@ -1,6 +1,6 @@
 function norm_value = axis_norm(x,y,value,ax,tl)
 %This function takes in a value, such as the reduced velocity, determines
-%where that value is in normalized position on the axis, then provides the
+%where that value is in normalized position on the axis, then provides the 
 %normalized value of that position
 ax_offset = get(tl,'Position');
 ax_limits = get(ax,'XLim');

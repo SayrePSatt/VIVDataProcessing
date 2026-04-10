@@ -1,5 +1,5 @@
 function [phase_TT,phase_VT]= retrievephase(fs,freq,yN,CyT,CvT)
-
+ 
 [crossCorr_T, lags_T] = xcorr(CyT, yN);
 [crossCorr_V, lags_V] = xcorr(CvT, yN);
 

@@ -367,4 +367,4 @@ for ii=1:num_uniq_configs %each configuration
             clear results
         end
     end
-end
+end 

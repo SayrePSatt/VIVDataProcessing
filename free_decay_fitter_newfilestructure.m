@@ -3,26 +3,29 @@ close all
 clc
 
 m = 1;
-stiffness = ["1k"];
+stiffness = ["1k"]; %Controls which free decay test to do, either 1k or 6k
+%Choose the directory where data is contained
 folder = uigetdir;
 allfiles = dir(folder);
 [~, date, ~] = fileparts(folder);
 date = string(date);
 %%
-fluid = ["water"];
+fluid = ["water"]; %Choose which fluid to process
 idx = 1;
 for i=3:length(allfiles)
     filename = "\"+string(allfiles(i).name)
     clear f_d f_n log_decrement data
+    %Chooses the correct data
     searchbool = contains(filename,fluid) && endsWith(filename,'.dat') && contains(filename,stiffness) && ~contains(filename,"results");
     if  searchbool && ~contains(filename,"_00.0_")
         data = readtable(folder+filename);
         data = table2array(data);
         time = data(:,1);
         disp = data(:,2);
-        [peak, peakidx] = findpeaks(disp,'MinPeakHeight',0,'MinPeakDistance',300);
+        
+        [peak, peakidx] = findpeaks(disp,'MinPeakHeight',0,'MinPeakDistance',300); %Control what time to average over for final values
         for jj = 1:length(peakidx)-m
-            if time(peakidx(jj)) > 50 && time(peakidx(jj)) < 150 && disp(peakidx(jj)) > 0.0005
+            if time(peakidx(jj)) > 50 && time(peakidx(jj)) < 150 && disp(peakidx(jj)) > 0.0005 %make sure that peaks are significant
                 f_d(jj) = 1/((time(peakidx(jj+m))-time(peakidx(jj)))/m);
                 log_decrement(jj) = log(peak(jj)/peak(jj+m))/m;
             else
@@ -42,7 +45,8 @@ for i=3:length(allfiles)
 
         peak = peak(1:end-1);
         peakidx = peakidx(1:end-1);
-
+        
+        %Plotting frequency and damping with time
         figure
         subplot(2,2,1)
         hold on

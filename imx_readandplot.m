@@ -15,34 +15,10 @@ else
     num_figs = numel(processing_files);
 end
 
-tic 
-% R = [linspace(0,1,100) ones(1,43) linspace(1,1,100)];
-% G = [linspace(0,1,100) ones(1,43) linspace(1,0,100)];
-% B = [linspace(1,1,100) ones(1,43) linspace(1,0,100)];
-% cmap = [R(:),G(:),B(:)];  %// create colormap
-
-reds = [251 226 211;
-        246 178 148;
-        224 109 84]/255;       % darkest red
-
-whites = [1 1 1];     % white
-
-blues = [219 234 242;   % lightest blue
-         156 199 223;
-         33 102 172]/255;      % darkest blue
-
-% colors = [224 109 84;
-%           246 178 148;
-%           251 226 211;   % darkest red
-%           255 255 255;    % white
-%           219 234 242;   % lightest blue
-%           156 199 223;
-%           33 102 172]/255;      % darkest blue
-
-%%
+tic
 make_subplot = 1;
 if make_subplot == 1
-    subplot_fig = figure('Position',[2196 355 1096 382]);
+    subplot_fig = figure('Position',[2196 355 1096 382]); %Control the figure size
     for jj = 1:numel(processing_files)
         dists(jj) = str2double(processing_files{jj}(1:3));
         subbin(jj) = str2double(processing_files{jj}(45:46));
@@ -55,14 +31,19 @@ if make_subplot == 1
     t_fig.TileIndexing = 'columnmajor';
 end
 
-
+%Quiver controls
 plot_quiver = 0;
 skip = 10;
 scale = 1;
+
+%Contour controls
 max_vorticity = 1;
 smoothing_window = 4; %7 for vorticity
-sigma = 1.1;
+
+%Averaging kernal controls
+sigma = 1.1; 
 N=2;
+
 value_to_plot = 4; %1 for vorticity, 2 for u, 3 for v, 4 for w
 sliding_ave = ones(smoothing_window,smoothing_window)/smoothing_window^2;
 min_size = 1.2/100; %Minimum window size for any vortex to be saved
@@ -113,8 +94,7 @@ f = figure('units','inch','position',[1,1,8,6]);
 bin = str2double(processing_files{ii}(45:46));
 nBins = str2double(processing_files{ii}(53:54));
 % tiledlayout(length(each_field),1,'TileSpacing', 'compact', 'Padding', 'none')
-
-%%
+%% Plotting
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
 St = 0.19;
@@ -124,10 +104,10 @@ diagnose = false;
 
 markers = ['s' 'd' '*'];
 
-field = readimx(fullfile(processing_file_dir,processing_files{ii}));
+field = readimx(fullfile(processing_file_dir,processing_files{ii})); %Reads in the DaVIS imx file
 fieldFrame = field.Frames{1};
-%%
-D = create2DVec(fieldFrame);
+
+D = create2DVec(fieldFrame); %Extracts components
 D.W = fieldFrame.Components{5}.Planes{1};
 
 X = D.X(:,1)/1000;
@@ -140,7 +120,7 @@ Ny = N*size(Y,2);
 
 if value_to_plot == 1    
 
-    vorticity = curl(X,Y,D.U',D.V');
+    vorticity = curl(X,Y,D.U',D.V'); %Vorticity from central differencing
     vorticityStar = vorticity*diameter/U;
     
     
@@ -183,9 +163,11 @@ if value_to_plot == 1
     plot_para_smooth(abs(plot_para_smooth)<0.2) = 0;
     
     % levels = [-3 -2.1429 -1.2677 -1.2677 2.1429 3];
+    %Limits the vorticity levels to prevent white coloring
     plot_para_smooth(plot_para_smooth>=max_vorticity) = max_vorticity;
     plot_para_smooth(plot_para_smooth<=-max_vorticity) = -max_vorticity;
-    BW = abs(plot_para_smooth) > 0.2;
+    
+    BW = abs(plot_para_smooth) > 0.2; %Only capture the vorticity with a strength greater than specified value
     CC = bwconncomp(BW); 
     region_area = cellfun(@numel, CC.PixelIdxList);  % Number of pixels (area) for each region
     image_area = prod(CC.ImageSize);
@@ -294,10 +276,13 @@ set(ax1,'FontWeight','Bold','fontsize',20,'FontName','Times','LineWidth',2,'Tick
 toc
 
 %% Circle
-% Your desired circle parameters
+% Creates a circle to represent the outline of the sphere at different
+% positions
 hold on
 u_red = str2double(u_star);
-if distance == 0
+%This needs to be properly updated so as to take the average position in 
+%the measured phase and convert it to normalized coordinates
+if distance == 0 
     if u_red == 8.5
         scale = 0.7;
     elseif u_red == 14.5
@@ -383,7 +368,7 @@ end
 title(['$U^*=$' num2str(str2double(u_star)) dist_disp])
 box on
 
-
+%Creating a subplot of all the contour figs
 if make_subplot == 1
     figure(subplot_fig)
     nexttile

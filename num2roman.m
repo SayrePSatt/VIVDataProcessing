@@ -1,5 +1,5 @@
 function str = num2roman(x)
-    % Validates input is a scalar integer
+    % Validates input is a scalar integer 
     assert(isscalar(x) && floor(x)==x, 'Input must be a scalar integer');
     assert(1 <= x && x <= 3999, 'Input must be between 1 and 3999');
     

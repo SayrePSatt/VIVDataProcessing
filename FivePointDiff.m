@@ -1,5 +1,5 @@
 function dx=FivePointDiff(x,fs)
-% 
+
 % fs is the sampling frequency
 h = 1/fs;
 for i=1:length(x)-5

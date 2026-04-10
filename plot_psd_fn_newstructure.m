@@ -28,6 +28,7 @@ size(combined_data)
 combined_data_interp = interp1(x_data,combined_data',x_data_interp);
 combined_data_interp = combined_data_interp';
 
+%Filtering image to make harmonics more clear
 combined_data_interp = imgaussfilt(combined_data_interp,2);
 imagesc(x_data_interp, common_freq, combined_data_interp)
 set(gca, 'YDir', 'normal')

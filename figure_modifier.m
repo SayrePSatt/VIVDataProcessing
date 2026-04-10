@@ -2,6 +2,7 @@ clear all
 close all
 clc
 
+%Figure settings
 mkr_sz = 8;
 line_wdth = 1.2;
 fig_sz = [100 100 650 400];

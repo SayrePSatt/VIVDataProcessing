@@ -1,6 +1,6 @@
 function [f,pxx,pxx_norm] = norm_PSD_calc(fs,signal,nfft,fc)
 %This function calculates the normalized power spectral density of a given
-%signal
+%signal 
 
 [pxx, f] = pwelch(signal,[],[],nfft,fs);
 

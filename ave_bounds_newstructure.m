@@ -1,7 +1,6 @@
 function [result_ave,upper,lower] = ave_bounds_newstructure(result)
 %ave_bounds takes in the desired quantity and produces the upper/lower
 %bound lengths for use with error bar plotting
-%   Detailed explanation goes here
 
 result_ave = mean(result(1,:),'omitnan');
 result_std = std(result(1,:),'omitnan');
