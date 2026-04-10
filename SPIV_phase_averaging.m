@@ -1,3 +1,5 @@
+%This code takes in a data file and bins the file, exporting the indicies
+%of images to export from DaVIS
 clear all
 close all
 clc
