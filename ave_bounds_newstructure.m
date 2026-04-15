@@ -7,7 +7,8 @@ result_std = std(result(1,:),'omitnan');
 uncert = result(2,:);
 weight = 1./uncert.^2;
 if sum(result(2,:)) == 0
-    result_stdmean = result_std/sqrt(length(result(:,2)));
+    [~, num_samp] = size(result);
+    result_stdmean = result_std/sqrt(num_samp); %result_std/sqrt(length(result(:,2)))
 else
     % result_stdmean = sqrt(sum(result(2,:).^2)/length(result(2,:))); %This is pooled statistics
     result_ave = sum(result(1,:).*weight)/sum(weight);
