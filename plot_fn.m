@@ -8,7 +8,6 @@ if distance == 0
 else
     legend_label = num2str(distance);
 end
-
 %Getting data and making limits
 x_data = squeeze(results{x_num}{config_idx}(:));
 y_data = squeeze(results{y_num}{config_idx}(:));
@@ -51,6 +50,7 @@ xlim([0 max(squeeze(results{x_num}{config_idx}(:)))+1])
 if plot_legend == 1
     plot_leg = legend('Location','eastoutside','NumColumns',1,'Interpreter', 'latex');
     set(plot_leg,'Color','none','Box','off')
+    plot_leg.FontSize = 14;
     plot_leg.Title.String = '$L^*$';
 end
 

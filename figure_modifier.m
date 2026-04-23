@@ -5,7 +5,7 @@ clc
 %Figure settings
 mkr_sz = 8;
 line_wdth = 1.2;
-fig_sz = [100 100 650 400];
+fig_sz = [100 100 400 400];
 manual_resize = 1;
 tick_sz = [0.03 0.012];
 font_sz = 20;
