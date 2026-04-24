@@ -13,10 +13,16 @@ close all
 clc
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 
+%% Importing Data
+assi_lift = csvread('assi_static_lift_cylinder.csv'); %#ok<CSVRD>
+assi_lift(assi_lift ==0) = NaN;
+span_spacing_assi = assi_lift(:,1);
+static_lift_assi = assi_lift(:,2);
+
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
-plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
+plot_reference = 1; %0 to not plot references
+plot_errors = 1; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 0;
@@ -171,7 +177,10 @@ for ii=1:num_uniq_configs %each configuration
                 force_transducer_ave = mean(force_transducer,1);
                 force_norm = 0.5*rho*(U^2)*pi*d_sph(1)^2/4;
 
-                C_d(iii) = -force_transducer_ave(1)/force_norm;
+                %Drag from the cylinder
+                C_d_cyl = 1.0; %Assuming reynolds of 900
+                drag_cyl = C_d_cyl*0.5*rho*U^2*d_sph(1)*rod_d(1);
+                C_d(iii) = -(force_transducer_ave(1)+drag_cyl)/force_norm;
                 C_l(iii) = -force_transducer_ave(2)/force_norm;
             end
             clear results
@@ -185,7 +194,11 @@ for ii=1:num_uniq_configs %each configuration
             hold on
 
         end
+
         name_sub = extractBetween(uniq_configs(ii),6,8);
+        if ii==1 && plot_reference == 1
+            plot(span_spacing_assi,static_lift_assi,'ks','DisplayName','4 (Cylinder)',MarkerSize=size_marker,MarkerFaceColor='k');     
+        end
         figure(drag_fig)
         plot_fn(results_ave,results_lower,results_upper,1,2,ii,name_sub,plot_legends,plotting_color,marker_style,plot_errors,1)
         figure(lift_fig)
@@ -197,6 +210,7 @@ figure(drag_fig)
 xlabel('$y/D$')
 ylabel('$C_d$')
 set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+set(get(gca,'ylabel'),'rotation',0)
 xlim([-max(uniq_span)/100 max(uniq_span)/100])
 xticks(-max(uniq_span)/100:0.5:max(uniq_span)/100)
 ylim([0.2 0.7])
@@ -205,6 +219,7 @@ figure(lift_fig)
 xlabel('$y/D$')
 ylabel('$C_l$')
 set(gca,'XMinorTick','on','YMinorTick','on','Layer','top')
+set(get(gca,'ylabel'),'rotation',0)
 xlim([-max(uniq_span)/100 max(uniq_span)/100])
 xticks(-max(uniq_span)/100:0.5:max(uniq_span)/100)
 
@@ -213,3 +228,18 @@ exportgraphics(lift_fig,['figures\' 'static_lift.pdf'],'Resolution',300,'Backgro
 
 savefig(drag_fig,['figures\matlab_figs\' 'static_drag.fig'])
 savefig(lift_fig,['figures\matlab_figs\' 'static_lift.fig'])
+
+%% Calculating the Slope
+
+% for ii = 1:num_uniq_configs
+%     x_data = results_ave{1}{ii};
+%     y_data = results_ave{3}{ii};
+% 
+%     middle_idx = ceil(length(x_data)/2);
+%     fit_idx = (middle_idx-6):(middle_idx+6);
+% 
+%     slope_fit(ii,:) = polyfit(x_data(fit_idx),y_data(fit_idx),1);
+%     figure(lift_fig)
+%     plot(x_data(fit_idx),polyval(slope_fit(ii,:),x_data(fit_idx)),Color=plotting_color(ii,:))
+% end
+

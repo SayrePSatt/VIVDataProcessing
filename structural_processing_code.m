@@ -23,7 +23,7 @@ freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Do not change here, this controls the plot colors
 
-test_distratios = ["000" "015" "020" "040" "070" "100"]; %Here, choose which distance ratios to plot. Distance ratios are multiplied by 10
+test_distratios = ["040"]; %Here, choose which distance ratios to plot. Distance ratios are multiplied by 10
 test_diaratios = ["_00" "_10"]; %"06" "08"]; %Must have "_00" for isolated sphere, this controls the diameter ratios
 test_spring = ["1k" "6k"]; %Which spring rate tests to include
 
@@ -37,7 +37,7 @@ tick_size = [0.03 0.012];
 size_marker = 6;
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\viv_newstructure\aftertare_newstructure\"; %Specify the folder in which all data occurs
+topfolder = "D:\EFDL\viv_newstructure\dataWithZeroTare\"; %Specify the folder in which all data occurs
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -268,6 +268,16 @@ if squareaxis == 1
 end
 hold on;
 
+f_star_kw_fig = figure;
+f_star_kw_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
 test_fig = figure;
 test_fig.Position = figure_size;
 set(gca,'TickLength',tick_size);
@@ -385,7 +395,7 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo pred_phase
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo pred_phase f_star_kw_peak
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii); %Data index to pull file from
@@ -413,6 +423,11 @@ for ii=1:num_uniq_configs %each configuration
                 omega_na = 2*pi*f_na(1);
                 k = m*omega_na.^2; %Calculating spring rate from system mass and nat freq
                 c = 2*m*omega_na*zeta(1); %Calculating damping
+
+                k_w = 0.39*rho*U^2*d_sph(1)*0.5; %Calculating added stiffness from wake stiffness, 0.39 only valid for 4D
+                k_eq = k(1)+k_w;
+                f_nw_kw = sqrt(k_eq/m(1))/(2*pi); 
+
                 mass_damp = (m_star+C_A)*zeta(1);
                             %Make sure to include the calculations for
                             %uncertainty
@@ -468,6 +483,7 @@ for ii=1:num_uniq_configs %each configuration
                 f_peak_temp = -p_f(2)/(2*p_f(1));
                 f_peak = f_peak_temp; %Setting 1st derivative slope to be 0, finding the location of 0
                 f_star_peak(iii) = -p_f_norm(2)/(2*p_f_norm(1));
+                f_star_kw_peak(iii) = f_peak/f_nw_kw;
 
                 f_vo_norm(iii) = (St*U/d_sph(1))/f_nw(1); %normalized frequency response
                 
@@ -588,7 +604,9 @@ for ii=1:num_uniq_configs %each configuration
             %% Determining the average and uncertainty bounds from the tests
             zeropad = zeros(size(pdicy)); %Used to add zeros for values that don't have associated uncertainty
             % zeropad_psd = zeros(size(PSD_freq_norm));
-            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad], [pred_phase; zeropad]};
+            results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], ...
+                [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], ...
+                [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad], [pred_phase; zeropad], [f_star_kw_peak; zeropad]};
             % 
             % if single_test==1
             %     % psd_results = {PSD_freq_norm, PSD_norm};
@@ -729,6 +747,23 @@ for ii=1:num_uniq_configs %each configuration
     % set(gca)
     xlabel('$U^*$')
     ylabel('$f^*$')
+    ylim([0.9 1.2])
+    set(get(gca,'ylabel'),'rotation',0)
+
+    figure(f_star_kw_fig)
+    hold on
+    if ii==1
+        Ustar_temp = 0:23.5;
+        f_vo_norm = St*Ustar_temp;
+        % plot(Ustar_temp,f_vo_norm,'k-','DisplayName','Static')
+        yline(1,'k--','HandleVisibility','off')
+        set(gca,'XMinorTick','on','YMinorTick','on')
+    end
+    
+    plot_fn(results_ave,results_lower,results_upper,1,18,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1) %Freq Ratio plot
+    % set(gca)
+    xlabel('$U^*$')
+    ylabel('$f^*_{kw}$')
     ylim([0.9 1.2])
     set(get(gca,'ylabel'),'rotation',0)
 
