@@ -29,7 +29,7 @@ freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Do not change here, this controls the plot colors
 
-test_distratios = ["015" "040"]; %Here, choose the 
+test_distratios = ["040"]; %Here, choose the 
 test_diaratios = ["000" "010"]; %"06" "08"];
 % test_spring = ["1k" "6k"];
 
@@ -243,3 +243,7 @@ savefig(lift_fig,['figures\matlab_figs\' 'static_lift.fig'])
 %     plot(x_data(fit_idx),polyval(slope_fit(ii,:),x_data(fit_idx)),Color=plotting_color(ii,:))
 % end
 
+%% Fitting curves
+disp = results_ave{1}{1};
+drag = results_ave{2}{1};
+lift = results_ave{3}{1};

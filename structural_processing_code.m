@@ -483,7 +483,7 @@ for ii=1:num_uniq_configs %each configuration
                 f_peak_temp = -p_f(2)/(2*p_f(1));
                 f_peak = f_peak_temp; %Setting 1st derivative slope to be 0, finding the location of 0
                 f_star_peak(iii) = -p_f_norm(2)/(2*p_f_norm(1));
-                f_star_kw_peak(iii) = f_peak/f_nw_kw;
+                % f_star_kw_peak(iii) = f_peak/f_nw_kw;
 
                 f_vo_norm(iii) = (St*U/d_sph(1))/f_nw(1); %normalized frequency response
                 
@@ -547,9 +547,17 @@ for ii=1:num_uniq_configs %each configuration
                 peaks_10(iii) = peaks_percentile(1)/d_sph(1);
                 peaks_90(iii) = peaks_percentile(2)/d_sph(1);
                 pdicy(iii) = sqrt(2)*A_rms./y_max; %Periodicity
-
+                
+                %% Nonlinear Natural Frequency Calculation
+                load lift_fit_4D_obj.mat
+                t_span = [0 10/f_nw(1)];
+                y_0_nlfreq = [A_y_star(iii)*d_sph(1) 0]; %Displacing from the A_rms value
+                lift_fit = lift_fit_4d_obj;
+                [t_nlfreq, disp_nlfreq] = ode45(@(t,y) nonlinear_spring_solver(t,y,m(1),k_eq(1),lift_fit,d_sph(1),U,rho),t_span,y_0_nlfreq);
+                [nl_pks, nl_pks_idx] = findpeaks(disp_nlfreq(:,1));
+                f_nl = (numel(nl_pks_idx)-1)/(t_nlfreq(nl_pks_idx(end))-t_nlfreq(nl_pks_idx(1)));
                 %Forces proportional to disp, velo, acc
-
+                f_star_kw_peak(iii) = f_peak*d_sph(1)/U;
                 %% Phase Lag Calculations
             
 
@@ -764,6 +772,8 @@ for ii=1:num_uniq_configs %each configuration
     % set(gca)
     xlabel('$U^*$')
     ylabel('$f^*_{kw}$')
+    f_w_line = sqrt(2*0.39/(pi*(6.659*0.5)))/(2*pi);
+    yline(f_w_line)
     ylim([0.9 1.2])
     set(get(gca,'ylabel'),'rotation',0)
 
