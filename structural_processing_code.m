@@ -16,14 +16,14 @@ warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
 %% Options for plotting
 plot_legends = 1; %0 to not plot legends, 1 to plot legends
 plot_reference = 0; %0 to not plot references
-plot_errors = 0; %0 to not plot errorbars
+plot_errors = 1; %0 to not plot errorbars
 single_test = 0; %Use for plotting the spectrogram curves and mean peaks curve
 squareaxis = 0;
 freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Do not change here, this controls the plot colors
 
-test_distratios = ["040"]; %Here, choose which distance ratios to plot. Distance ratios are multiplied by 10
+test_distratios = ["015" "040"]; %Here, choose which distance ratios to plot. Distance ratios are multiplied by 10
 test_diaratios = ["_00" "_10"]; %"06" "08"]; %Must have "_00" for isolated sphere, this controls the diameter ratios
 test_spring = ["1k" "6k"]; %Which spring rate tests to include
 
@@ -278,6 +278,16 @@ if squareaxis == 1
 end
 hold on;
 
+f_DU_fig = figure;
+f_DU_fig.Position = figure_size;
+set(gca,'TickLength',tick_size);
+set(gcf, 'color', bgColor);
+set(gca, 'color', bgColor);
+if squareaxis == 1
+    axis square
+end
+hold on;
+
 test_fig = figure;
 test_fig.Position = figure_size;
 set(gca,'TickLength',tick_size);
@@ -395,7 +405,8 @@ for ii=1:num_uniq_configs %each configuration
     for jj=1:num_spring_configs %Spring Config for each configuration
         num_red_velo = length(matching_tests{ii,jj});
         for kk=1:num_red_velo
-            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo pred_phase f_star_kw_peak
+            clear pdicy f_star_peak u_red u_red_68 u_norm u_norm_68 A_y_star C_y_rms C_y_rms_68 C_pot_rms C_vortex_rms C_vortex_rms_68 C_y_phase C_vortex_phase f_vo_norm u_red_norm ...
+            zeropad peaks_10 peaks_90 e_vortex e_total total_phase_velo vortex_phase_velo pred_phase f_star_kw_peak f_DU f_DU_nl
             num_datapoints = length(matching_tests{ii,jj}{kk});
             for iii = 1:num_datapoints
                 data_idx = matching_tests{ii,jj}{kk}(iii); %Data index to pull file from
@@ -425,7 +436,7 @@ for ii=1:num_uniq_configs %each configuration
                 c = 2*m*omega_na*zeta(1); %Calculating damping
 
                 k_w = 0.39*rho*U^2*d_sph(1)*0.5; %Calculating added stiffness from wake stiffness, 0.39 only valid for 4D
-                k_eq = k(1)+k_w;
+                k_eq = k(1);%+k_w;
                 f_nw_kw = sqrt(k_eq/m(1))/(2*pi); 
 
                 mass_damp = (m_star+C_A)*zeta(1);
@@ -549,15 +560,27 @@ for ii=1:num_uniq_configs %each configuration
                 pdicy(iii) = sqrt(2)*A_rms./y_max; %Periodicity
                 
                 %% Nonlinear Natural Frequency Calculation
-                load lift_fit_4D_obj.mat
-                t_span = [0 10/f_nw(1)];
+                load lift_fit_4D_obj.mat 
+                load lift_fit_015D_obj.mat
+                t_span = [0 50/f_nw(1)];
                 y_0_nlfreq = [A_y_star(iii)*d_sph(1) 0]; %Displacing from the A_rms value
-                lift_fit = lift_fit_4d_obj;
-                [t_nlfreq, disp_nlfreq] = ode45(@(t,y) nonlinear_spring_solver(t,y,m(1),k_eq(1),lift_fit,d_sph(1),U,rho),t_span,y_0_nlfreq);
+                distance = str2double(extractBetween(uniq_configs(ii),1,3))/10;
+                if distance == 1.5
+                    lift_fit = lift_fit_015d_obj;
+                elseif distance == 4
+                    lift_fit = lift_fit_4d_obj;
+                end
+                [t_nlfreq, disp_nlfreq] = ode45(@(t,y) nonlinear_spring_solver(t,y,C_A,m_star,k_eq(1),lift_fit,d_sph(1),U,rho),t_span,y_0_nlfreq);
                 [nl_pks, nl_pks_idx] = findpeaks(disp_nlfreq(:,1));
                 f_nl = (numel(nl_pks_idx)-1)/(t_nlfreq(nl_pks_idx(end))-t_nlfreq(nl_pks_idx(1)));
                 %Forces proportional to disp, velo, acc
-                f_star_kw_peak(iii) = f_peak*d_sph(1)/U;
+                f_star_kw_peak(iii) = f_peak/f_nl;%*d_sph(1)/U;
+                f_DU(iii) = f_peak*d_sph(1)/U;
+                
+                [t_nlfreq, disp_nlfreq] = ode45(@(t,y) nonlinear_spring_solver(t,y,C_A,m_star,0,lift_fit,d_sph(1),U,rho),t_span,y_0_nlfreq);
+                [nl_pks, nl_pks_idx] = findpeaks(disp_nlfreq(:,1));
+                f_nl_0k = (numel(nl_pks_idx)-1)/(t_nlfreq(nl_pks_idx(end))-t_nlfreq(nl_pks_idx(1)));
+                f_DU_nl(iii) = f_nl_0k*d_sph(1)/U;
                 %% Phase Lag Calculations
             
 
@@ -614,7 +637,8 @@ for ii=1:num_uniq_configs %each configuration
             % zeropad_psd = zeros(size(PSD_freq_norm));
             results = {[u_red; u_red_68], [u_norm; u_norm_68], [pdicy; zeropad], [C_y_rms; C_y_rms_68], [C_pot_rms; zeropad], [C_vortex_rms; C_vortex_rms_68], ...
                 [C_y_phase; zeropad], [C_vortex_phase; zeropad], [A_y_star; zeropad], [f_star_peak; zeropad], [peaks_10; zeropad], [peaks_90; zeropad], ...
-                [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad], [pred_phase; zeropad], [f_star_kw_peak; zeropad]};
+                [e_vortex; zeropad], [e_total; zeropad], [total_phase_velo; zeropad], [vortex_phase_velo; zeropad], [pred_phase; zeropad], [f_star_kw_peak; zeropad], ...
+                [f_DU; zeropad], [f_DU_nl; zeropad]};
             % 
             % if single_test==1
             %     % psd_results = {PSD_freq_norm, PSD_norm};
@@ -771,10 +795,30 @@ for ii=1:num_uniq_configs %each configuration
     plot_fn(results_ave,results_lower,results_upper,1,18,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1) %Freq Ratio plot
     % set(gca)
     xlabel('$U^*$')
-    ylabel('$f^*_{kw}$')
-    f_w_line = sqrt(2*0.39/(pi*(6.659*0.5)))/(2*pi);
-    yline(f_w_line)
+    ylabel('$f^*_{w}$')
+    % f_w_line = sqrt(3*0.39/(pi*(6.659+0.5)))/(2*pi);
+    % yline(f_w_line)
     ylim([0.9 1.2])
+    set(get(gca,'ylabel'),'rotation',0)
+
+    figure(f_DU_fig)
+    hold on
+    if ii==1
+        Ustar_temp = 0:23.5;
+        f_vo_norm = St*Ustar_temp;
+        % plot(Ustar_temp,f_vo_norm,'k-','DisplayName','Static')
+        yline(1,'k--','HandleVisibility','off')
+        set(gca,'XMinorTick','on','YMinorTick','on')
+    end
+    
+    plot_fn(results_ave,results_lower,results_upper,1,19,ii,uniq_configs(ii),plot_legends,plotting_color,marker_style,plot_errors,1) %Freq Ratio plot
+    plot_fn(results_ave,results_lower,results_upper,1,20,ii,uniq_configs(ii),0,plotting_color,marker_style,plot_errors,1)
+    % set(gca)
+    xlabel('$fD/U$')
+    ylabel('$fwD/U$')
+    % f_w_line = sqrt(3*0.39/(pi*(6.659+0.5)))/(2*pi);
+    % yline(f_w_line)
+    ylim([0 0.2])
     set(get(gca,'ylabel'),'rotation',0)
 
     %Plots of lift coefficient
