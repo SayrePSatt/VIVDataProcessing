@@ -1053,6 +1053,7 @@ exportgraphics(pdicy_fig,['figures\' 'pdicy.pdf'],'Resolution',300,'BackgroundCo
 exportgraphics(f_star_fig,['figures\' 'f_star.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(vortex_energy_fig,['figures\' 'vortex_energy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 exportgraphics(total_energy_fig,['figures\' 'total_energy.pdf'],'Resolution',300,'BackgroundColor', bgColor)
+exportgraphics(f_star_kw_fig,['figures\' 'f_star_kw.pdf'],'Resolution',300,'BackgroundColor', bgColor)
 if freq_plots == 1
     exportgraphics(A_y_star_pctile_fig,['figures\' 'A_y_star_pctile.pdf'],'Resolution',300,'BackgroundColor', bgColor)
     exportgraphics(freq_contour_fig,['figures\' 'freq_contour.pdf'],'Resolution',300,'BackgroundColor', bgColor)
@@ -1087,6 +1088,7 @@ savefig(pdicy_fig,['figures\matlab_figs\' 'pdicy.fig'])
 savefig(f_star_fig,['figures\matlab_figs\' 'f_star.fig'])
 savefig(vortex_energy_fig,['figures\matlab_figs\' 'vortex_energy.fig'])
 savefig(total_energy_fig,['figures\matlab_figs\' 'total_energy.fig'])
+savefig(f_star_kw_fig,['figures\matlab_figs\' 'f_star_kw.fig'])
 if freq_plots == 1
     savefig(A_y_star_pctile_fig,['figures\matlab_figs\' 'A_y_star_pctile.fig'])
     savefig(freq_contour_fig,['figures\matlab_figs\' 'freq_contour.fig'])
