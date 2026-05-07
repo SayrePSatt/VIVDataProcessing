@@ -13,7 +13,7 @@ date = string(date);
 fluid = ["air"]; %Choose which fluid to process
 idx = 1;
 for i=3:length(allfiles)
-    filename = "/"+string(allfiles(i).name)
+    filename = "/"+string(allfiles(i).name);
     clear f_d f_n log_decrement data
     %Chooses the correct data
     searchbool = contains(filename,fluid) && endsWith(filename,'.dat') && contains(filename,stiffness) && ~contains(filename,"results");

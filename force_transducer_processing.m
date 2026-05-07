@@ -29,7 +29,7 @@ freq_plots = 0;
 
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"]; %Do not change here, this controls the plot colors
 
-test_distratios = ["015"]; %Here, choose the 
+test_distratios = ["015" "040"]; %Here, choose the 
 test_diaratios = ["000" "010"]; %"06" "08"];
 % test_spring = ["1k" "6k"];
 
@@ -38,22 +38,23 @@ freq_cutoff = 6;
 [~, colormask, ~] = intersect(all_distratios,test_distratios);
 
 bgColor = [255 255 255]/255;
-figure_size = [100 100 600 350];
+figure_size = [100 100 650 350];
 tick_size = [0.03 0.012];
 size_marker = 6;
 
 drag_fig = figure;
 set(gca,'TickLength',tick_size);
-
+set(gcf,'Position',figure_size);
 hold on
 
 lift_fig = figure;
 set(gca,'TickLength',tick_size);
+set(gcf,'Position',figure_size);
 
 hold on
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "D:\EFDL\static_sphere_force\tandem_tests\";
+topfolder = "/Volumes/EFDLShal13/EFDL/static_sphere_force/tandem_tests/";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -230,20 +231,20 @@ savefig(drag_fig,['figures\matlab_figs\' 'static_drag.fig'])
 savefig(lift_fig,['figures\matlab_figs\' 'static_lift.fig'])
 
 %% Calculating the Slope
-
-for ii = 1:num_uniq_configs
-    x_data = results_ave{1}{ii};
-    y_data = results_ave{3}{ii};
-
-    middle_idx = ceil(length(x_data)/2);
-    fit_idx = (middle_idx-6):(middle_idx+6);
-
-    slope_fit(ii,:) = polyfit(x_data(fit_idx),y_data(fit_idx),1);
-    figure(lift_fig)
-    plot(x_data(fit_idx),polyval(slope_fit(ii,:),x_data(fit_idx)),Color=plotting_color(ii,:))
-end
-
-%% Fitting curves
-disp = results_ave{1}{1};
-drag = results_ave{2}{1};
-lift = results_ave{3}{1};
+% 
+% for ii = 1:num_uniq_configs
+%     x_data = results_ave{1}{ii};
+%     y_data = results_ave{3}{ii};
+% 
+%     middle_idx = ceil(length(x_data)/2);
+%     fit_idx = (middle_idx-6):(middle_idx+6);
+% 
+%     slope_fit(ii,:) = polyfit(x_data(fit_idx),y_data(fit_idx),1);
+%     figure(lift_fig)
+%     plot(x_data(fit_idx),polyval(slope_fit(ii,:),x_data(fit_idx)),Color=plotting_color(ii,:))
+% end
+% 
+% %% Fitting curves
+% disp = results_ave{1}{1};
+% drag = results_ave{2}{1};
+% lift = results_ave{3}{1};
