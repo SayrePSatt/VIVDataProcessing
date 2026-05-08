@@ -13,12 +13,12 @@ squareaxis = 0;
 all_distratios = ["000" "015" "020" "025" "030" "040" "050" "060" "070" "100"];
 
 test_distratios = ["000" "015" "040"];
-test_diaratios = ["_00" "_10"]; %"06" "08"];
+test_diaratios = ["_00"]; %"06" "08"];
 test_spring = ["1k"];
-test_redvelo = ["_08.5" "_14.5" "_20.5"];
-use_datapoint = 2;
+test_redvelo = ["_06.0" "_10.0" "_14.0"];
+use_datapoint = 1;
 
-timerseries_cycles = 5;
+timerseries_cycles = 30;
 lissajous_cycles = 50;
 offset = 30;
 
@@ -29,7 +29,7 @@ figure_size = [100 100 600 350];
 tick_size = [0.03 0.012];
 %% Experiment Specification
 % datafolder = "E:\vivscratch_complete\";
-topfolder = "E:\EFDL\viv_newstructure\aftertare_newstructure\";
+topfolder = "/Volumes/Sayre_Flash/EFDL/force_validation/tests/";
 
 rho = 998;
 C_A = 0.5;     %Added mass coefficient
@@ -124,7 +124,7 @@ for ii=1:num_uniq_configs %each configuration
                 filename = all_files(data_idx).name;
                 run = convertCharsToStrings(filename);
                 testing = [testing string(filename)];
-                metadata = table2array(readtable(topfolder+filename,'Range','A12:F13'));
+                metadata = table2array(readtable(topfolder+filename,'Range','A12:G13'));
                 data = table2array(readtable(topfolder+filename,'NumHeaderLines',14)); %Imports one file with corresponding data
                 if data(end,1) > 225
                     data = data(50000:end,:);
@@ -137,6 +137,7 @@ for ii=1:num_uniq_configs %each configuration
                 d_sph = metadata(:,1);
                 m_d = (4/3)*pi*(d_sph(1)/2)^3*rho+rho*0.005^2*pi*d_sph(1)/4; %Displaced mass
                 m = metadata(:,2);
+                m_below = m-metadata(:,7);
                 f_nw = metadata(:,3);
                 f_na = metadata(:,5);
                 zeta = metadata(:,6);
@@ -169,6 +170,7 @@ for ii=1:num_uniq_configs %each configuration
                 f_s = 1/(time(2)-time(1));
                 dt = 1/f_s;
                 encoder = data(:,2);
+                F_y_carriage = data(:,4);
 
                 clear data metadata
 
@@ -181,10 +183,11 @@ for ii=1:num_uniq_configs %each configuration
                 
                 freq = 1/(dt*n)*(0:n); % Create x-qxis of frequencies in Hz
                 L = 1:floor(n/2); %only plot the first half of freqs
-                f_c = 2;   %Cutoff frequency
+                f_c = 1;   %Cutoff frequency
                 [b,a] = butter(4,f_c/(f_s/2),"low");
                 
                 encoder_filt = filtfilt(b,a,encoder);
+                F_y_carriage_filt = filtfilt(b,a,F_y_carriage);
                 
                 %% Frequency investigation
                 clear f_peaks mx phase f_windowed A_y_max peak_idx %PSD_freq PSD_norm PSD_freq_norm
@@ -245,9 +248,11 @@ for ii=1:num_uniq_configs %each configuration
                 data_length = length(acc);
                 time = time(1:data_length);
                 encoder_filt = encoder_filt(1:data_length);
+                F_y_carriage_filt = F_y_carriage_filt(1:data_length);
                 velo =  velo(1:data_length);
             
                 F = m(1)*acc+c(1).*velo+k(1)*encoder_filt;
+                F_ft = F_y_carriage_filt+m_below(1)*acc;
                 F_pot = -m_a*acc;%-C_A*m_d*acc;
                 F_vortex = F - F_pot;
                 F_68 = sqrt((acc.*m(2)).^2+(velo.*c_68).^2+(encoder_filt.*k_68).^2);
@@ -304,7 +309,7 @@ for ii=1:num_uniq_configs %each configuration
                 plot(t/T,encoder_filt_cont,'k-')
                 
                 xlim([0 timerseries_cycles])
-                limits = 1.5;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+                limits = 0.5;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
                 % limits = 0.1;
                 ylim([-limits limits])
                 yticks([-limits 0 limits])
@@ -318,11 +323,35 @@ for ii=1:num_uniq_configs %each configuration
                     L_star = ['$L^*=$' +num2str(distance) ' '];
                 end
                 title([L_star ' $U^*=$' num2str(red_velo_est)])
-                set(gca,'xticklabel',0:10:timerseries_cycles)
+                set(gca,'xticklabel',0:1:timerseries_cycles)
+               
+                %% Plotting Time Series of Force
+                timeSeriesForce = figure;
                 set(gcf, 'color', bgColor);
                 set(gca, 'color', bgColor);
+                timeSeriesForce.Position = [100 100 500 250];
+                plot(t/T,F(idx),'k-')
+                hold on
+                plot(t/T,F_ft(idx),'b--')
 
-    
+                xlim([0 timerseries_cycles])
+                limits = 0.1;%ceil(max(abs(encoder_filt_cont))/0.5)*0.5;
+                % limits = 0.1;
+                ylim([-limits limits])
+                yticks([-limits 0 limits])
+                % xlabel('$t/T$')
+                ylabel('$F$')
+                xlabel('$t/T$')
+                distance = str2double(char(uniq_dist))/10;
+                if distance == 0
+                    L_star = 'Isolated ';
+                else
+                    L_star = ['$L^*=$' +num2str(distance) ' '];
+                end
+                title([L_star ' $U^*=$' num2str(red_velo_est)])
+                set(gca,'xticklabel',0:1:timerseries_cycles)
+                set(gcf, 'color', bgColor);
+                set(gca, 'color', bgColor);
                 %% Plotting Lissajous Curves
                 lissajous_fig_total = figure;
                 
@@ -360,9 +389,11 @@ for ii=1:num_uniq_configs %each configuration
                 set(gca, 'color', bgColor);
                 figsize = get(gcf,'Position');
                 %% Figure Export
-                exportgraphics(timeSeries,['figures\timeSeries\' filename(18:42) '_timeSeries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
-                exportgraphics(lissajous_fig_total,['figures\lissajous\' filename(18:42) '_total_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
-                exportgraphics(lissajous_fig_vortex,['figures\lissajous\' filename(18:42) '_vortex_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(timeSeries,['figures/timeSeries/' filename(18:42) '_timeSeries.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(timeSeriesForce,['figures/timeSeries/' filename(18:42) '_timeSeries_force.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(timeSeriesForce,['figures/timeSeries/' filename(18:42) '_timeSeries_force.png'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(lissajous_fig_total,['figures/lissajous/' filename(18:42) '_total_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
+                exportgraphics(lissajous_fig_vortex,['figures/lissajous/' filename(18:42) '_vortex_lissajous.pdf'],'Resolution',300,'BackgroundColor', bgColor);
             end
             clear results
         end

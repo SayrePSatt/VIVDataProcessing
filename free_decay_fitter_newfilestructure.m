@@ -10,7 +10,7 @@ allfiles = dir(folder);
 [~, date, ~] = fileparts(folder);
 date = string(date);
 %%
-fluid = ["air"]; %Choose which fluid to process
+fluid = ["water"]; %Choose which fluid to process
 idx = 1;
 for i=3:length(allfiles)
     filename = "/"+string(allfiles(i).name);
@@ -25,7 +25,7 @@ for i=3:length(allfiles)
         ans = 1
         [peak, peakidx] = findpeaks(disp,'MinPeakHeight',0,'MinPeakDistance',300); %Control what time to average over for final values
         for jj = 1:length(peakidx)-m
-            if time(peakidx(jj)) > 0 && time(peakidx(jj)) < 150 && disp(peakidx(jj)) > 0.0005 %make sure that peaks are significant
+            if time(peakidx(jj)) > 50 && time(peakidx(jj)) < 150 && disp(peakidx(jj)) > 0.0005 %make sure that peaks are significant
                 f_d(jj) = 1/((time(peakidx(jj+m))-time(peakidx(jj)))/m);
                 log_decrement(jj) = log(peak(jj)/peak(jj+m))/m;
             else
